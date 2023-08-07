@@ -1,4 +1,4 @@
-![banner](https://github.com/Aeldit/Cyan/blob/1.19.x/images/banner_small.png?raw=true)
+![banner](https://github.com/Aeldit/CTMSelector/blob/1.19.x/images/banner_small.png?raw=true)
 
 > If you fork this repo, make sure to state clearly that your repo is a fork of this one, and make a link to this one
 
