@@ -32,7 +32,7 @@ public class Textures
     private final ArrayList<Path> texturesPaths = new ArrayList<>();
     private final ArrayList<CyanLibOptionsStorage.BooleanOption> booleanOptions = new ArrayList<>();
 
-    public void init()
+    public void init() // TODO -> make options for each ctm resource pack
     {
         Path path = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
 
