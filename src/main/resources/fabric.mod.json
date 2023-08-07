@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "ctms",
+  "version": "${version}",
+  "name": "CTM Selector",
+  "description": "This mod allows you to choose which blocks will have connected textures with the pack you selected",
+  "authors": [
+    "Aeldit"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/user/Aeldit/ctm-selector",
+    "sources": "https://github.com/Aeldit/CTMSelector",
+    "issues": "https://github.com/Aeldit/CTMSelector/issues"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/ctms/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "fr.aeldit.ctms.CTMSClientCore"
+    ],
+    "modmenu": [
+      "fr.aeldit.ctms.config.ModMenuApiImpl"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "fabric-resource-loader-v0": "*",
+    "minecraft": "1.20.x",
+    "java": ">=17"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/JJMnf62Kuj"
+      }
+    }
+  }
+}
