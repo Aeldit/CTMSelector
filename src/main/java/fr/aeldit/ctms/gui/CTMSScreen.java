@@ -75,7 +75,7 @@ public class CTMSScreen extends Screen
                                                         CTMS_OPTIONS_STORAGE,
                                                         parent,
                                                         packName,
-                                                        CTMS_OPTIONS_STORAGE.getBooleanOptions().get(packName)
+                                                        CTMS_OPTIONS_STORAGE.getDefaultBooleanOptions().get(packName)
                                                 )
                                         )
                                 )
@@ -91,7 +91,7 @@ public class CTMSScreen extends Screen
                                                 CTMS_OPTIONS_STORAGE,
                                                 parent,
                                                 packName,
-                                                CTMS_OPTIONS_STORAGE.getBooleanOptions().get(packName)
+                                                CTMS_OPTIONS_STORAGE.getDefaultBooleanOptions().get(packName)
                                         ))
                                 )
                                 .dimensions(width - 180, 30 + 30 * (i - 6), 150, 20)

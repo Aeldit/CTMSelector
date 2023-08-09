@@ -26,7 +26,7 @@ public class CTMSClientCore implements ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        TEXTURES.init();
+        TEXTURES_HANDLING.init();
         CTMS_OPTIONS_STORAGE.init();
 
         CTMS_LOGGER.info("[CTMSelector] Successfully initialized");

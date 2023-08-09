@@ -33,7 +33,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +40,8 @@ import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
 
 public class CTMSOptionsStorage
 {
-    private final Map<String, ArrayList<BooleanOption>> booleanOptions = new HashMap<>();
+    private final Map<String, ArrayList<BooleanOption>> defaultBooleanOptions = new HashMap<>();
+    private final Map<String, Map<String, Boolean>> booleanOptions = new HashMap<>();
     private final Map<String, Map<String, Boolean>> unsavedChangedOptions = new HashMap<>();
 
     public void init()
@@ -49,9 +49,28 @@ public class CTMSOptionsStorage
         readConfig();
     }
 
-    public void initOptions(String packName, ArrayList<BooleanOption> options)
+    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> options)
     {
-        booleanOptions.put(packName, options);
+        Map<String, Boolean> tmpMap = new HashMap<>();
+        options.forEach(booleanOption -> tmpMap.put(booleanOption.optionName, booleanOption.defaultValue));
+        System.out.println("tmpMap : " + tmpMap);
+
+        if (booleanOptions.containsKey(packName))
+        {
+            booleanOptions.get(packName).putAll(tmpMap);
+        }
+        else
+        {
+            booleanOptions.put(packName, tmpMap);
+        }
+        if (defaultBooleanOptions.containsKey(packName))
+        {
+            defaultBooleanOptions.get(packName).addAll(options);
+        }
+        else
+        {
+            defaultBooleanOptions.put(packName, new ArrayList<>(options));
+        }
     }
 
     public Map<String, Map<String, Boolean>> getUnsavedChangedOptions()
@@ -84,9 +103,15 @@ public class CTMSOptionsStorage
 
         public void setValue(boolean value)
         {
-            if (!unsavedChangedOptions.containsKey(optionName) && booleanOptionExists(packName, optionName))
+            if (unsavedChangedOptions.containsKey(packName))
             {
                 unsavedChangedOptions.get(packName).put(optionName, getBooleanOption(packName, optionName));
+            }
+            else
+            {
+                Map<String, Boolean> booleanMap = new HashMap<>();
+                booleanMap.put(optionName, getBooleanOption(packName, optionName));
+                unsavedChangedOptions.put(packName, booleanMap);
             }
             setBooleanOption(packName, optionName, value);
         }
@@ -116,70 +141,42 @@ public class CTMSOptionsStorage
         return options.toArray(SimpleOption[]::new);
     }
 
-    public Map<String, ArrayList<BooleanOption>> getBooleanOptions()
+    public Map<String, Map<String, Boolean>> getBooleanOptions()
     {
         return booleanOptions;
     }
 
-    public boolean getBooleanOption(String packName, String blockName)
+    public Map<String, ArrayList<BooleanOption>> getDefaultBooleanOptions()
     {
-        return booleanOptions.get(packName).get(getBlockIndex(packName, blockName)).getValue();
+        return defaultBooleanOptions;
+    }
+
+    public boolean getBooleanOption(String packName, String optionName)
+    {
+        return booleanOptions.get(packName).get(optionName);
     }
 
     public void setBooleanOption(String packName, String optionName, boolean value)
     {
         if (booleanOptions.containsKey(packName))
         {
-            booleanOptions.get(packName).get(getBlockIndex(packName, optionName)).setValue(value);
+            booleanOptions.get(packName).put(optionName, value);
         }
         else
         {
-            booleanOptions.put(packName, new ArrayList<>(Collections.singletonList(new BooleanOption(packName, optionName, value))));
+            Map<String, Boolean> tmpMap = new HashMap<>();
+            tmpMap.put(optionName, value);
+            booleanOptions.put(packName, tmpMap);
         }
-    }
-
-    public boolean booleanOptionExists(String packName, String optionName)
-    {
-        for (BooleanOption option : booleanOptions.get(packName))
-        {
-            if (option.optionName.equals(optionName))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Can only be called if the result of {@link #booleanOptionExists(String, String)} is {@code true}
-     * <p>
-     * Should NEVER return {@code -1}. If it does, it means the result of {@link #booleanOptionExists(String, String)} is {@code false}
-     */
-    public int getBlockIndex(String packName, String blockName)
-    {
-        int i = 0;
-        System.out.println(booleanOptions);
-
-        for (BooleanOption option : booleanOptions.get(packName))
-        {
-            if (option.optionName.equals(blockName))
-            {
-                return i;
-            }
-            i++;
-        }
-        return -1;
     }
 
     public void resetOptions(String packName)
     {
-        booleanOptions.get(packName).forEach(booleanOption -> booleanOption.setValue(booleanOption.defaultValue));
-        //in the foreach : booleanOptions.get(packName).get(getBlockIndex(packName, booleanOption.optionName)).setValue(booleanOption.defaultValue)
+        defaultBooleanOptions.get(packName).forEach(option -> booleanOptions.get(packName).put(option.optionName, option.defaultValue));
     }
 
     private void readConfig()
     {
-        booleanOptions.get("CTM OF Fabric").forEach(booleanOption -> System.out.println(booleanOption.optionName));
         Path path = FabricLoader.getInstance().getConfigDir().resolve(CTMS_MODID + ".json");
 
         if (Files.exists(path))
@@ -188,9 +185,27 @@ public class CTMSOptionsStorage
             {
                 Gson gson = new Gson();
                 Reader reader = Files.newBufferedReader(path);
-                TypeToken<Map<String, ArrayList<BooleanOption>>> mapType = new TypeToken<>() {};
-                booleanOptions.putAll(gson.fromJson(reader, mapType));
+                TypeToken<Map<String, Map<String, Boolean>>> mapType = new TypeToken<>() {};
+                Map<String, Map<String, Boolean>> fromGsonMap = new HashMap<>(gson.fromJson(reader, mapType));
                 reader.close();
+
+                for (Map.Entry<String, Map<String, Boolean>> entry : fromGsonMap.entrySet())
+                {
+                    if (booleanOptions.containsKey(entry.getKey()))
+                    {
+                        for (Map.Entry<String, Boolean> packEntry : entry.getValue().entrySet())
+                        {
+                            if (booleanOptions.get(entry.getKey()).containsKey(packEntry.getKey()))
+                            {
+                                if (booleanOptions.get(entry.getKey()).get(packEntry.getKey()) != packEntry.getValue())
+                                {
+                                    booleanOptions.get(entry.getKey()).put(packEntry.getKey(), packEntry.getValue());
+                                }
+                            }
+                        }
+                    }
+                }
+                System.out.println(booleanOptions);
             }
             catch (IOException e)
             {

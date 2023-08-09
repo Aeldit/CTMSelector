@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
-public class Textures
+public class TexturesHandling
 {
     public void init() // TODO -> make options for each ctm resource pack
     {
@@ -66,7 +66,7 @@ public class Textures
 
                             if (!tmpCtmBlocksList.isEmpty())
                             {
-                                CTMS_OPTIONS_STORAGE.initOptions(resourcePackDir.getName(), tmpCtmBlocksList);
+                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDir.getName(), tmpCtmBlocksList);
                             }
                         }
                     }
