@@ -86,7 +86,5 @@
   "cyan.msg.rule.opLevels": "§cThe OP level must be between 0 and 4 (both included)",
   "cyan.msg.rule.positiveValue": "§cThe value must be positive",
   "-----------------------------------------------CONFIG_SCREEN-----------------------------------------------": "",
-  "cyan.cyanlib.screen": "Cyan",
-  "cyan.screen.options.title": "Cyan Options",
-  "cyan.config.option.allowBed": "AllowBed"
+  "ctms.screen.title": "Resource Packs Configurations"
 }

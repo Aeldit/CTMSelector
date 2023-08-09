@@ -17,8 +17,9 @@
 
 package fr.aeldit.ctms.textures;
 
-import fr.aeldit.cyanlib.lib.config.CyanLibOptionsStorage;
+import fr.aeldit.ctms.config.CTMSOptionsStorage;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -29,47 +30,43 @@ import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
 public class Textures
 {
-    private final ArrayList<Path> texturesPaths = new ArrayList<>();
-    private final ArrayList<CyanLibOptionsStorage.BooleanOption> booleanOptions = new ArrayList<>();
-
     public void init() // TODO -> make options for each ctm resource pack
     {
         Path path = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
 
-        for (final File resourcePackDir : path.toFile().listFiles())
+        for (File resourcePackDir : path.toFile().listFiles())
         {
-            if (resourcePackDir.isDirectory())
+            if (resourcePackDir.isDirectory() && resourcePackDir.getName().startsWith("CTM"))
             {
                 Path tmpPath = Path.of(resourcePackDir + "/assets/minecraft/optifine/ctm/connect");
 
                 if (Files.exists(tmpPath))
                 {
-                    for (final File file : tmpPath.toFile().listFiles())
+                    for (File categoryOrBlockDir : tmpPath.toFile().listFiles())
                     {
-                        if (file.getName().startsWith("c_"))
+                        if (categoryOrBlockDir.isDirectory())
                         {
-                            for (final File textureDir : file.listFiles())
+                            ArrayList<CTMSOptionsStorage.BooleanOption> tmpCtmBlocksList = new ArrayList<>();
+
+                            if (categoryOrBlockDir.getName().startsWith("c_"))
                             {
-                                if (textureDir.isDirectory())
+                                for (File textureDir : categoryOrBlockDir.listFiles())
                                 {
-                                    for (final File imagesOrProperties : textureDir.listFiles())
+                                    if (textureDir.isDirectory())
                                     {
-                                        if (imagesOrProperties.getName().endsWith(".properties"))
-                                        {
-                                            texturesPaths.add(textureDir.toPath());
-                                            System.out.println(imagesOrProperties.getName()
-                                                    .split("\\\\")[imagesOrProperties.getName().split("\\\\").length - 1]
-                                                    .replace(".properties", "")
-                                            );
-                                            booleanOptions.add(CTMS_OPTIONS_STORAGE.new BooleanOption(imagesOrProperties.getName()
-                                                    .split("\\\\")[imagesOrProperties.getName().split("\\\\").length - 1]
-                                                    .replace(".properties", ""),
-                                                    true)
-                                            );
-                                            break;
-                                        }
+                                        System.out.println("Texture dir : " + textureDir.getName());
+                                        tmpCtmBlocksList.addAll(getBlockInDir(resourcePackDir, textureDir));
                                     }
                                 }
+                            }
+                            else
+                            {
+                                tmpCtmBlocksList.addAll(getBlockInDir(resourcePackDir, categoryOrBlockDir));
+                            }
+
+                            if (!tmpCtmBlocksList.isEmpty())
+                            {
+                                CTMS_OPTIONS_STORAGE.initOptions(resourcePackDir.getName(), tmpCtmBlocksList);
                             }
                         }
                     }
@@ -78,13 +75,28 @@ public class Textures
         }
     }
 
-    public ArrayList<CyanLibOptionsStorage.BooleanOption> getTextureOptions()
+    public ArrayList<CTMSOptionsStorage.BooleanOption> getBlockInDir(File packDir, @NotNull File dir)
     {
-        return booleanOptions;
+        ArrayList<CTMSOptionsStorage.BooleanOption> allBlocksInDir = new ArrayList<>();
+
+        for (File currentDir : dir.listFiles())
+        {
+            if (currentDir.getName().endsWith(".properties"))
+            {
+                allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
+                        packDir.getName(),
+                        currentDir.getName()
+                                .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
+                                .replace(".properties", ""),
+                        true
+                ));
+            }
+        }
+        return allBlocksInDir;
     }
 
-    public ArrayList<Path> getTexturesPaths()
+    public void updateUsedTextures()
     {
-        return texturesPaths;
+
     }
 }

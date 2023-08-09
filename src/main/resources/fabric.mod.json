@@ -20,7 +20,7 @@
       "fr.aeldit.ctms.CTMSClientCore"
     ],
     "modmenu": [
-      "fr.aeldit.ctms.config.ModMenuApiImpl"
+      "fr.aeldit.ctms.gui.ModMenuApiImpl"
     ]
   },
   "depends": {

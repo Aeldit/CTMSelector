@@ -17,14 +17,10 @@
 
 package fr.aeldit.ctms.util;
 
+import fr.aeldit.ctms.config.CTMSOptionsStorage;
 import fr.aeldit.ctms.textures.Textures;
-import fr.aeldit.cyanlib.lib.CyanLib;
-import fr.aeldit.cyanlib.lib.commands.CyanLibConfigCommands;
-import fr.aeldit.cyanlib.lib.config.CyanLibOptionsStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
 
 public class Utils
 {
@@ -33,7 +29,5 @@ public class Utils
 
     public static final Textures TEXTURES = new Textures();
 
-    public static CyanLibOptionsStorage CTMS_OPTIONS_STORAGE = new CyanLibOptionsStorage(CTMS_MODID, TEXTURES.getTextureOptions(), new ArrayList<>());
-    public static CyanLib CTMS_LIB_UTILS = new CyanLib(CTMS_MODID, CTMS_OPTIONS_STORAGE);
-    public static CyanLibConfigCommands CTMS_CONFIG_COMMANDS = new CyanLibConfigCommands(CTMS_MODID, CTMS_LIB_UTILS);
+    public static final CTMSOptionsStorage CTMS_OPTIONS_STORAGE = new CTMSOptionsStorage();
 }

@@ -18,7 +18,6 @@
 package fr.aeldit.ctms;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import static fr.aeldit.ctms.util.Utils.*;
 
@@ -28,9 +27,8 @@ public class CTMSClientCore implements ClientModInitializer
     public void onInitializeClient()
     {
         TEXTURES.init();
-        CTMS_LIB_UTILS.init(CTMS_MODID, CTMS_OPTIONS_STORAGE, null);
+        CTMS_OPTIONS_STORAGE.init();
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CTMS_CONFIG_COMMANDS.register(dispatcher));
         CTMS_LOGGER.info("[CTMSelector] Successfully initialized");
     }
 }
