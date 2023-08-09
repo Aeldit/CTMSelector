@@ -17,9 +17,16 @@
 
 package fr.aeldit.ctms;
 
+import fr.aeldit.ctms.gui.CTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import org.lwjgl.glfw.GLFW;
 
-import static fr.aeldit.ctms.util.Utils.*;
+import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
@@ -27,7 +34,19 @@ public class CTMSClientCore implements ClientModInitializer
     public void onInitializeClient()
     {
         TEXTURES_HANDLING.init();
-        CTMS_OPTIONS_STORAGE.init();
+
+        KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "cyanlib.keybindings.openScreen.config",
+                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_U,
+                "cyanlib.keybindings.category"
+        ));
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (packScreenKey.wasPressed())
+            {
+                client.setScreen(new CTMSScreen(null));
+            }
+        });
 
         CTMS_LOGGER.info("[CTMSelector] Successfully initialized");
     }

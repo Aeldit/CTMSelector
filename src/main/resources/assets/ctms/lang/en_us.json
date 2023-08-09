@@ -86,5 +86,9 @@
   "cyan.msg.rule.opLevels": "§cThe OP level must be between 0 and 4 (both included)",
   "cyan.msg.rule.positiveValue": "§cThe value must be positive",
   "-----------------------------------------------CONFIG_SCREEN-----------------------------------------------": "",
-  "ctms.screen.title": "Resource Packs Configurations"
+  "ctms.screen.title": "Resource Packs Configurations",
+  "ctms.screen.config.reset": "Reset",
+  "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (ON)",
+  "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
+  "ctms.screen.config.save&quit": "save & Quit"
 }

@@ -19,18 +19,23 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.config.CTMSOptionsStorage;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
 public class TexturesHandling
 {
-    public void init() // TODO -> make options for each ctm resource pack
+    private final Map<String, Boolean> tmpOptionsMap = new HashMap<>();
+
+    public void init()
     {
         Path path = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
 
@@ -38,11 +43,11 @@ public class TexturesHandling
         {
             if (resourcePackDir.isDirectory() && resourcePackDir.getName().startsWith("CTM"))
             {
-                Path tmpPath = Path.of(resourcePackDir + "/assets/minecraft/optifine/ctm/connect");
+                Path ctmPath = Path.of(resourcePackDir + "/assets/minecraft/optifine/ctm/connect");
 
-                if (Files.exists(tmpPath))
+                if (Files.exists(ctmPath))
                 {
-                    for (File categoryOrBlockDir : tmpPath.toFile().listFiles())
+                    for (File categoryOrBlockDir : ctmPath.toFile().listFiles())
                     {
                         if (categoryOrBlockDir.isDirectory())
                         {
@@ -54,7 +59,6 @@ public class TexturesHandling
                                 {
                                     if (textureDir.isDirectory())
                                     {
-                                        System.out.println("Texture dir : " + textureDir.getName());
                                         tmpCtmBlocksList.addAll(getBlockInDir(resourcePackDir, textureDir));
                                     }
                                 }
@@ -66,7 +70,7 @@ public class TexturesHandling
 
                             if (!tmpCtmBlocksList.isEmpty())
                             {
-                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDir.getName(), tmpCtmBlocksList);
+                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDir.getName(), tmpCtmBlocksList, tmpOptionsMap);
                             }
                         }
                     }
@@ -83,20 +87,98 @@ public class TexturesHandling
         {
             if (currentDir.getName().endsWith(".properties"))
             {
+                String optionName = currentDir.getName()
+                        .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
+                        .replace(".properties", "");
                 allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
                         packDir.getName(),
-                        currentDir.getName()
-                                .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
-                                .replace(".properties", ""),
+                        optionName,
                         true
                 ));
+                tmpOptionsMap.put(optionName, true);
+            }
+            else if (currentDir.getName().endsWith(".txt"))
+            {
+                String optionName = currentDir.getName()
+                        .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
+                        .replace(".txt", "");
+                allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
+                        packDir.getName(),
+                        optionName,
+                        true
+                ));
+                tmpOptionsMap.put(optionName, false);
             }
         }
         return allBlocksInDir;
     }
 
-    public void updateUsedTextures()
+    public void toggleBlockConnection(String packName, @NotNull File propertiesOrTxtFile)
     {
+        if (CTMS_OPTIONS_STORAGE.getBooleanOption(packName, propertiesOrTxtFile.getName()
+                .replace(".properties", "")
+                .replace(".txt", ""))
+        )
+        {
+            if (propertiesOrTxtFile.getName().endsWith(".txt"))
+            {
+                propertiesOrTxtFile.renameTo(new File(
+                        propertiesOrTxtFile.getPath().replace(propertiesOrTxtFile.getName(), "")
+                                + propertiesOrTxtFile.getName().replace(".txt", ".properties"))
+                );
+            }
+        }
+        else
+        {
+            if (propertiesOrTxtFile.getName().endsWith(".properties"))
+            {
+                propertiesOrTxtFile.renameTo(new File(
+                        propertiesOrTxtFile.getPath().replace(propertiesOrTxtFile.getName(), "")
+                                + propertiesOrTxtFile.getName().replace(".properties", ".txt"))
+                );
+            }
+        }
+    }
 
+    public void updateUsedTextures(String packName)
+    {
+        Path ctmPath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/" + packName + "/assets/minecraft/optifine/ctm/connect");
+
+        if (Files.exists(ctmPath))
+        {
+            for (File categoryOrBlockDir : ctmPath.toFile().listFiles())
+            {
+                if (categoryOrBlockDir.isDirectory())
+                {
+                    if (categoryOrBlockDir.getName().startsWith("c_"))
+                    {
+                        for (File textureDir : categoryOrBlockDir.listFiles())
+                        {
+                            if (textureDir.isDirectory())
+                            {
+                                for (File currentDir : textureDir.listFiles())
+                                {
+                                    if (currentDir.isFile() && (currentDir.getName().endsWith(".properties") || currentDir.getName().endsWith(".txt")))
+                                    {
+                                        toggleBlockConnection(packName, currentDir);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (File currentDir : categoryOrBlockDir.listFiles())
+                        {
+                            if (currentDir.isFile() && (currentDir.getName().endsWith(".properties") || currentDir.getName().endsWith(".txt")))
+                            {
+                                toggleBlockConnection(packName, currentDir);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        MinecraftClient.getInstance().reloadResources();
     }
 }

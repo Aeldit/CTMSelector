@@ -17,26 +17,14 @@
 
 package fr.aeldit.ctms.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import fr.aeldit.cyanlib.lib.config.SimpleOptionConverter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.option.SimpleOption;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
 
 public class CTMSOptionsStorage
 {
@@ -44,32 +32,24 @@ public class CTMSOptionsStorage
     private final Map<String, Map<String, Boolean>> booleanOptions = new HashMap<>();
     private final Map<String, Map<String, Boolean>> unsavedChangedOptions = new HashMap<>();
 
-    public void init()
+    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> defaultOptions, Map<String, Boolean> options)
     {
-        readConfig();
-    }
-
-    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> options)
-    {
-        Map<String, Boolean> tmpMap = new HashMap<>();
-        options.forEach(booleanOption -> tmpMap.put(booleanOption.optionName, booleanOption.defaultValue));
-        System.out.println("tmpMap : " + tmpMap);
+        if (defaultBooleanOptions.containsKey(packName))
+        {
+            defaultBooleanOptions.get(packName).addAll(defaultOptions);
+        }
+        else
+        {
+            defaultBooleanOptions.put(packName, new ArrayList<>(defaultOptions));
+        }
 
         if (booleanOptions.containsKey(packName))
         {
-            booleanOptions.get(packName).putAll(tmpMap);
+            booleanOptions.get(packName).putAll(options);
         }
         else
         {
-            booleanOptions.put(packName, tmpMap);
-        }
-        if (defaultBooleanOptions.containsKey(packName))
-        {
-            defaultBooleanOptions.get(packName).addAll(options);
-        }
-        else
-        {
-            defaultBooleanOptions.put(packName, new ArrayList<>(options));
+            booleanOptions.put(packName, options);
         }
     }
 
@@ -83,7 +63,7 @@ public class CTMSOptionsStorage
         unsavedChangedOptions.clear();
     }
 
-    public class BooleanOption implements SimpleOptionConverter
+    public class BooleanOption
     {
         private final String packName;
         private final String optionName;
@@ -117,7 +97,6 @@ public class CTMSOptionsStorage
         }
 
         @Environment(EnvType.CLIENT)
-        @Override
         public SimpleOption<Boolean> asConfigOption()
         {
             String[] translations = optionName.split("_");
@@ -136,7 +115,7 @@ public class CTMSOptionsStorage
     public static SimpleOption<?> @NotNull [] asConfigOptions(@NotNull ArrayList<BooleanOption> booleanOptions)
     {
         ArrayList<SimpleOption<?>> options = new ArrayList<>();
-        booleanOptions.forEach(option -> options.add(((SimpleOptionConverter) option).asConfigOption()));
+        booleanOptions.forEach(option -> options.add(option.asConfigOption()));
 
         return options.toArray(SimpleOption[]::new);
     }
@@ -153,7 +132,11 @@ public class CTMSOptionsStorage
 
     public boolean getBooleanOption(String packName, String optionName)
     {
-        return booleanOptions.get(packName).get(optionName);
+        if (booleanOptions.containsKey(packName) && booleanOptions.get(packName).containsKey(optionName))
+        {
+            return booleanOptions.get(packName).get(optionName);
+        }
+        return false;
     }
 
     public void setBooleanOption(String packName, String optionName, boolean value)
@@ -173,74 +156,5 @@ public class CTMSOptionsStorage
     public void resetOptions(String packName)
     {
         defaultBooleanOptions.get(packName).forEach(option -> booleanOptions.get(packName).put(option.optionName, option.defaultValue));
-    }
-
-    private void readConfig()
-    {
-        Path path = FabricLoader.getInstance().getConfigDir().resolve(CTMS_MODID + ".json");
-
-        if (Files.exists(path))
-        {
-            try
-            {
-                Gson gson = new Gson();
-                Reader reader = Files.newBufferedReader(path);
-                TypeToken<Map<String, Map<String, Boolean>>> mapType = new TypeToken<>() {};
-                Map<String, Map<String, Boolean>> fromGsonMap = new HashMap<>(gson.fromJson(reader, mapType));
-                reader.close();
-
-                for (Map.Entry<String, Map<String, Boolean>> entry : fromGsonMap.entrySet())
-                {
-                    if (booleanOptions.containsKey(entry.getKey()))
-                    {
-                        for (Map.Entry<String, Boolean> packEntry : entry.getValue().entrySet())
-                        {
-                            if (booleanOptions.get(entry.getKey()).containsKey(packEntry.getKey()))
-                            {
-                                if (booleanOptions.get(entry.getKey()).get(packEntry.getKey()) != packEntry.getValue())
-                                {
-                                    booleanOptions.get(entry.getKey()).put(packEntry.getKey(), packEntry.getValue());
-                                }
-                            }
-                        }
-                    }
-                }
-                System.out.println(booleanOptions);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public void writeConfig()
-    {
-        clearUnsavedChangedOptions();
-        Path path = FabricLoader.getInstance().getConfigDir().resolve(CTMS_MODID + ".json");
-
-        if (!Files.exists(path))
-        {
-            try
-            {
-                Files.createFile(path);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try
-        {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            Writer writer = Files.newBufferedWriter(path);
-            gson.toJson(booleanOptions, writer);
-            writer.close();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 }

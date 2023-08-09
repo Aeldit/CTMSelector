@@ -3,7 +3,7 @@
   "id": "ctms",
   "version": "${version}",
   "name": "CTM Selector",
-  "description": "This mod allows you to choose which blocks will have connected textures with the pack you selected",
+  "description": "This mod allows you to download my CTM resource packs and choose which blocks will have connected textures in each pack",
   "authors": [
     "Aeldit"
   ],

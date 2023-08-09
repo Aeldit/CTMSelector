@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 
+import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+
 @Environment(EnvType.CLIENT)
 public class ResourcePacksScreen extends Screen
 {
@@ -43,6 +46,7 @@ public class ResourcePacksScreen extends Screen
     private OptionListWidget optionList;
     // Used for when the player uses the escape key to exit the screen, which like the cancel button, reverts the modified but no saved options to their previous value
     private boolean save = false;
+    private boolean reset = false;
 
     public ResourcePacksScreen(@NotNull CTMSOptionsStorage optionsStorage, Screen parent, String packName, ArrayList<CTMSOptionsStorage.BooleanOption> options)
     {
@@ -66,8 +70,15 @@ public class ResourcePacksScreen extends Screen
                 }
             }
         }
+        else
+        {
+            if (!CTMS_OPTIONS_STORAGE.getUnsavedChangedOptions().isEmpty() || reset)
+            {
+                TEXTURES_HANDLING.updateUsedTextures(packName);
+            }
+        }
         save = false;
-        optionsStorage.writeConfig();
+        CTMS_OPTIONS_STORAGE.clearUnsavedChangedOptions();
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -88,12 +99,12 @@ public class ResourcePacksScreen extends Screen
         addSelectableChild(optionList);
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("cyanlib.screen.config.reset"), button -> {
+                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             optionsStorage.resetOptions(packName);
-                            save = true;
+                            save = reset = true;
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("cyanlib.screen.config.reset.tooltip")))
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
                         .dimensions(10, 6, 100, 20)
                         .build()
         );
@@ -103,12 +114,12 @@ public class ResourcePacksScreen extends Screen
                             save = false;
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("cyanlib.screen.config.cancel.tooltip")))
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
                         .dimensions(width / 2 - 154, height - 28, 150, 20)
                         .build()
         );
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("cyanlib.screen.config.save&quit"), button -> {
+                ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
                             save = true;
                             close();
                         })
