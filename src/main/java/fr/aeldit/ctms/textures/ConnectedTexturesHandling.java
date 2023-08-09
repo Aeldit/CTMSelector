@@ -31,7 +31,7 @@ import java.util.Map;
 
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
-public class TexturesHandling
+public class ConnectedTexturesHandling
 {
     private final Map<String, Boolean> tmpOptionsMap = new HashMap<>();
 

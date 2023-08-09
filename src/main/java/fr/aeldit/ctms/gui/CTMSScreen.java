@@ -70,7 +70,7 @@ public class CTMSScreen extends Screen
             if (i < 6)
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable(packName),
+                        ButtonWidget.builder(Text.of(packName),
                                         button -> Objects.requireNonNull(client).setScreen(new ResourcePacksScreen(
                                                         CTMS_OPTIONS_STORAGE,
                                                         parent,
@@ -86,7 +86,7 @@ public class CTMSScreen extends Screen
             else
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable(packName),
+                        ButtonWidget.builder(Text.of(packName),
                                         button -> Objects.requireNonNull(client).setScreen(new ResourcePacksScreen(
                                                 CTMS_OPTIONS_STORAGE,
                                                 parent,

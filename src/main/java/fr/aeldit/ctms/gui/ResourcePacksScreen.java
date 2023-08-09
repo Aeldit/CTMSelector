@@ -50,7 +50,7 @@ public class ResourcePacksScreen extends Screen
 
     public ResourcePacksScreen(@NotNull CTMSOptionsStorage optionsStorage, Screen parent, String packName, ArrayList<CTMSOptionsStorage.BooleanOption> options)
     {
-        super(Text.translatable(packName));
+        super(Text.of(packName));
         this.packName = packName;
         this.optionsStorage = optionsStorage;
         this.parent = parent;
