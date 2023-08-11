@@ -90,5 +90,7 @@
   "ctms.screen.config.reset": "Reset",
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (ON)",
   "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
-  "ctms.screen.config.save&quit": "save & Quit"
+  "ctms.screen.config.save&quit": "Save & Quit",
+  "ctms.screen.ctmPacks": "Packs with Connected Textures",
+  "ctms.screen.openResourcePacksFolder": "Open Packs Folder"
 }

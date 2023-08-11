@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.config.CTMSOptionsStorage;
+import fr.aeldit.ctms.util.CTMResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +35,7 @@ import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 public class ConnectedTexturesHandling
 {
     private final Map<String, Boolean> tmpOptionsMap = new HashMap<>();
+    private static final ArrayList<CTMResourcePack> ctmResourcePacks = new ArrayList<>();
 
     public void init()
     {
@@ -43,6 +45,7 @@ public class ConnectedTexturesHandling
         {
             if (resourcePackDir.isDirectory() && resourcePackDir.getName().startsWith("CTM"))
             {
+                boolean ctmFound = false;
                 Path ctmPath = Path.of(resourcePackDir + "/assets/minecraft/optifine/ctm/connect");
 
                 if (Files.exists(ctmPath))
@@ -70,10 +73,22 @@ public class ConnectedTexturesHandling
 
                             if (!tmpCtmBlocksList.isEmpty())
                             {
-                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDir.getName(), tmpCtmBlocksList, tmpOptionsMap);
+                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDir.getName(), tmpCtmBlocksList, tmpOptionsMap, ctmResourcePacks);
+                                ctmFound = true;
                             }
                         }
+
+                        if (ctmFound)
+                        {
+                            ctmResourcePacks.add(new CTMResourcePack(resourcePackDir.getName(), resourcePackDir.toPath()));
+                        }
                     }
+                }
+                for (CTMResourcePack ctmResourcePack : ctmResourcePacks)
+                {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(ctmResourcePack.getName());
+                    System.out.println(tmp);
                 }
             }
         }
@@ -93,7 +108,8 @@ public class ConnectedTexturesHandling
                 allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
                         packDir.getName(),
                         optionName,
-                        true
+                        true,
+                        dir.toPath()
                 ));
                 tmpOptionsMap.put(optionName, true);
             }
@@ -105,7 +121,8 @@ public class ConnectedTexturesHandling
                 allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
                         packDir.getName(),
                         optionName,
-                        true
+                        true,
+                        dir.toPath()
                 ));
                 tmpOptionsMap.put(optionName, false);
             }
@@ -180,5 +197,10 @@ public class ConnectedTexturesHandling
             }
         }
         MinecraftClient.getInstance().reloadResources();
+    }
+
+    public static ArrayList<CTMResourcePack> getCtmResourcePacks()
+    {
+        return ctmResourcePacks;
     }
 }

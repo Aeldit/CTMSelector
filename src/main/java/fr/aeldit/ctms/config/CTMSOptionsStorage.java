@@ -17,11 +17,14 @@
 
 package fr.aeldit.ctms.config;
 
+import fr.aeldit.ctms.gui.widgets.ResourcePacksListWidget;
+import fr.aeldit.ctms.util.CTMResourcePack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.option.SimpleOption;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +34,9 @@ public class CTMSOptionsStorage
     private final Map<String, ArrayList<BooleanOption>> defaultBooleanOptions = new HashMap<>();
     private final Map<String, Map<String, Boolean>> booleanOptions = new HashMap<>();
     private final Map<String, Map<String, Boolean>> unsavedChangedOptions = new HashMap<>();
+    private final ArrayList<ResourcePacksListWidget.ResourcePackListEntry> resourcePackListEntries = new ArrayList<>();
 
-    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> defaultOptions, Map<String, Boolean> options)
+    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> defaultOptions, Map<String, Boolean> options, ArrayList<CTMResourcePack> ctmResourcePacks)
     {
         if (defaultBooleanOptions.containsKey(packName))
         {
@@ -51,11 +55,18 @@ public class CTMSOptionsStorage
         {
             booleanOptions.put(packName, options);
         }
+
+        ctmResourcePacks.forEach(ctmResourcePack -> resourcePackListEntries.add(new ResourcePacksListWidget.ResourcePackListEntry(ctmResourcePack)));
     }
 
     public Map<String, Map<String, Boolean>> getUnsavedChangedOptions()
     {
         return unsavedChangedOptions;
+    }
+
+    public ArrayList<ResourcePacksListWidget.ResourcePackListEntry> getResourcePackListEntries()
+    {
+        return resourcePackListEntries;
     }
 
     public void clearUnsavedChangedOptions()
@@ -68,12 +79,14 @@ public class CTMSOptionsStorage
         private final String packName;
         private final String optionName;
         private final boolean defaultValue;
+        private final Path parentPath;
 
-        public BooleanOption(String packName, String optionName, boolean value)
+        public BooleanOption(String packName, String optionName, boolean value, Path parentPath)
         {
             this.packName = packName;
             this.optionName = optionName;
             this.defaultValue = value;
+            this.parentPath = parentPath;
         }
 
         public boolean getValue()
@@ -108,6 +121,11 @@ public class CTMSOptionsStorage
                 translation.append(" ");
             }
             return SimpleOption.ofBoolean(translation.toString(), getValue(), this::setValue);
+        }
+
+        public Path getParentPath()
+        {
+            return parentPath;
         }
     }
 
