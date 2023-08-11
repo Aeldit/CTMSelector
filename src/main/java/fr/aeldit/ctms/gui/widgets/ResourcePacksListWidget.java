@@ -37,12 +37,9 @@ public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<Resou
     @Override
     protected void renderList(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        int i = this.getRowLeft();
         int j = this.getRowWidth();
         int k = this.itemHeight - 4;
         int l = this.getEntryCount();
-
-        context.drawText(client.textRenderer, Text.translatable("ctms.screen.ctmPacks"), 50, 50, 0xFFFFFF, false);
 
         for (int m = 0; m < l; ++m)
         {
@@ -52,8 +49,21 @@ public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<Resou
             {
                 continue;
             }
-            this.renderEntry(context, mouseX, mouseY, delta, m, i, n + 10 * m, j, k);
+            this.renderEntry(context, mouseX, mouseY, delta, m, 6, 2 + n + 11 * m, j, k);
         }
+    }
+
+    @Override
+    public void render(@NotNull DrawContext context, int mouseX, int mouseY, float delta)
+    {
+        super.render(context, mouseX, mouseY, delta);
+        context.drawText(client.textRenderer, Text.translatable("ctms.screen.ctmPacks"), 16, 52, 0xFFFFFF, false);
+    }
+
+    @Override
+    protected int getScrollbarPositionX()
+    {
+        return width / 2 + 97;
     }
 
     @Override
