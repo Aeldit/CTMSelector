@@ -17,24 +17,29 @@
 
 package fr.aeldit.ctms.gui;
 
-import fr.aeldit.ctms.gui.widgets.ResourcePacksListWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.textures.ConnectedTexturesHandling.getCtmResourcePacks;
+import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
 {
     private final Screen parent;
-    private ResourcePacksListWidget resourcePacksListWidgetList;
+    //private ResourcePacksListWidget resourcePacksListWidgetList;
 
     public CTMSScreen(Screen parent)
     {
@@ -52,7 +57,7 @@ public class CTMSScreen extends Screen
     public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
     {
         renderBackgroundTexture(DrawContext);
-        resourcePacksListWidgetList.render(DrawContext, mouseX, mouseY, delta);
+        //resourcePacksListWidgetList.render(DrawContext, mouseX, mouseY, delta);
         DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
         super.render(DrawContext, mouseX, mouseY, delta);
     }
@@ -60,11 +65,11 @@ public class CTMSScreen extends Screen
     @Override
     protected void init()
     {
-        resourcePacksListWidgetList = new ResourcePacksListWidget(client, width / 2 - 8, height, 67, height - 36, 25);
-        resourcePacksListWidgetList.addAll(getCtmResourcePacks());
-        addSelectableChild(resourcePacksListWidgetList);
+        //resourcePacksListWidgetList = new ResourcePacksListWidget(client, width / 2 - 8, height, 67, height - 36, 25, this);
+        //resourcePacksListWidgetList.addAll(getCtmResourcePacks());
+        //addSelectableChild(resourcePacksListWidgetList);
 
-        /*int i = 0;
+        int i = 0;
         List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getBooleanOptions().keySet());
         Collections.sort(sortedPacksNames);
 
@@ -83,7 +88,7 @@ public class CTMSScreen extends Screen
                                                 )
                                         )
                                 )
-                                .dimensions(30, 30 + 20 * i + 10 * i, 150, 20)
+                                .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
                                 .build()
                 );
             }
@@ -98,15 +103,17 @@ public class CTMSScreen extends Screen
                                                 CTMS_OPTIONS_STORAGE.getDefaultBooleanOptions().get(packName)
                                         ))
                                 )
-                                .dimensions(width - 180, 30 + 30 * (i - 6), 150, 20)
+                                .dimensions(width - 180, 30 + 30 * (i - 6), 200, 20)
                                 .build()
                 );
             }
             i++;
-        }*/
+        }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"), button -> close())
+                ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
+                                button -> Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks"))
+                        )
                         .dimensions(width / 2 - 154, height - 28, 150, 20)
                         .build()
         );

@@ -17,6 +17,7 @@
 
 package fr.aeldit.ctms.gui.widgets;
 
+import fr.aeldit.ctms.gui.CTMSScreen;
 import fr.aeldit.ctms.util.CTMResourcePack;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -27,11 +28,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+/**
+ * Made using a part of ModMenu's ModListWidget and Minecraft's EntryListWidget (rearranged to match the purpose of this mod)
+ */
 public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<ResourcePacksListWidget.ResourcePackListEntry> implements AutoCloseable
 {
-    public ResourcePacksListWidget(MinecraftClient minecraftClient, int i, int j, int k, int l, int m)
+    private boolean scrolling;
+    private final CTMSScreen parent;
+
+    public ResourcePacksListWidget(MinecraftClient minecraftClient, int i, int j, int k, int l, int m, CTMSScreen parent)
     {
         super(minecraftClient, i, j, k, l, m);
+        this.parent = parent;
     }
 
     @Override
@@ -57,6 +65,7 @@ public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<Resou
     public void render(@NotNull DrawContext context, int mouseX, int mouseY, float delta)
     {
         super.render(context, mouseX, mouseY, delta);
+        renderList(context, mouseX, mouseY, delta);
         context.drawText(client.textRenderer, Text.translatable("ctms.screen.ctmPacks"), 16, 52, 0xFFFFFF, false);
     }
 
@@ -64,6 +73,37 @@ public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<Resou
     protected int getScrollbarPositionX()
     {
         return width / 2 + 97;
+    }
+
+    @Override
+    public boolean mouseClicked(double double_1, double double_2, int int_1)
+    {
+        this.updateScrollingState(double_1, double_2, int_1);
+
+        if (!this.isMouseOver(double_1, double_2))
+        {
+            return false;
+        }
+        else
+        {
+            ResourcePackListEntry entry = getEntryAtPosition(double_1, double_2);
+
+            if (entry != null)
+            {
+                if (entry.mouseClicked(double_1, double_2, int_1))
+                {
+                    this.setFocused(entry);
+                    this.setDragging(true);
+                    return true;
+                }
+            }
+            else if (int_1 == 0)
+            {
+                this.clickedHeader((int) (double_1 - (double) (this.left + this.width / 2 - this.getRowWidth() / 2)), (int) (double_2 - (double) this.top) + (int) this.getScrollAmount() - 4);
+                return true;
+            }
+            return scrolling;
+        }
     }
 
     @Override
@@ -80,7 +120,6 @@ public class ResourcePacksListWidget extends AlwaysSelectedEntryListWidget<Resou
     @Override
     public void close()
     {
-
     }
 
     public static class ResourcePackListEntry extends AlwaysSelectedEntryListWidget.Entry<ResourcePackListEntry>
