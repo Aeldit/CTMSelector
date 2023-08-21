@@ -27,7 +27,7 @@
 
 ***
 
-> If you find any issue, please make sure to report it on github so I can fix it (both badges can be clicked on to
+> If you find any issue, please make sure to report it on GitHub so I can fix it (both badges can be clicked on to
 > follow the link)
 >
 > [![github_issues](https://img.shields.io/github/issues/Aeldit/CTMSelector?color=red&style=for-the-badge&logo=github)](https://github.com/Aeldit/CTMSelector/issues)

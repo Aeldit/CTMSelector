@@ -81,11 +81,11 @@ public class CTMSOptionsStorage
         private final boolean defaultValue;
         private final Path parentPath;
 
-        public BooleanOption(String packName, String optionName, boolean value, Path parentPath)
+        public BooleanOption(String packName, String optionName, boolean defaultValue, Path parentPath)
         {
             this.packName = packName;
             this.optionName = optionName;
-            this.defaultValue = value;
+            this.defaultValue = defaultValue;
             this.parentPath = parentPath;
         }
 
