@@ -126,7 +126,7 @@ public class ConnectedTexturesHandling
                                 ));
                                 tmpOptionsMap.put(optionName, true);
                             }
-                            else if (fileHeader.toString().equals(".txt"))
+                            else if (fileHeader.toString().endsWith(".txt"))
                             {
                                 String optionName = fileHeader.toString()
                                         .split("/")[fileHeader.toString().split("/").length - 1]
@@ -266,11 +266,10 @@ public class ConnectedTexturesHandling
     {
         if (packName.endsWith(".zip"))
         {
-            MinecraftClient.getInstance().getResourcePackManager().getEnabledProfiles().forEach(resourcePackProfile -> {
-                System.out.println(resourcePackProfile.getName());
-            });
+            // We disable the pack but the resources need to be reloaded for the zip file to be accessible for writing
             MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
             MinecraftClient.getInstance().reloadResources();
+
             if (pathInZipExists(resourcePacksDir + "\\" + packName, "assets/minecraft/optifine/ctm/connect/"))
             {
                 Map<String, String> fileNamesMap = new HashMap<>();
@@ -286,7 +285,7 @@ public class ConnectedTexturesHandling
                     {
                         fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".properties", ".txt"));
                     }
-                    else if (fileHeader.toString().equals(".txt") && option)
+                    else if (fileHeader.toString().endsWith(".txt") && option)
                     {
                         fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".txt", ".properties"));
                     }
