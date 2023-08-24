@@ -31,6 +31,7 @@ public class CTMSOptionsStorage
 {
     private final Map<String, Map<String, Boolean>> optionsMaps = new HashMap<>();
     private final Map<String, Map<String, Boolean>> unsavedOptionsMaps = new HashMap<>();
+    private final ArrayList<String> enabledPacks = new ArrayList<>();
 
     public void initPackOptions(String packName, Map<String, Boolean> options)
     {
@@ -75,6 +76,18 @@ public class CTMSOptionsStorage
         {
             unsavedOptionsMaps.put(packName, new HashMap<>(0));
         }
+    }
+
+    public void setEnabledPacks(ArrayList<String> enabledPacks)
+    {
+        this.enabledPacks.addAll(enabledPacks);
+        enabledPacks.remove("vanilla");
+        enabledPacks.remove("fabric");
+    }
+
+    public ArrayList<String> getEnabledPacks()
+    {
+        return enabledPacks;
     }
 
     public boolean optionsChanged(String packName)

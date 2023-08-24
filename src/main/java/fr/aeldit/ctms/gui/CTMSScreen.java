@@ -22,9 +22,11 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
 import java.io.File;
@@ -56,7 +58,6 @@ public class CTMSScreen extends Screen
     public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
     {
         renderBackgroundTexture(DrawContext);
-        //resourcePacksListWidgetList.render(DrawContext, mouseX, mouseY, delta);
         DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
         super.render(DrawContext, mouseX, mouseY, delta);
     }
@@ -73,30 +74,35 @@ public class CTMSScreen extends Screen
             // Temporary, will add a page system at some point
             if (i < 6)
             {
-                addDrawableChild(
-                        ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
-                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
-                                                        parent,
-                                                        packName
-                                                )
-                                        )
-                                )
-                                .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
-                                .build()
-                );
-            }
-            else
-            {
-                addDrawableChild(
-                        ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
-                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
-                                                parent,
-                                                packName
-                                        ))
-                                )
-                                .dimensions(width - 180, 30 + 30 * (i - 6), 200, 20)
-                                .build()
-                );
+                if (CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName))
+                {
+                    addDrawableChild(
+                            ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
+                                            button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
+                                                            parent,
+                                                            packName
+                                                    )
+                                            )
+                                    )
+                                    .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
+                                    .build()
+                    );
+                }
+                else
+                {
+                    addDrawableChild(
+                            ButtonWidget.builder(Text.of(Formatting.ITALIC + packName.replace(".zip", "")),
+                                            button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
+                                                            parent,
+                                                            packName
+                                                    )
+                                            )
+                                    )
+                                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.packDisabled.tooltip")))
+                                    .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
+                                    .build()
+                    );
+                }
             }
             i++;
         }

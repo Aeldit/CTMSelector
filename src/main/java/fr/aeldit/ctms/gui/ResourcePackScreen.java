@@ -26,6 +26,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.OptionListWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -45,7 +46,10 @@ public class ResourcePackScreen extends Screen
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
-        super(Text.of(packName.replace(".zip", "")));
+        super(CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName)
+                ? Text.of(packName.replace(".zip", ""))
+                : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
+        );
         this.packName = packName;
         this.parent = parent;
     }

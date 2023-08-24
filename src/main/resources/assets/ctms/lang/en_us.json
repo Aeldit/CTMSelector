@@ -87,6 +87,8 @@
   "cyan.msg.rule.positiveValue": "§cThe value must be positive",
   "-----------------------------------------------CONFIG_SCREEN-----------------------------------------------": "",
   "ctms.screen.title": "Resource Packs Configurations",
+  "ctms.screen.packDisabled.tooltip": "§cThis Resource pack is not activated",
+  "ctms.screen.packDisabledTitle": " (not activated)",
   "ctms.screen.config.reset": "Reset",
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (ON)",
   "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
