@@ -17,7 +17,6 @@
 
 package fr.aeldit.ctms.gui;
 
-import fr.aeldit.ctms.config.CTMSOptionsStorage;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
@@ -29,56 +28,41 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
-public class ResourcePacksScreen extends Screen
+public class ResourcePackScreen extends Screen
 {
     private final String packName;
-    private final CTMSOptionsStorage optionsStorage;
     private final Screen parent;
-    private final ArrayList<CTMSOptionsStorage.BooleanOption> options = new ArrayList<>();
     private OptionListWidget optionList;
     // Used for when the player uses the escape key to exit the screen, which like the cancel button, reverts the modified but no saved options to their previous value
     private boolean save = false;
     private boolean reset = false;
 
-    public ResourcePacksScreen(@NotNull CTMSOptionsStorage optionsStorage, Screen parent, String packName, ArrayList<CTMSOptionsStorage.BooleanOption> options)
+    public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
-        super(Text.of(packName));
+        super(Text.of(packName.replace(".zip", "")));
         this.packName = packName;
-        this.optionsStorage = optionsStorage;
         this.parent = parent;
-        this.options.addAll(options);
     }
 
     @Override
     public void close()
     {
-        if (!save)
+        if (save)
         {
-            if (!optionsStorage.getUnsavedChangedOptions().isEmpty())
+            if (CTMS_OPTIONS_STORAGE.optionsChanged(packName) || reset)
             {
-                for (Map.Entry<String, Boolean> entry : optionsStorage.getUnsavedChangedOptions().get(packName).entrySet())
-                {
-                    optionsStorage.setBooleanOption(packName, entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        else
-        {
-            if (!CTMS_OPTIONS_STORAGE.getUnsavedChangedOptions().isEmpty() || reset)
-            {
+                CTMS_OPTIONS_STORAGE.setOption(packName);
                 TEXTURES_HANDLING.updateUsedTextures(packName);
             }
         }
         save = false;
-        CTMS_OPTIONS_STORAGE.clearUnsavedChangedOptions();
+        CTMS_OPTIONS_STORAGE.clearUnsavedOptionsMap(packName);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -95,12 +79,12 @@ public class ResourcePacksScreen extends Screen
     protected void init()
     {
         optionList = new OptionListWidget(client, width, height, 32, height - 32, 25);
-        optionList.addAll(CTMSOptionsStorage.asConfigOptions(options));
+        optionList.addAll(CTMS_OPTIONS_STORAGE.asConfigOptions(packName));
         addSelectableChild(optionList);
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                            optionsStorage.resetOptions(packName);
+                            CTMS_OPTIONS_STORAGE.resetOptions(packName);
                             save = reset = true;
                             close();
                         })
@@ -123,6 +107,7 @@ public class ResourcePacksScreen extends Screen
                             save = true;
                             close();
                         })
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
                         .dimensions(width / 2 + 4, height - 28, 150, 20)
                         .build()
         );

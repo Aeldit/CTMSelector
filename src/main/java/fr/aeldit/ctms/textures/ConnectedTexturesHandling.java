@@ -17,8 +17,6 @@
 
 package fr.aeldit.ctms.textures;
 
-import fr.aeldit.ctms.config.CTMSOptionsStorage;
-import fr.aeldit.ctms.util.CTMResourcePack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
@@ -27,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,141 +35,59 @@ import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
 public class ConnectedTexturesHandling
 {
-    private final Map<String, Boolean> tmpOptionsMap = new HashMap<>();
-    private static final ArrayList<CTMResourcePack> ctmResourcePacks = new ArrayList<>();
-    private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/");
+    private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
+    private final String ctmPath = "assets/minecraft/optifine/ctm/connect/";
 
     public void init()
     {
-        Path path = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
-
-        for (File resourcePackDirOrZip : path.toFile().listFiles())
+        for (File zipFileOrFolder : resourcePacksDir.toFile().listFiles())
         {
-            // Directory
-            if (resourcePackDirOrZip.isDirectory() && resourcePackDirOrZip.getName().startsWith("CTM"))
-            {
-                //boolean ctmFound = false;
-                Path ctmPath = Path.of(resourcePackDirOrZip + "/assets/minecraft/optifine/ctm/connect");
-
-                if (Files.exists(ctmPath))
-                {
-                    for (File categoryOrBlockDir : ctmPath.toFile().listFiles())
-                    {
-                        if (categoryOrBlockDir.isDirectory())
-                        {
-                            ArrayList<CTMSOptionsStorage.BooleanOption> tmpCtmBlocksList = new ArrayList<>();
-
-                            if (categoryOrBlockDir.getName().startsWith("c_"))
-                            {
-                                for (File textureDir : categoryOrBlockDir.listFiles())
-                                {
-                                    if (textureDir.isDirectory())
-                                    {
-                                        tmpCtmBlocksList.addAll(getBlocksInDir(resourcePackDirOrZip, textureDir));
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                tmpCtmBlocksList.addAll(getBlocksInDir(resourcePackDirOrZip, categoryOrBlockDir));
-                            }
-
-                            if (!tmpCtmBlocksList.isEmpty())
-                            {
-                                CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDirOrZip.getName(), tmpCtmBlocksList, tmpOptionsMap, ctmResourcePacks);
-                                //ctmFound = true;
-                            }
-                        }
-                    }
-                }
-
-                /*if (ctmFound)
-                {
-                    ctmResourcePacks.add(new CTMResourcePack(resourcePackDirOrZip.getName(), resourcePackDirOrZip.toPath()));
-                }*/
-            }
-
             // Zip File
-            else if (resourcePackDirOrZip.isFile() && resourcePackDirOrZip.getName().startsWith("CTM"))
+            if (zipFileOrFolder.isFile()
+                    && zipFileOrFolder.getName().startsWith("CTM")
+                    && zipFileOrFolder.getName().endsWith(".zip")
+            )
             {
-                if (getFileExtension(resourcePackDirOrZip.getName()).equals("zip"))
+                if (isCtmPack(zipFileOrFolder.toString()))
                 {
-                    if (pathInZipExists(resourcePackDirOrZip.toString(), "assets/minecraft/optifine/ctm/connect/"))
-                    {
-                        ArrayList<CTMSOptionsStorage.BooleanOption> tmpCtmBlocksList = new ArrayList<>();
+                    Map<String, Boolean> currentPackOptions = new HashMap<>();
 
-                        for (FileHeader fileHeader : listFilesInPack(resourcePackDirOrZip.toString()))
+                    for (FileHeader fileHeader : listFilesInPack(zipFileOrFolder.toString()))
+                    {
+                        if (fileHeader.toString().contains(ctmPath))
                         {
                             if (fileHeader.toString().endsWith(".properties"))
                             {
-                                String optionName = fileHeader.toString()
+                                currentPackOptions.put(fileHeader.toString()
                                         .split("/")[fileHeader.toString().split("/").length - 1]
-                                        .replace(".properties", "");
-
-                                // Removes the fileName from the path the get the parent path
-                                String[] strippedFileHeader = fileHeader.toString().split("/");
-                                StringBuilder parentPath = new StringBuilder();
-
-                                for (int i = 0; i < strippedFileHeader.length - 1; i++)
-                                {
-                                    parentPath.append(strippedFileHeader[i]).append("/");
-                                }
-
-                                tmpCtmBlocksList.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
-                                        resourcePackDirOrZip.getName(),
-                                        optionName,
-                                        true,
-                                        Path.of(parentPath.toString())
-                                ));
-                                tmpOptionsMap.put(optionName, true);
+                                        .replace(".properties", ""), true);
                             }
                             else if (fileHeader.toString().endsWith(".txt"))
                             {
-                                String optionName = fileHeader.toString()
+                                currentPackOptions.put(fileHeader.toString()
                                         .split("/")[fileHeader.toString().split("/").length - 1]
-                                        .replace(".txt", "");
-
-                                // Removes the fileName from the path the get the parent path
-                                String[] strippedFileHeader = fileHeader.toString().split("/");
-                                StringBuilder parentPath = new StringBuilder();
-
-                                for (int i = 0; i < strippedFileHeader.length - 1; i++)
-                                {
-                                    parentPath.append(strippedFileHeader[i]).append("/");
-                                }
-
-                                tmpCtmBlocksList.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
-                                        resourcePackDirOrZip.getName(),
-                                        optionName,
-                                        true,
-                                        Path.of(parentPath.toString())
-                                ));
-                                tmpOptionsMap.put(optionName, false);
+                                        .replace(".txt", ""), false);
                             }
                         }
+                    }
 
-                        if (!tmpCtmBlocksList.isEmpty())
-                        {
-                            CTMS_OPTIONS_STORAGE.initPackOptions(resourcePackDirOrZip.getName(), tmpCtmBlocksList, tmpOptionsMap, ctmResourcePacks);
-                        }
+                    // If the array and the map are not empty, we initialise the options for the current pack
+                    if (!currentPackOptions.isEmpty())
+                    {
+                        CTMS_OPTIONS_STORAGE.initPackOptions(zipFileOrFolder.getName(), currentPackOptions);
                     }
                 }
             }
         }
     }
 
-    private String getFileExtension(@NotNull String fileName)
-    {
-        return fileName.split("\\.")[fileName.split("\\.").length - 1];
-    }
-
-    private boolean pathInZipExists(String packName, String path)
+    private boolean isCtmPack(String packPath)
     {
         try
         {
-            for (FileHeader fileHeader : listFilesInPack(packName))
+            for (FileHeader fileHeader : listFilesInPack(packPath))
             {
-                if (fileHeader.toString().equals(path))
+                if (fileHeader.toString().equals(ctmPath))
                 {
                     return true;
                 }
@@ -185,10 +100,11 @@ public class ConnectedTexturesHandling
         return false;
     }
 
-    public List<FileHeader> listFilesInPack(String packName)
+    private List<FileHeader> listFilesInPack(String packPath)
     {
         ArrayList<FileHeader> fileHeaders;
-        try (ZipFile tmpZipFile = new ZipFile(packName))
+
+        try (ZipFile tmpZipFile = new ZipFile(packPath))
         {
             fileHeaders = new ArrayList<>(tmpZipFile.getFileHeaders());
         }
@@ -199,153 +115,46 @@ public class ConnectedTexturesHandling
         return fileHeaders;
     }
 
-    private @NotNull ArrayList<CTMSOptionsStorage.BooleanOption> getBlocksInDir(File packDir, @NotNull File dir)
-    {
-        ArrayList<CTMSOptionsStorage.BooleanOption> allBlocksInDir = new ArrayList<>();
-
-        for (File currentDir : dir.listFiles())
-        {
-            if (currentDir.getName().endsWith(".properties"))
-            {
-                String optionName = currentDir.getName()
-                        .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
-                        .replace(".properties", "");
-                allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
-                        packDir.getName(),
-                        optionName,
-                        true,
-                        dir.toPath()
-                ));
-                tmpOptionsMap.put(optionName, true);
-            }
-            else if (currentDir.getName().endsWith(".txt"))
-            {
-                String optionName = currentDir.getName()
-                        .split("\\\\")[currentDir.getName().split("\\\\").length - 1]
-                        .replace(".txt", "");
-                allBlocksInDir.add(CTMS_OPTIONS_STORAGE.new BooleanOption(
-                        packDir.getName(),
-                        optionName,
-                        true,
-                        dir.toPath()
-                ));
-                tmpOptionsMap.put(optionName, false);
-            }
-        }
-        return allBlocksInDir;
-    }
-
-    private void toggleBlockConnection(String packName, @NotNull File propertiesOrTxtFile)
-    {
-        if (CTMS_OPTIONS_STORAGE.getBooleanOption(packName, propertiesOrTxtFile.getName()
-                .replace(".properties", "")
-                .replace(".txt", ""))
-        )
-        {
-            if (propertiesOrTxtFile.getName().endsWith(".txt"))
-            {
-                propertiesOrTxtFile.renameTo(new File(
-                        propertiesOrTxtFile.getPath().replace(propertiesOrTxtFile.getName(), "")
-                                + propertiesOrTxtFile.getName().replace(".txt", ".properties"))
-                );
-            }
-        }
-        else
-        {
-            if (propertiesOrTxtFile.getName().endsWith(".properties"))
-            {
-                propertiesOrTxtFile.renameTo(new File(
-                        propertiesOrTxtFile.getPath().replace(propertiesOrTxtFile.getName(), "")
-                                + propertiesOrTxtFile.getName().replace(".properties", ".txt"))
-                );
-            }
-        }
-    }
-
     public void updateUsedTextures(@NotNull String packName)
     {
-        if (packName.endsWith(".zip"))
+        // We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
+        MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
+        MinecraftClient.getInstance().reloadResources();
+
+        if (isCtmPack(resourcePacksDir + "\\" + packName))
         {
-            // We disable the pack but the resources need to be reloaded for the zip file to be accessible for writing
-            MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
-            MinecraftClient.getInstance().reloadResources();
+            Map<String, String> fileNamesMap = new HashMap<>();
 
-            if (pathInZipExists(resourcePacksDir + "\\" + packName, "assets/minecraft/optifine/ctm/connect/"))
+            for (FileHeader fileHeader : listFilesInPack(resourcePacksDir + "\\" + packName))
             {
-                Map<String, String> fileNamesMap = new HashMap<>();
+                boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, fileHeader.toString()
+                        .split("/")[fileHeader.toString().split("/").length - 1]
+                        .replace(".properties", "")
+                        .replace(".txt", ""));
 
-                for (FileHeader fileHeader : listFilesInPack(resourcePacksDir + "\\" + packName))
+                if (fileHeader.toString().endsWith(".properties") && !option)
                 {
-                    boolean option = CTMS_OPTIONS_STORAGE.getBooleanOption(packName, fileHeader.toString()
-                            .split("/")[fileHeader.toString().split("/").length - 1]
-                            .replace(".properties", "")
-                            .replace(".txt", ""));
-
-                    if (fileHeader.toString().endsWith(".properties") && !option)
-                    {
-                        fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".properties", ".txt"));
-                    }
-                    else if (fileHeader.toString().endsWith(".txt") && option)
-                    {
-                        fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".txt", ".properties"));
-                    }
+                    fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".properties", ".txt"));
                 }
-
-                if (!fileNamesMap.isEmpty())
+                else if (fileHeader.toString().endsWith(".txt") && option)
                 {
-                    try (ZipFile zipFile = new ZipFile(resourcePacksDir + "\\" + packName))
-                    {
-                        zipFile.renameFiles(fileNamesMap);
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
+                    fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".txt", ".properties"));
                 }
             }
-            MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);
-            MinecraftClient.getInstance().reloadResources();
-        }
-        else
-        {
-            Path ctmPath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/" + packName + "/assets/minecraft/optifine/ctm/connect");
 
-            if (Files.exists(ctmPath))
+            if (!fileNamesMap.isEmpty())
             {
-                for (File categoryOrBlockDir : ctmPath.toFile().listFiles())
+                try (ZipFile zipFile = new ZipFile(resourcePacksDir + "\\" + packName))
                 {
-                    if (categoryOrBlockDir.isDirectory())
-                    {
-                        if (categoryOrBlockDir.getName().startsWith("c_"))
-                        {
-                            for (File textureDir : categoryOrBlockDir.listFiles())
-                            {
-                                if (textureDir.isDirectory())
-                                {
-                                    for (File currentDir : textureDir.listFiles())
-                                    {
-                                        if (currentDir.isFile() && (currentDir.getName().endsWith(".properties") || currentDir.getName().endsWith(".txt")))
-                                        {
-                                            toggleBlockConnection(packName, currentDir);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            for (File currentDir : categoryOrBlockDir.listFiles())
-                            {
-                                if (currentDir.isFile() && (currentDir.getName().endsWith(".properties") || currentDir.getName().endsWith(".txt")))
-                                {
-                                    toggleBlockConnection(packName, currentDir);
-                                }
-                            }
-                        }
-                    }
+                    zipFile.renameFiles(fileNamesMap);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
                 }
             }
-            MinecraftClient.getInstance().reloadResources();
         }
+        MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);
+        MinecraftClient.getInstance().reloadResources();
     }
 }

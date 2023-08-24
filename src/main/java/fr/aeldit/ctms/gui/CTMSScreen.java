@@ -39,7 +39,6 @@ import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 public class CTMSScreen extends Screen
 {
     private final Screen parent;
-    //private ResourcePacksListWidget resourcePacksListWidgetList;
 
     public CTMSScreen(Screen parent)
     {
@@ -65,12 +64,8 @@ public class CTMSScreen extends Screen
     @Override
     protected void init()
     {
-        //resourcePacksListWidgetList = new ResourcePacksListWidget(client, width / 2 - 8, height, 67, height - 36, 25, this);
-        //resourcePacksListWidgetList.addAll(getCtmResourcePacks());
-        //addSelectableChild(resourcePacksListWidgetList);
-
         int i = 0;
-        List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getBooleanOptions().keySet());
+        List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getOptionsMaps().keySet());
         Collections.sort(sortedPacksNames);
 
         for (String packName : sortedPacksNames)
@@ -79,12 +74,10 @@ public class CTMSScreen extends Screen
             if (i < 6)
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.of(packName),
-                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePacksScreen(
-                                                        CTMS_OPTIONS_STORAGE,
+                        ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
+                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
                                                         parent,
-                                                        packName,
-                                                        CTMS_OPTIONS_STORAGE.getDefaultBooleanOptions().get(packName)
+                                                        packName
                                                 )
                                         )
                                 )
@@ -95,12 +88,10 @@ public class CTMSScreen extends Screen
             else
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.of(packName),
-                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePacksScreen(
-                                                CTMS_OPTIONS_STORAGE,
+                        ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
+                                        button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
                                                 parent,
-                                                packName,
-                                                CTMS_OPTIONS_STORAGE.getDefaultBooleanOptions().get(packName)
+                                                packName
                                         ))
                                 )
                                 .dimensions(width - 180, 30 + 30 * (i - 6), 200, 20)

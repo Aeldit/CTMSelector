@@ -17,162 +17,111 @@
 
 package fr.aeldit.ctms.config;
 
-import fr.aeldit.ctms.gui.widgets.ResourcePacksListWidget;
-import fr.aeldit.ctms.util.CTMResourcePack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.option.SimpleOption;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CTMSOptionsStorage
 {
-    private final Map<String, ArrayList<BooleanOption>> defaultBooleanOptions = new HashMap<>();
-    private final Map<String, Map<String, Boolean>> booleanOptions = new HashMap<>();
-    private final Map<String, Map<String, Boolean>> unsavedChangedOptions = new HashMap<>();
-    private final ArrayList<ResourcePacksListWidget.ResourcePackListEntry> resourcePackListEntries = new ArrayList<>();
+    private final Map<String, Map<String, Boolean>> optionsMaps = new HashMap<>();
+    private final Map<String, Map<String, Boolean>> unsavedOptionsMaps = new HashMap<>();
 
-    public void initPackOptions(String packName, @NotNull ArrayList<BooleanOption> defaultOptions, Map<String, Boolean> options, ArrayList<CTMResourcePack> ctmResourcePacks)
+    public void initPackOptions(String packName, Map<String, Boolean> options)
     {
-        if (defaultBooleanOptions.containsKey(packName))
+        optionsMaps.put(packName, options);
+    }
+
+    public Map<String, Map<String, Boolean>> getOptionsMaps()
+    {
+        return optionsMaps;
+    }
+
+    public boolean getOption(String packName, String optionName)
+    {
+        return optionsMaps.containsKey(packName) && optionsMaps.get(packName).containsKey(optionName) ? optionsMaps.get(packName).get(optionName) : false;
+    }
+
+    public void setOption(String packName)
+    {
+        if (unsavedOptionsMaps.containsKey(packName) && optionsMaps.containsKey(packName))
         {
-            defaultBooleanOptions.get(packName).addAll(defaultOptions);
+            unsavedOptionsMaps.get(packName).forEach((optionName, optionValue) -> optionsMaps.get(packName).put(optionName, optionValue));
+        }
+    }
+
+    public void setUnsavedOption(String packName, String optionName, boolean value)
+    {
+        if (unsavedOptionsMaps.containsKey(packName))
+        {
+            Map<String, Boolean> tmpMap = new HashMap<>(unsavedOptionsMaps.get(packName));
+            tmpMap.put(optionName, value);
+            unsavedOptionsMaps.put(packName, tmpMap);
         }
         else
         {
-            defaultBooleanOptions.put(packName, new ArrayList<>(defaultOptions));
+            unsavedOptionsMaps.put(packName, Collections.singletonMap(optionName, value));
         }
-
-        if (booleanOptions.containsKey(packName))
-        {
-            booleanOptions.get(packName).putAll(options);
-        }
-        else
-        {
-            booleanOptions.put(packName, options);
-        }
-
-        ctmResourcePacks.forEach(ctmResourcePack -> resourcePackListEntries.add(new ResourcePacksListWidget.ResourcePackListEntry(ctmResourcePack)));
     }
 
-    public Map<String, Map<String, Boolean>> getUnsavedChangedOptions()
+    public void clearUnsavedOptionsMap(String packName)
     {
-        return unsavedChangedOptions;
-    }
-
-    public ArrayList<ResourcePacksListWidget.ResourcePackListEntry> getResourcePackListEntries()
-    {
-        return resourcePackListEntries;
-    }
-
-    public void clearUnsavedChangedOptions()
-    {
-        unsavedChangedOptions.clear();
-    }
-
-    public class BooleanOption
-    {
-        private final String packName;
-        private final String optionName;
-        private final boolean defaultValue;
-        private final Path parentPath;
-
-        public BooleanOption(String packName, String optionName, boolean defaultValue, Path parentPath)
+        if (unsavedOptionsMaps.containsKey(packName))
         {
-            this.packName = packName;
-            this.optionName = optionName;
-            this.defaultValue = defaultValue;
-            this.parentPath = parentPath;
+            unsavedOptionsMaps.put(packName, new HashMap<>(0));
         }
+    }
 
-        public boolean getValue()
+    public boolean optionsChanged(String packName)
+    {
+        if (optionsMaps.containsKey(packName) && unsavedOptionsMaps.containsKey(packName))
         {
-            return getBooleanOption(packName, optionName);
-        }
-
-        public void setValue(boolean value)
-        {
-            if (unsavedChangedOptions.containsKey(packName))
+            for (Map.Entry<String, Boolean> entry : unsavedOptionsMaps.get(packName).entrySet())
             {
-                unsavedChangedOptions.get(packName).put(optionName, getBooleanOption(packName, optionName));
+                if (entry.getValue() != getOption(packName, entry.getKey()))
+                {
+                    return true;
+                }
             }
-            else
-            {
-                Map<String, Boolean> booleanMap = new HashMap<>();
-                booleanMap.put(optionName, getBooleanOption(packName, optionName));
-                unsavedChangedOptions.put(packName, booleanMap);
-            }
-            setBooleanOption(packName, optionName, value);
-        }
-
-        @Environment(EnvType.CLIENT)
-        public SimpleOption<Boolean> asConfigOption()
-        {
-            String[] translations = optionName.split("_");
-            StringBuilder translation = new StringBuilder();
-
-            for (String str : translations)
-            {
-                translation.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
-                translation.append(" ");
-            }
-            return SimpleOption.ofBoolean(translation.toString(), getValue(), this::setValue);
-        }
-
-        public Path getParentPath()
-        {
-            return parentPath;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static SimpleOption<?> @NotNull [] asConfigOptions(@NotNull ArrayList<BooleanOption> booleanOptions)
-    {
-        ArrayList<SimpleOption<?>> options = new ArrayList<>();
-        booleanOptions.forEach(option -> options.add(option.asConfigOption()));
-
-        return options.toArray(SimpleOption[]::new);
-    }
-
-    public Map<String, Map<String, Boolean>> getBooleanOptions()
-    {
-        return booleanOptions;
-    }
-
-    public Map<String, ArrayList<BooleanOption>> getDefaultBooleanOptions()
-    {
-        return defaultBooleanOptions;
-    }
-
-    public boolean getBooleanOption(String packName, String optionName)
-    {
-        if (booleanOptions.containsKey(packName) && booleanOptions.get(packName).containsKey(optionName))
-        {
-            return booleanOptions.get(packName).get(optionName);
         }
         return false;
     }
 
-    public void setBooleanOption(String packName, String optionName, boolean value)
+    public void resetOptions(String packName)
     {
-        if (booleanOptions.containsKey(packName))
+        if (optionsMaps.containsKey(packName))
         {
-            booleanOptions.get(packName).put(optionName, value);
-        }
-        else
-        {
-            Map<String, Boolean> tmpMap = new HashMap<>();
-            tmpMap.put(optionName, value);
-            booleanOptions.put(packName, tmpMap);
+            optionsMaps.get(packName).forEach((optionName, optionValue) -> optionsMaps.get(packName).put(optionName, true));
         }
     }
 
-    public void resetOptions(String packName)
+    @Environment(EnvType.CLIENT)
+    public SimpleOption<?> @NotNull [] asConfigOptions(String packName)
     {
-        defaultBooleanOptions.get(packName).forEach(option -> booleanOptions.get(packName).put(option.optionName, option.defaultValue));
+        ArrayList<SimpleOption<?>> optionsList = new ArrayList<>();
+        ArrayList<String> sortedNames = new ArrayList<>(optionsMaps.get(packName).keySet());
+        Collections.sort(sortedNames);
+
+        sortedNames.forEach(optionName -> {
+            StringBuilder translation = new StringBuilder();
+
+            for (String str : optionName.split("_"))
+            {
+                translation.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
+                translation.append(" ");
+            }
+            optionsList.add(SimpleOption.ofBoolean(
+                    translation.toString(),
+                    getOption(packName, optionName),
+                    optionValue -> setUnsavedOption(packName, optionName, optionValue))
+            );
+        });
+
+        return optionsList.toArray(SimpleOption[]::new);
     }
 }
