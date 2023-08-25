@@ -19,17 +19,14 @@ package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.gui.CTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-
-import static fr.aeldit.ctms.util.Utils.*;
+import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
@@ -50,10 +47,6 @@ public class CTMSClientCore implements ClientModInitializer
                 client.setScreen(new CTMSScreen(null));
             }
         });
-
-        ClientLifecycleEvents.CLIENT_STARTED.register(
-                client -> CTMS_OPTIONS_STORAGE.setEnabledPacks(new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledNames()))
-        );
 
         CTMS_LOGGER.info("[CTMSelector] Successfully initialized");
     }

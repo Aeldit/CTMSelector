@@ -19,6 +19,7 @@ package fr.aeldit.ctms.config;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.SimpleOption;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +32,6 @@ public class CTMSOptionsStorage
 {
     private final Map<String, Map<String, Boolean>> optionsMaps = new HashMap<>();
     private final Map<String, Map<String, Boolean>> unsavedOptionsMaps = new HashMap<>();
-    private final ArrayList<String> enabledPacks = new ArrayList<>();
 
     public void initPackOptions(String packName, Map<String, Boolean> options)
     {
@@ -41,6 +41,11 @@ public class CTMSOptionsStorage
     public Map<String, Map<String, Boolean>> getOptionsMaps()
     {
         return optionsMaps;
+    }
+
+    public void clearOptionsMap()
+    {
+        optionsMaps.clear();
     }
 
     public boolean getOption(String packName, String optionName)
@@ -78,16 +83,9 @@ public class CTMSOptionsStorage
         }
     }
 
-    public void setEnabledPacks(ArrayList<String> enabledPacks)
-    {
-        this.enabledPacks.addAll(enabledPacks);
-        enabledPacks.remove("vanilla");
-        enabledPacks.remove("fabric");
-    }
-
     public ArrayList<String> getEnabledPacks()
     {
-        return enabledPacks;
+        return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledNames());
     }
 
     public boolean optionsChanged(String packName)

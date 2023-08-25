@@ -40,6 +40,8 @@ public class ConnectedTexturesHandling
 
     public void init()
     {
+        CTMS_OPTIONS_STORAGE.clearOptionsMap();
+
         for (File zipFileOrFolder : resourcePacksDir.toFile().listFiles())
         {
             // Zip File

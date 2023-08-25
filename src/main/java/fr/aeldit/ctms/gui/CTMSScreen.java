@@ -20,13 +20,16 @@ package fr.aeldit.ctms.gui;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 
 import java.io.File;
@@ -35,7 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
+import static fr.aeldit.ctms.util.Utils.*;
 
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
@@ -65,6 +68,15 @@ public class CTMSScreen extends Screen
     @Override
     protected void init()
     {
+        addDrawableChild(
+                new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
+                        0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/reload.png"), 20, 40,
+                        (button) -> {
+                            TEXTURES_HANDLING.init();
+                            MinecraftClient.getInstance().setScreen(this);
+                        })
+        );
+
         int i = 0;
         List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getOptionsMaps().keySet());
         Collections.sort(sortedPacksNames);
