@@ -35,7 +35,8 @@ dependencies {
     modLocalRuntime("maven.modrinth:continuity:3.0.0-beta.3+1.20.1")
 
     // zip4j
-    implementation 'net.lingala.zip4j:zip4j:2.11.5'
+    implementation "net.lingala.zip4j:zip4j:2.11.5"
+    include "net.lingala.zip4j:zip4j:2.11.5"
 }
 
 processResources {

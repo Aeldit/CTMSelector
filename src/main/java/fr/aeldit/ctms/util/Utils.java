@@ -28,6 +28,5 @@ public class Utils
     public static final Logger CTMS_LOGGER = LoggerFactory.getLogger(CTMS_MODID);
 
     public static final ConnectedTexturesHandling TEXTURES_HANDLING = new ConnectedTexturesHandling();
-
     public static final CTMSOptionsStorage CTMS_OPTIONS_STORAGE = new CTMSOptionsStorage();
 }

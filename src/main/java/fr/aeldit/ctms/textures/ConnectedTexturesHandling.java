@@ -89,7 +89,7 @@ public class ConnectedTexturesHandling
         {
             for (FileHeader fileHeader : listFilesInPack(packPath))
             {
-                if (fileHeader.toString().equals(ctmPath))
+                if (fileHeader.toString().contains(ctmPath))
                 {
                     return true;
                 }
