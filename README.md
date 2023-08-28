@@ -7,10 +7,12 @@
 
 ***
 
-![java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![LICENSE_PLATE](https://img.shields.io/github/license/Aeldit/CTMSelector?style=for-the-badge)
-![loader](https://img.shields.io/badge/modloader-Fabric-1976d2?style=for-the-badge)
+![LICENSE_PLATE](https://img.shields.io/github/license/Aeldit/CTMSelector?style=for-the-badge&color=2e0078&labelColor=2e0078)
 ![modrinth downloads](https://img.shields.io/modrinth/dt/CTM%20Selector?color=2e0078&labelColor=2e0078&label=downloads&logo=modrinth&style=for-the-badge)
+
+![fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)
+or
+![quilted-fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/quilted-fabric-api_vector.svg)
 
 | Supported MC Version | Up to date | Last version |
 |:--------------------:|:----------:|:------------:|
@@ -32,6 +34,6 @@
 >
 > [![github_issues](https://img.shields.io/github/issues/Aeldit/CTMSelector?color=red&style=for-the-badge&logo=github)](https://github.com/Aeldit/CTMSelector/issues)
 >
-> If you have a suggestion, you can go on my discord server and create a post in 🖍️-suggestion
+> If you have a suggestion, you can go on my discord server and create a post in 🗽-suggestions-forum
 >
 > [![discord_badge](https://img.shields.io/discord/750243612473819188?color=7289da&label=DISCORD&logo=discord&logoColor=7289da&style=for-the-badge)](https://discord.gg/PcYPpqzhKS)
