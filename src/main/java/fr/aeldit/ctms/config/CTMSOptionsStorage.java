@@ -92,13 +92,8 @@ public class CTMSOptionsStorage
     {
         if (optionsMaps.containsKey(packName) && unsavedOptionsMaps.containsKey(packName))
         {
-            for (Map.Entry<String, Boolean> entry : unsavedOptionsMaps.get(packName).entrySet())
-            {
-                if (entry.getValue() != getOption(packName, entry.getKey()))
-                {
-                    return true;
-                }
-            }
+            return unsavedOptionsMaps.get(packName).entrySet().stream()
+                    .anyMatch(entry -> entry.getValue() != getOption(packName, entry.getKey()));
         }
         return false;
     }
