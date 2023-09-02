@@ -1,22 +1,49 @@
-![banner](images/banner_small.png)
-
+![banner](https://github.com/Aeldit/CTMSelector/blob/1.20.x/images/banner_small.png?raw=true)
+<!-- modrinth_exclude.start -->
 > ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge (this overrides the
 > LICENSE)
+<!-- modrinth_exclude.end -->
 
-![fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)
+[![fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
 or
-![quilted-fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/quilted-fabric-api_vector.svg)
+[![quilted-fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/quilted-fabric-api_vector.svg)](https://modrinth.com/mod/qsl)
+
+[![continuity](https://raw.githubusercontent.com/Aeldit/Aeldit/b683fac4b97744f1a64dfde6f39624379e661095/images/requires-continuity-cozy.svg)](https://modrinth.com/mod/continuity)
+or
+[![optifine](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/optifine_vector.svg)](https://optifine.net/home)
+
+![ctm-pack](https://raw.githubusercontent.com/Aeldit/Aeldit/b683fac4b97744f1a64dfde6f39624379e661095/images/requires-ctm-cozy.svg)
+
+<details>
+<summary>🎴 Show available versions</summary>
 
 | Supported MC Version | Up to date | Last version |
 |:--------------------:|:----------:|:------------:|
-|       `1.20.x`       |     ✅      |    latest    |
+|        1.20.x        |     ✅      |    latest    |
+
+</details>
 
 ***
+
+### This mod allows you to choose which blocks with connected textures will be enabled in your pack. For example, if you have a connected textures pack but you don't want the log textures to be connected, then you can simply disable only these textures, while keeping the other textures connected
+
+🏛️ In order to work, this mod needs 3 things (for links, you can click the badges above) :
+
+- The Fabric or Quilt API
+- A connected textures mod like Continuity or Optifine
+- A CTM capable resource pack (basically a resource pack that adds connected textures)
+
+For the resource packs to be detected, they simply have to be in your usual resourcepacks folder
+
+Once you have installed the mods and resource pack(s), you have to select in Minecraft the resource packs you want (you
+just need to activate the resource pack like in vanilla). Then you can go in the config screen of the mod using the U
+key or ModMenu, and you will have access to all the options
 
 ### 💲`Features`
 
 1. Choose which blocks will have connected textures among the possible ones (❗ the resources will reload 2 times when
    enabling or disabling textures, this is normal)
+
 2. Plans :
     - Allow the user to download my resource packs directly from the mod
 
@@ -30,10 +57,6 @@ or
 > If you have a suggestion, you can go on my discord server and create a post in 🗽-suggestions-forum
 >
 > [![discord_badge](https://img.shields.io/discord/750243612473819188?color=7289da&label=DISCORD&logo=discord&logoColor=7289da&style=for-the-badge)](https://discord.gg/PcYPpqzhKS)
-
-***
-
-### Check out the rest of my projects !
 
 [![cyan_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/bef8e5f6a837ee8c3479a2550e92c0ac028200f3/images/cyan-cozy-minimal.svg)](https://modrinth.com/mod/cyan)
 [![cyansethome_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/fdcc5b2b359f2bcc51654d9a973674c4d8557fd4/images/cyansethome-cozy-minimal.svg)](https://modrinth.com/mod/cyansethome)
