@@ -19,11 +19,11 @@ package fr.aeldit.ctms.gui;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.OptionListWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -71,12 +71,12 @@ public class ResourcePackScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta)
     {
-        renderBackgroundTexture(DrawContext);
-        optionList.render(DrawContext, mouseX, mouseY, delta);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
-        super.render(DrawContext, mouseX, mouseY, delta);
+        renderBackgroundTexture(matrices);
+        optionList.render(matrices, mouseX, mouseY, delta);
+        drawCenteredTextWithShadow(matrices, textRenderer, title, width / 2, 5, 0xffffff);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
     @Override
