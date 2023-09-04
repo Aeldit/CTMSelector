@@ -8,7 +8,7 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
-version = project.mod_version
+version = project.mod_version + "+" + project.minecraft_version
 group = project.maven_group
 
 repositories {
@@ -88,7 +88,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
     projectId = "ctm-selector" // This can be the project ID or the slug. Either will work!
-    versionName = "[$project.minecraft_version] $archivesBaseName $version"
+    versionName = "[$project.minecraft_version] $archivesBaseName"
     versionNumber = "$version"
     // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default -- can also be `beta` or `alpha`
