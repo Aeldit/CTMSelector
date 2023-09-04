@@ -3,7 +3,6 @@
 > ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge (this overrides the
 > LICENSE)
 <!-- modrinth_exclude.end -->
-
 [![fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
 or
 [![quilted-fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/quilted-fabric-api_vector.svg)](https://modrinth.com/mod/qsl)
@@ -46,6 +45,12 @@ key or ModMenu, and you will have access to all the options
 
 2. Plans :
     - Allow the user to download my resource packs directly from the mod
+
+> If you want a resource pack, you can check these (badges are clickable) :
+>
+> [![ctm_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/e2fb5f7ffe92301f627540cebca28d9aa90c641d/images/ctm-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-of-fabric)
+> [![ctm_faithful_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-faithful-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-faithful)
+> [![ctm_create_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-create-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-create)
 
 ***
 
