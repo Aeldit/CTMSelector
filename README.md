@@ -18,6 +18,7 @@ or
 
 | Supported MC Version | Up to date | Last version |
 |:--------------------:|:----------:|:------------:|
+|        1.19.4        |     ✅      |    latest    |
 |        1.20.x        |     ✅      |    latest    |
 
 </details>
