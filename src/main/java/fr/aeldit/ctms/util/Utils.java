@@ -18,7 +18,7 @@
 package fr.aeldit.ctms.util;
 
 import fr.aeldit.ctms.config.CTMSOptionsStorage;
-import fr.aeldit.ctms.textures.ConnectedTexturesHandling;
+import fr.aeldit.ctms.textures.FilesHandling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +27,6 @@ public class Utils
     public static final String CTMS_MODID = "ctms";
     public static final Logger CTMS_LOGGER = LoggerFactory.getLogger(CTMS_MODID);
 
-    public static final ConnectedTexturesHandling TEXTURES_HANDLING = new ConnectedTexturesHandling();
+    public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static final CTMSOptionsStorage CTMS_OPTIONS_STORAGE = new CTMSOptionsStorage();
 }
