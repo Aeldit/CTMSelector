@@ -86,7 +86,7 @@ public class CTMSScreen extends Screen
             // Temporary, will add a page system at some point
             if (i < 6)
             {
-                if (CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName))
+                if (CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName.replace(" (folder)", "")))
                 {
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(packName.replace(".zip", "")),

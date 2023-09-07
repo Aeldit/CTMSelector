@@ -114,7 +114,7 @@ public class FilesHandling
                 // If the map is not empty, we initialise the options for the current pack
                 if (!currentFolderPackOptions.isEmpty())
                 {
-                    CTMS_OPTIONS_STORAGE.initPackOptions(zipFileOrFolder.getName(), currentFolderPackOptions);
+                    CTMS_OPTIONS_STORAGE.initPackOptions(zipFileOrFolder.getName() + " (folder)", currentFolderPackOptions);
                 }
             }
         }
@@ -177,44 +177,87 @@ public class FilesHandling
 
     public void updateUsedTextures(@NotNull String packName)
     {
-        // We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
-        MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
-        MinecraftClient.getInstance().reloadResources();
-
-        if (isZipCtmPack(resourcePacksDir + "\\" + packName))
+        if (packName.endsWith(" (folder)"))
         {
-            Map<String, String> fileNamesMap = new HashMap<>();
-
-            for (FileHeader fileHeader : listFilesInZipPack(resourcePacksDir + "\\" + packName))
+            if (isFolderCtmPack(resourcePacksDir + "\\" + packName))
             {
-                boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, fileHeader.toString()
-                        .split("/")[fileHeader.toString().split("/").length - 1]
-                        .replace(".properties", "")
-                        .replace(".txt", ""));
+                Map<Path, Path> fileNamesMap = new HashMap<>();
 
-                if (fileHeader.toString().endsWith(".properties") && !option)
+                for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName)))
                 {
-                    fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".properties", ".txt"));
-                }
-                else if (fileHeader.toString().endsWith(".txt") && option)
-                {
-                    fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".txt", ".properties"));
-                }
-            }
+                    boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, path.toString()
+                            .replace(".properties", "")
+                            .replace(".txt", ""));
 
-            if (!fileNamesMap.isEmpty())
-            {
-                try (ZipFile zipFile = new ZipFile(resourcePacksDir + "\\" + packName))
-                {
-                    zipFile.renameFiles(fileNamesMap);
+                    if (path.toString().contains(ctmPath.replace("/", "\\")))
+                    {
+                        if (path.toString().endsWith(".properties") && !option)
+                        {
+                            fileNamesMap.put(path.getFileName(), Path.of(path.getFileName().toString().replace(".properties", "")));
+                        }
+                        else if (path.toString().endsWith(".txt") && option)
+                        {
+                            fileNamesMap.put(path.getFileName(), Path.of(path.getFileName().toString().replace(".txt", "")));
+                        }
+                    }
                 }
-                catch (IOException e)
+
+                if (!fileNamesMap.isEmpty())
                 {
-                    throw new RuntimeException(e);
+                    fileNamesMap.forEach((string, string2) -> {
+                        try
+                        {
+                            Files.move(string, string2);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    MinecraftClient.getInstance().reloadResources();
                 }
             }
         }
-        MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);
-        MinecraftClient.getInstance().reloadResources();
+        else
+        {// We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
+            MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
+            MinecraftClient.getInstance().reloadResources();
+
+            if (isZipCtmPack(resourcePacksDir + "\\" + packName))
+            {
+                Map<String, String> fileNamesMap = new HashMap<>();
+
+                for (FileHeader fileHeader : listFilesInZipPack(resourcePacksDir + "\\" + packName))
+                {
+                    boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, fileHeader.toString()
+                            .split("/")[fileHeader.toString().split("/").length - 1]
+                            .replace(".properties", "")
+                            .replace(".txt", ""));
+
+                    if (fileHeader.toString().endsWith(".properties") && !option)
+                    {
+                        fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".properties", ".txt"));
+                    }
+                    else if (fileHeader.toString().endsWith(".txt") && option)
+                    {
+                        fileNamesMap.put(fileHeader.toString(), fileHeader.toString().replace(".txt", ".properties"));
+                    }
+                }
+
+                if (!fileNamesMap.isEmpty())
+                {
+                    try (ZipFile zipFile = new ZipFile(resourcePacksDir + "\\" + packName))
+                    {
+                        zipFile.renameFiles(fileNamesMap);
+                    }
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);
+            MinecraftClient.getInstance().reloadResources();
+        }
     }
 }
