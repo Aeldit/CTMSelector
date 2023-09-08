@@ -139,9 +139,9 @@ public class FilesHandling
         return false;
     }
 
-    private boolean isFolderCtmPack(String packPath)
+    private boolean isFolderCtmPack(String packName)
     {
-        return Files.exists(Path.of(resourcePacksDir + "\\" + packPath + "\\" + ctmPath));
+        return Files.exists(Path.of(resourcePacksDir + "\\" + packName + "\\" + ctmPath));
     }
 
     private List<FileHeader> listFilesInZipPack(String packPath)
@@ -179,7 +179,9 @@ public class FilesHandling
     {
         if (packName.endsWith(" (folder)"))
         {
-            if (isFolderCtmPack(resourcePacksDir + "\\" + packName))
+            packName = packName.replace(" (folder)", "");
+
+            if (isFolderCtmPack(packName))
             {
                 Map<Path, Path> fileNamesMap = new HashMap<>();
 
@@ -193,21 +195,21 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties") && !option)
                         {
-                            fileNamesMap.put(path.getFileName(), Path.of(path.getFileName().toString().replace(".properties", "")));
+                            fileNamesMap.put(path, Path.of(path.toString().replace(".properties", ".txt")));
                         }
                         else if (path.toString().endsWith(".txt") && option)
                         {
-                            fileNamesMap.put(path.getFileName(), Path.of(path.getFileName().toString().replace(".txt", "")));
+                            fileNamesMap.put(path, Path.of(path.toString().replace(".txt", ".properties")));
                         }
                     }
                 }
 
                 if (!fileNamesMap.isEmpty())
                 {
-                    fileNamesMap.forEach((string, string2) -> {
+                    fileNamesMap.forEach((path, newPath) -> {
                         try
                         {
-                            Files.move(string, string2);
+                            Files.move(path, newPath);
                         }
                         catch (IOException e)
                         {
@@ -219,7 +221,8 @@ public class FilesHandling
             }
         }
         else
-        {// We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
+        {
+            // We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
             MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
             MinecraftClient.getInstance().reloadResources();
 
