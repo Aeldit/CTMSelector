@@ -101,7 +101,7 @@ modrinth {
         // The type can either be `project` or `version`
         required.project "fabric-api" // Creates a new required dependency on Fabric API
         required.project "continuity"
-        optional.version "modmenu", "$project.modmenu_version"
+        optional.project "modmenu"
     }
     changelog = file("changelogs/latest.md").exists() ? file("changelogs/latest.md").getText() : "No changelog provided"
     syncBodyFrom = rootProject.file("README.md").text
