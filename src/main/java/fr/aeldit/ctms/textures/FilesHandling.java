@@ -27,10 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
@@ -38,7 +38,7 @@ public class FilesHandling
 {
     private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
     private final String ctmPath = "assets/minecraft/optifine/ctm/connect/";
-    private final ArrayList<Path> folderPaths = new ArrayList<>();
+    private final Set<Path> folderPaths = new HashSet<>();
 
     public void init()
     {
@@ -144,13 +144,13 @@ public class FilesHandling
         return Files.exists(Path.of(resourcePacksDir + "\\" + packName + "\\" + ctmPath));
     }
 
-    private List<FileHeader> listFilesInZipPack(String packPath)
+    private Set<FileHeader> listFilesInZipPack(String packPath)
     {
-        ArrayList<FileHeader> fileHeaders;
+        Set<FileHeader> fileHeaders;
 
         try (ZipFile tmpZipFile = new ZipFile(packPath))
         {
-            fileHeaders = new ArrayList<>(tmpZipFile.getFileHeaders());
+            fileHeaders = new HashSet<>(tmpZipFile.getFileHeaders());
         }
         catch (IOException e)
         {
@@ -159,7 +159,15 @@ public class FilesHandling
         return fileHeaders;
     }
 
-    private ArrayList<Path> listFilesInFolderPack(@NotNull File packFolder)
+    /**
+     * Lists the files in the given folder
+     * <p>
+     * {@code folderPaths.clear()} must be called after the iteration over the result of this functions, to prevent any weird behavior
+     *
+     * @param packFolder The folder whose files will be listed and returned
+     * @return Returns the files present in the folder {@code packFolder}
+     */
+    private Set<Path> listFilesInFolderPack(@NotNull File packFolder)
     {
         for (File file : packFolder.listFiles())
         {
@@ -185,7 +193,6 @@ public class FilesHandling
 
                 for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
                 {
-                    System.out.println(fileNamesMap);
                     boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, path.toString()
                             .split("\\\\")[path.toString().split("\\\\").length - 1]
                             .replace(".properties", "")
@@ -195,17 +202,15 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties") && !option)
                         {
-                            System.out.println("a");
                             fileNamesMap.put(path, Path.of(path.toString().replace(".properties", ".txt")));
                         }
                         else if (path.toString().endsWith(".txt") && option)
                         {
-                            System.out.println("b");
-                            System.out.println(path);
                             fileNamesMap.put(path, Path.of(path.toString().replace(".txt", ".properties")));
                         }
                     }
                 }
+                folderPaths.clear();
 
                 if (!fileNamesMap.isEmpty())
                 {
