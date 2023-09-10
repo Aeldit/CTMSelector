@@ -179,15 +179,15 @@ public class FilesHandling
     {
         if (packName.endsWith(" (folder)"))
         {
-            packName = packName.replace(" (folder)", "");
-
-            if (isFolderCtmPack(packName))
+            if (isFolderCtmPack(packName.replace(" (folder)", "")))
             {
                 Map<Path, Path> fileNamesMap = new HashMap<>();
 
-                for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName)))
+                for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
                 {
+                    System.out.println(fileNamesMap);
                     boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, path.toString()
+                            .split("\\\\")[path.toString().split("\\\\").length - 1]
                             .replace(".properties", "")
                             .replace(".txt", ""));
 
@@ -195,10 +195,13 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties") && !option)
                         {
+                            System.out.println("a");
                             fileNamesMap.put(path, Path.of(path.toString().replace(".properties", ".txt")));
                         }
                         else if (path.toString().endsWith(".txt") && option)
                         {
+                            System.out.println("b");
+                            System.out.println(path);
                             fileNamesMap.put(path, Path.of(path.toString().replace(".txt", ".properties")));
                         }
                     }
