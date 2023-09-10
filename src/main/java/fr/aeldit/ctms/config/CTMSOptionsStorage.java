@@ -57,7 +57,7 @@ public class CTMSOptionsStorage
     {
         if (unsavedOptionsMaps.containsKey(packName) && optionsMaps.containsKey(packName))
         {
-            unsavedOptionsMaps.get(packName).forEach((optionName, optionValue) -> optionsMaps.get(packName).put(optionName, optionValue));
+            unsavedOptionsMaps.get(packName).forEach(optionsMaps.get(packName)::put);
         }
     }
 

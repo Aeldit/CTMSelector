@@ -46,7 +46,7 @@ public class ResourcePackScreen extends Screen
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
-        super(CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName)
+        super(CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
                 ? Text.of(packName.replace(".zip", ""))
                 : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
         );

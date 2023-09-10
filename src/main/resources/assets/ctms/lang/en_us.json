@@ -12,5 +12,5 @@
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (§aON§f)",
   "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
   "ctms.screen.config.save&quit": "Save & Quit",
-  "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times, because we need to edit the zip file, which we can't do if Minecraft is using the resource pack"
+  "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times if the pack is a zip file, because we need to edit the zip file, which we can't do if Minecraft is using the resource pack"
 }
