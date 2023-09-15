@@ -18,7 +18,6 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ import java.util.List;
 
 public class CTMSelector
 {
-    public static final TypeToken<ArrayList<Controls>> CONTROLS_TYPE = new TypeToken<>() {};
     private final List<Controls> controls = new ArrayList<>();
     private final Path path;
 
@@ -47,6 +45,11 @@ public class CTMSelector
         return Files.exists(Path.of(packPath + "\\ctm_selector.json"));
     }
 
+    public List<Controls> getControls()
+    {
+        return controls;
+    }
+
     public void readFile()
     {
         if (Files.exists(path))
@@ -56,7 +59,6 @@ public class CTMSelector
                 Gson gson = new Gson();
                 Reader reader = Files.newBufferedReader(path);
                 controls.addAll(Arrays.asList(gson.fromJson(reader, Controls[].class)));
-                controls.forEach(controls1 -> System.out.println(controls1.getBlockGroup()));
                 reader.close();
             }
             catch (IOException e)
