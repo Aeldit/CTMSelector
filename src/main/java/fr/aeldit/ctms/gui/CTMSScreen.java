@@ -68,15 +68,6 @@ public class CTMSScreen extends Screen
     @Override
     protected void init()
     {
-        addDrawableChild(
-                new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
-                        0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/reload.png"), 20, 40,
-                        (button) -> {
-                            TEXTURES_HANDLING.init();
-                            MinecraftClient.getInstance().setScreen(this);
-                        })
-        );
-
         int i = 0;
         List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getOptionsMaps().keySet());
         Collections.sort(sortedPacksNames);
@@ -119,6 +110,15 @@ public class CTMSScreen extends Screen
             i++;
         }
 
+        ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
+                0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/reload.png"), 20, 40,
+                (button) -> {
+                    TEXTURES_HANDLING.init();
+                    MinecraftClient.getInstance().setScreen(this);
+                });
+        reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
+        addDrawableChild(reloadButton);
+
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
                                 button -> Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks"))
@@ -132,5 +132,11 @@ public class CTMSScreen extends Screen
                         .dimensions(width / 2 + 4, height - 28, 150, 20)
                         .build()
         );
+
+        ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
+                0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/controls.png"), 20, 40,
+                (button) -> MinecraftClient.getInstance().setScreen(this));
+        controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
+        addDrawableChild(controlsButton);
     }
 }
