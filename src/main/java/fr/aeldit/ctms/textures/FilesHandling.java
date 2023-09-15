@@ -32,7 +32,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static fr.aeldit.ctms.textures.CTMSelector.isPackEligible;
+import static fr.aeldit.ctms.textures.CTMSelector.isFolderPackEligible;
+import static fr.aeldit.ctms.textures.CTMSelector.isZipPackEligible;
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 import static fr.aeldit.ctms.util.Utils.CTM_SELECTOR_ARRAY_LIST;
 
@@ -60,11 +61,15 @@ public class FilesHandling
 
         for (File zipFileOrFolder : resourcePacksDir.toFile().listFiles())
         {
-            if (zipFileOrFolder.isFile() && zipFileOrFolder.getName().endsWith(".zip")
-            )
+            if (zipFileOrFolder.isFile() && zipFileOrFolder.getName().endsWith(".zip"))
             {
                 if (isZipCtmPack(zipFileOrFolder.toString()))
                 {
+                    if (isZipPackEligible(zipFileOrFolder.toString()))
+                    {
+                        CTM_SELECTOR_ARRAY_LIST.add(new CTMSelector(zipFileOrFolder.getName()));
+                    }
+
                     Map<String, Boolean> currentPackOptions = new HashMap<>();
 
                     for (FileHeader fileHeader : listFilesInZipPack(zipFileOrFolder.toString()))
@@ -95,7 +100,7 @@ public class FilesHandling
             }
             else if (zipFileOrFolder.isDirectory() && isFolderCtmPack(zipFileOrFolder.getName()))
             {
-                if (isPackEligible(zipFileOrFolder.toPath()))
+                if (isFolderPackEligible(zipFileOrFolder.toPath()))
                 {
                     CTM_SELECTOR_ARRAY_LIST.add(new CTMSelector(zipFileOrFolder.getName()));
                 }

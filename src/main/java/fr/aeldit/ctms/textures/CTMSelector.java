@@ -19,6 +19,8 @@ package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
 import net.fabricmc.loader.api.FabricLoader;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.FileHeader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -38,11 +40,6 @@ public class CTMSelector
         this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "\\" + packName + "\\ctm_selector.json");
 
         readFile();
-    }
-
-    public static boolean isPackEligible(Path packPath)
-    {
-        return Files.exists(Path.of(packPath + "\\ctm_selector.json"));
     }
 
     public List<Controls> getControls()
@@ -66,5 +63,29 @@ public class CTMSelector
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public static boolean isFolderPackEligible(Path packPath)
+    {
+        return Files.exists(Path.of(packPath + "\\ctm_selector.json"));
+    }
+
+    public static boolean isZipPackEligible(String packPath)
+    {
+        try (ZipFile tmpZipFile = new ZipFile(packPath))
+        {
+            for (FileHeader fileHeader : tmpZipFile.getFileHeaders())
+            {
+                if (fileHeader.toString().equals("ctm_selector.json"))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 }
