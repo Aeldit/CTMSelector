@@ -32,7 +32,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static fr.aeldit.ctms.textures.CTMSelector.isPackEligible;
 import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
+import static fr.aeldit.ctms.util.Utils.CTM_SELECTOR_ARRAY_LIST;
 
 public class FilesHandling
 {
@@ -93,6 +95,11 @@ public class FilesHandling
             }
             else if (zipFileOrFolder.isDirectory() && isFolderCtmPack(zipFileOrFolder.getName()))
             {
+                if (isPackEligible(zipFileOrFolder.toPath()))
+                {
+                    CTM_SELECTOR_ARRAY_LIST.add(new CTMSelector(zipFileOrFolder.getName()));
+                }
+
                 Map<String, Boolean> currentFolderPackOptions = new HashMap<>();
 
                 for (Path path : listFilesInFolderPack(zipFileOrFolder))
