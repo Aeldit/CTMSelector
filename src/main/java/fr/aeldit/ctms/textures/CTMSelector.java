@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CTMSelector
 {
+    private static final Map<String, List<Controls>> packsControlsMap = new HashMap<>();
     private final List<Controls> controls = new ArrayList<>();
     private final Path path;
 
@@ -40,11 +39,12 @@ public class CTMSelector
         this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "\\" + packName + "\\ctm_selector.json");
 
         readFile();
+        packsControlsMap.put(packName, controls);
     }
 
-    public List<Controls> getControls()
+    public static List<Controls> getControls(String packName)
     {
-        return controls;
+        return packsControlsMap.getOrDefault(packName, new ArrayList<>(0));
     }
 
     public void readFile()

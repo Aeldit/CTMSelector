@@ -17,33 +17,28 @@
 
 package fr.aeldit.ctms.gui;
 
+import fr.aeldit.ctms.gui.widgets.ControlsPackWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.OptionListWidget;
+import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Objects;
-
-import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 
 @Environment(EnvType.CLIENT)
 public class ControlsScreen extends Screen
 {
-    private final String packName;
     private final Screen parent;
-    private OptionListWidget optionList;
+    private ControlsPackWidget controlsPackWidget;
+    private PackListWidget packListWidget;
 
-    public ControlsScreen(Screen parent, @NotNull String packName)
+    public ControlsScreen(Screen parent)
     {
-        super(CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
-                ? Text.of(packName.replace(".zip", ""))
-                : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
-        );
-        this.packName = packName;
+        super(Text.translatable("ctms.screen.controls.title"));
         this.parent = parent;
     }
 
@@ -54,19 +49,19 @@ public class ControlsScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
-        renderBackgroundTexture(DrawContext);
-        optionList.render(DrawContext, mouseX, mouseY, delta);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
-        super.render(DrawContext, mouseX, mouseY, delta);
+        renderBackgroundTexture(drawContext);
+        controlsPackWidget.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 
     @Override
     protected void init()
     {
-        optionList = new OptionListWidget(client, width, height, 32, height - 32, 25);
-        optionList.addAll(CTMS_OPTIONS_STORAGE.asConfigOptions(packName));
-        addSelectableChild(optionList);
+        controlsPackWidget = new ControlsPackWidget(client, width, height, 32, height - 32, 25);
+        controlsPackWidget.addAll(Collections.singletonList(new ControlsPackWidget.ControlsPackEntry(MinecraftClient.getInstance(), controlsPackWidget)));
+        addSelectableChild(controlsPackWidget);
     }
 }

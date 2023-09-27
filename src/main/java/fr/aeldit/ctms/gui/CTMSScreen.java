@@ -87,7 +87,7 @@ public class CTMSScreen extends Screen
                                                     )
                                             )
                                     )
-                                    .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
+                                    .dimensions(width / 2 - 205, 30 + 20 * i + 10 * i, 200, 20)
                                     .build()
                     );
                 }
@@ -102,7 +102,7 @@ public class CTMSScreen extends Screen
                                             )
                                     )
                                     .tooltip(Tooltip.of(Text.translatable("ctms.screen.packDisabled.tooltip")))
-                                    .dimensions(30, 30 + 20 * i + 10 * i, 200, 20)
+                                    .dimensions(width / 2 - 205, 30 + 20 * i + 10 * i, 200, 20)
                                     .build()
                     );
                 }
@@ -135,7 +135,7 @@ public class CTMSScreen extends Screen
 
         ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
                 0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/controls.png"), 20, 40,
-                (button) -> MinecraftClient.getInstance().setScreen(this));
+                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this)));
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
         addDrawableChild(controlsButton);
     }
