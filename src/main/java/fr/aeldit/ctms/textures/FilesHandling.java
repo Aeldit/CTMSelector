@@ -21,6 +21,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -119,6 +120,14 @@ public class FilesHandling
                         {
                             currentFolderPackOptions.put(path.getFileName().toString().replace(".txt", ""), false);
                         }
+                        CTMBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                .replace(".properties", "")
+                                .replace(".txt", ""),
+                                new Identifier(":textures/block/" + path.getFileName().toString()
+                                        .replace(".properties", ".png")
+                                        .replace(".txt", ".png")
+                                )
+                        ));
                     }
                 }
                 folderPaths.clear();

@@ -22,6 +22,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -60,9 +61,14 @@ public class CTMSScreen extends Screen
     @Override
     public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
     {
-        renderBackgroundTexture(DrawContext);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
         super.render(DrawContext, mouseX, mouseY, delta);
+        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
+    }
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
+    {
+        super.renderBackgroundTexture(context);
     }
 
     @Override
@@ -82,7 +88,7 @@ public class CTMSScreen extends Screen
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
                                             button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
-                                                            parent,
+                                                            this,
                                                             packName
                                                     )
                                             )
@@ -96,7 +102,7 @@ public class CTMSScreen extends Screen
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(Formatting.ITALIC + packName.replace(".zip", "")),
                                             button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
-                                                            parent,
+                                                            this,
                                                             packName
                                                     )
                                             )
@@ -111,7 +117,7 @@ public class CTMSScreen extends Screen
         }
 
         ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
-                0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/reload.png"), 20, 40,
+                new ButtonTextures(new Identifier(CTMS_MODID + ":textures/gui/reload.png"), new Identifier(CTMS_MODID + ":textures/gui/reload.png")),
                 (button) -> {
                     TEXTURES_HANDLING.init();
                     MinecraftClient.getInstance().setScreen(this);
@@ -133,10 +139,10 @@ public class CTMSScreen extends Screen
                         .build()
         );
 
-        ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
+        /*ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
                 0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this)));
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);
+        addDrawableChild(controlsButton);*/
     }
 }
