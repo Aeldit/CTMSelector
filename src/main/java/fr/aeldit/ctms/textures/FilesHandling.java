@@ -120,6 +120,7 @@ public class FilesHandling
                         {
                             currentFolderPackOptions.put(path.getFileName().toString().replace(".txt", ""), false);
                         }
+                        // TODO -> use the texture referenced in the .properties or .txt file
                         CTMBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
                                 .replace(".properties", "")
                                 .replace(".txt", ""),

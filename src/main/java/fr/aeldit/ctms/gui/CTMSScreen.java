@@ -139,10 +139,10 @@ public class CTMSScreen extends Screen
                         .build()
         );
 
-        /*ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
-                0, 0, 20, new Identifier(CTMS_MODID + ":textures/gui/controls.png"), 20, 40,
+        ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
+                new ButtonTextures(new Identifier(CTMS_MODID + ":textures/gui/controls.png"), new Identifier(CTMS_MODID + ":textures/gui/controls.png")),
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this)));
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);*/
+        addDrawableChild(controlsButton);
     }
 }
