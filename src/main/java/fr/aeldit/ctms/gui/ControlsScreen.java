@@ -23,7 +23,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.text.Text;
 
 import java.util.Collections;
@@ -34,7 +33,6 @@ public class ControlsScreen extends Screen
 {
     private final Screen parent;
     private ControlsPackWidget controlsPackWidget;
-    private PackListWidget packListWidget;
 
     public ControlsScreen(Screen parent)
     {
