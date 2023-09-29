@@ -25,13 +25,11 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static fr.aeldit.ctms.textures.CTMSelector.isFolderPackEligible;
 import static fr.aeldit.ctms.textures.CTMSelector.isZipPackEligible;
@@ -44,7 +42,7 @@ public class FilesHandling
     private final String ctmPath = "assets/minecraft/optifine/ctm/connect/";
     private final Set<Path> folderPaths = new HashSet<>();
 
-    public void init()
+    public void load()
     {
         CTMS_OPTIONS_STORAGE.clearOptionsMap();
 
@@ -110,25 +108,69 @@ public class FilesHandling
 
                 for (Path path : listFilesInFolderPack(zipFileOrFolder))
                 {
-                    if (path.toString().contains(ctmPath.replace("/", "\\")))
+                    if (path.toString().contains(ctmPath.replace("/", "\\")) && path.toFile().isFile())
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            currentFolderPackOptions.put(path.getFileName().toString().replace(".properties", ""), true);
+                            try
+                            {
+                                Properties properties = new Properties();
+                                properties.load(new FileInputStream(path.toFile()));
+
+                                if (properties.containsKey("matchBlocks"))
+                                {
+                                    for (String block : properties.getProperty("matchBlocks").split(" "))
+                                    {
+                                        currentFolderPackOptions.put(block, true);
+                                    }
+                                }
+                                if (properties.containsKey("ctmDisabled"))
+                                {
+                                    for (String block : properties.getProperty("ctmDisabled").split(" "))
+                                    {
+                                        currentFolderPackOptions.put(block, false);
+                                    }
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
                         }
-                        else if (path.toString().endsWith(".txt"))
+
+                        try
                         {
-                            currentFolderPackOptions.put(path.getFileName().toString().replace(".txt", ""), false);
+                            Properties properties = new Properties();
+                            String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf("assets") + 1];
+                            properties.load(new FileInputStream(path.toFile()));
+
+                            if (properties.containsKey("faces"))
+                            {
+                                CTMBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                        .replace(".properties", "")
+                                        .replace(".txt", ""),
+                                        new Identifier(namespace, "textures/block/%s.png".formatted(path.getFileName().toString()
+                                                .replace(".properties", "")
+                                                .replace(".txt", ""))
+                                        )
+                                ));
+                            }
+                            else if (properties.containsKey("matchBlocks")) // TODO -> handle more cases
+                            {
+                                String texture = properties.getProperty("matchBlocks").split(" ")[0];
+
+                                for (String block : properties.getProperty("matchBlocks").split(" "))
+                                {
+                                    CTMBlocks.add(new CTMBlocks.CTMBlock(block,
+                                            new Identifier(namespace, "textures/block/%s.png".formatted(texture))
+                                    ));
+                                }
+                            }
                         }
-                        // TODO -> use the texture referenced in the .properties or .txt file
-                        CTMBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
-                                .replace(".properties", "")
-                                .replace(".txt", ""),
-                                new Identifier(":textures/block/" + path.getFileName().toString()
-                                        .replace(".properties", ".png")
-                                        .replace(".txt", ".png")
-                                )
-                        ));
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
                 folderPaths.clear();

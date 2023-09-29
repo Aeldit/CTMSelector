@@ -33,7 +33,7 @@ public class CTMSClientCore implements ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.init();
+        TEXTURES_HANDLING.load();
 
         KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "cyanlib.keybindings.openScreen.config",

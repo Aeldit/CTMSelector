@@ -177,7 +177,6 @@ public class ResourcePackScreen extends Screen
         private final CTMBlocks.CTMBlock block;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
-        //private final String blockId;
         private final CyclingButtonWidget<Boolean> button;
         private static final MinecraftClient client = MinecraftClient.getInstance();
 
@@ -186,7 +185,6 @@ public class ResourcePackScreen extends Screen
             this.block = block;
             this.layout = layout;
             this.button = button;
-            //this.blockId = Registries.BLOCK.getId(block).toString();
             this.layout.forEachChild(this.children::add);
         }
 

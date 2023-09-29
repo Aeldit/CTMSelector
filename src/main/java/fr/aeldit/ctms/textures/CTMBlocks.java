@@ -17,7 +17,6 @@
 
 package fr.aeldit.ctms.textures;
 
-import net.minecraft.block.Block;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -34,47 +33,17 @@ public class CTMBlocks
         }
     }
 
-    private static Set<Block> availableBlocks = new HashSet<>();
-    private static Set<Block> enabledBlocks = new HashSet<>();
-
-    private static Set<CTMBlock> availableCtmBlocks = new HashSet<>();
-    private static Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
-
-    public static void add(Block block)
-    {
-        availableBlocks.add(block);
-    }
+    private static final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
+    private static final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
 
     public static void add(CTMBlock block)
     {
         availableCtmBlocks.add(block);
-        System.out.println(block.blockName);
-        System.out.println(block.identifier);
-    }
-
-    public static boolean contains(Block block)
-    {
-        return availableBlocks.contains(block);
     }
 
     public static boolean contains(CTMBlock block)
     {
         return availableCtmBlocks.contains(block);
-    }
-
-    public static void toggle(Block block)
-    {
-        if (availableBlocks.contains(block))
-        {
-            if (enabledBlocks.contains(block))
-            {
-                enabledBlocks.remove(block);
-            }
-            else
-            {
-                enabledBlocks.add(block);
-            }
-        }
     }
 
     public static void toggle(CTMBlock block)
@@ -90,11 +59,6 @@ public class CTMBlocks
                 enabledCtmBlocks.add(block);
             }
         }
-    }
-
-    public static Set<Block> getAvailableBlocks()
-    {
-        return availableBlocks;
     }
 
     public static Set<CTMBlock> getAvailableCtmBlocks()

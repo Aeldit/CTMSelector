@@ -119,11 +119,11 @@ public class CTMSScreen extends Screen
         ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
                 new ButtonTextures(new Identifier(CTMS_MODID + ":textures/gui/reload.png"), new Identifier(CTMS_MODID + ":textures/gui/reload.png")),
                 (button) -> {
-                    TEXTURES_HANDLING.init();
+                    TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
                 });
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
-        addDrawableChild(reloadButton);
+        addDrawableChild(reloadButton); // TODO -> Fix textures
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
