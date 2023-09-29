@@ -99,9 +99,9 @@ public class ResourcePackScreen extends Screen
         //optionList.addAll(CTMS_OPTIONS_STORAGE.asConfigOptions(packName));
         //addSelectableChild(optionList);
 
-        list = new ListWidget(client, width, height, 32, height - 32, 25);
+        list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
         addDrawableChild(list);
-        CTMBlocks.getAvailableCtmBlocks().stream()
+        CTMBlocks.ctmBlocksMap.get(packName).getAvailableCtmBlocks().stream()
                 .sorted(Comparator.comparing(block -> block.getName().getString()))
                 .forEach(block -> list.add(block));
 
@@ -139,50 +139,54 @@ public class ResourcePackScreen extends Screen
     private static class ListWidget extends ElementListWidget<Entry>
     {
         private final EntryBuilder builder = new EntryBuilder(client, width);
+        private final String packName;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight)
+        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, String packName)
         {
             super(client, width, height, top, bottom, itemHeight);
+            this.packName = packName;
         }
 
         public void add(CTMBlocks.CTMBlock block)
         {
-            addEntry(builder.build(block));
+            addEntry(builder.build(block, packName));
         }
     }
 
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_ -> new")
-        public @NotNull Entry build(@NotNull CTMBlocks.CTMBlock block)
+        public @NotNull Entry build(@NotNull CTMBlocks.CTMBlock block, String packName)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    .initially(CTMBlocks.contains(block))
-                    .build(0, 0, 30, 20, Text.empty(), (button, value) -> CTMBlocks.toggle(block));
+                    .initially(CTMBlocks.ctmBlocksMap.get(packName).contains(block))
+                    .build(0, 0, 30, 20, Text.empty(), (button, value) -> CTMBlocks.ctmBlocksMap.get(packName).toggle(block));
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
             layout.add(toggleButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
-            return new Entry(block, layout, toggleButton);
+            return new Entry(block, layout, toggleButton, packName);
         }
     }
 
     static class Entry extends ElementListWidget.Entry<Entry>
     {
         private final CTMBlocks.CTMBlock block;
+        private final String packName;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
         private final CyclingButtonWidget<Boolean> button;
         private static final MinecraftClient client = MinecraftClient.getInstance();
 
-        Entry(CTMBlocks.CTMBlock block, LayoutWidget layout, CyclingButtonWidget<Boolean> button)
+        Entry(CTMBlocks.CTMBlock block, LayoutWidget layout, CyclingButtonWidget<Boolean> button, String packName)
         {
             this.block = block;
+            this.packName = packName;
             this.layout = layout;
             this.button = button;
             this.layout.forEachChild(this.children::add);
@@ -190,7 +194,7 @@ public class ResourcePackScreen extends Screen
 
         public void update()
         {
-            button.setValue(CTMBlocks.contains(block));
+            button.setValue(CTMBlocks.ctmBlocksMap.get(packName).contains(block));
         }
 
         @Override
@@ -207,7 +211,7 @@ public class ResourcePackScreen extends Screen
 
         @Override
         public void render(
-                DrawContext context,
+                @NotNull DrawContext context,
                 int index,
                 int y,
                 int x,

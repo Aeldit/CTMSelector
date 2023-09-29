@@ -20,8 +20,12 @@ package fr.aeldit.ctms.textures;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMBlocks
 {
@@ -33,20 +37,30 @@ public class CTMBlocks
         }
     }
 
-    private static final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
-    private static final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
+    public static Map<String, CTMBlocks> ctmBlocksMap = new HashMap<>();
 
-    public static void add(CTMBlock block)
+    private final String packName;
+
+    public CTMBlocks(String packName)
+    {
+        this.packName = packName;
+        ctmBlocksMap.put(packName, this);
+    }
+
+    private final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
+    private final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
+
+    public void add(CTMBlock block)
     {
         availableCtmBlocks.add(block);
     }
 
-    public static boolean contains(CTMBlock block)
+    public boolean contains(CTMBlock block)
     {
-        return availableCtmBlocks.contains(block);
+        return enabledCtmBlocks.contains(block);
     }
 
-    public static void toggle(CTMBlock block)
+    public void toggle(CTMBlock block)
     {
         if (availableCtmBlocks.contains(block))
         {
@@ -58,10 +72,11 @@ public class CTMBlocks
             {
                 enabledCtmBlocks.add(block);
             }
+            TEXTURES_HANDLING.updateUsedTextures(packName);
         }
     }
 
-    public static Set<CTMBlock> getAvailableCtmBlocks()
+    public Set<CTMBlock> getAvailableCtmBlocks()
     {
         return availableCtmBlocks;
     }

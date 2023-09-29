@@ -105,12 +105,13 @@ public class FilesHandling
                 }
 
                 Map<String, Boolean> currentFolderPackOptions = new HashMap<>();
+                CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName());
 
                 for (Path path : listFilesInFolderPack(zipFileOrFolder))
                 {
                     if (path.toString().contains(ctmPath.replace("/", "\\")) && path.toFile().isFile())
                     {
-                        if (path.toString().endsWith(".properties"))
+                        if (path.toString().endsWith(".properties")) // TODO -> remake the system to use a new property instead of changing the file extension
                         {
                             try
                             {
@@ -146,7 +147,7 @@ public class FilesHandling
 
                             if (properties.containsKey("faces"))
                             {
-                                CTMBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                packCtmBlocks.add(new CTMBlocks.CTMBlock(path.getFileName().toString()
                                         .replace(".properties", "")
                                         .replace(".txt", ""),
                                         new Identifier(namespace, "textures/block/%s.png".formatted(path.getFileName().toString()
@@ -161,7 +162,7 @@ public class FilesHandling
 
                                 for (String block : properties.getProperty("matchBlocks").split(" "))
                                 {
-                                    CTMBlocks.add(new CTMBlocks.CTMBlock(block,
+                                    packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
                                             new Identifier(namespace, "textures/block/%s.png".formatted(texture))
                                     ));
                                 }
@@ -235,7 +236,7 @@ public class FilesHandling
     {
         for (File file : packFolder.listFiles())
         {
-            if (file.isFile() && (file.getName().endsWith(".properties") || file.getName().endsWith(".txt")))
+            if (file.isFile() && file.getName().endsWith(".properties")) // || file.getName().endsWith(".txt")))
             {
                 folderPaths.add(file.toPath());
             }
@@ -253,43 +254,71 @@ public class FilesHandling
         {
             if (isFolderCtmPack(packName.replace(" (folder)", "")))
             {
-                Map<Path, Path> fileNamesMap = new HashMap<>();
-
                 for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
                 {
-                    boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, path.toString()
-                            .split("\\\\")[path.toString().split("\\\\").length - 1]
-                            .replace(".properties", "")
-                            .replace(".txt", ""));
-
-                    if (path.toString().contains(ctmPath.replace("/", "\\")))
+                    try
                     {
-                        if (path.toString().endsWith(".properties") && !option)
+                        List<String> options = new ArrayList<>();
+                        List<String> disabledOptions = new ArrayList<>();
+                        Properties properties = new Properties();
+                        properties.load(new FileInputStream(path.toFile()));
+
+                        if (properties.containsKey("matchBlocks"))
                         {
-                            fileNamesMap.put(path, Path.of(path.toString().replace(".properties", ".txt")));
+                            options.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
                         }
-                        else if (path.toString().endsWith(".txt") && option)
+                        if (properties.containsKey("ctmDisabled"))
                         {
-                            fileNamesMap.put(path, Path.of(path.toString().replace(".txt", ".properties")));
+                            disabledOptions.addAll(Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList());
                         }
+
+                        if (path.toString().contains(ctmPath.replace("/", "\\")))
+                        {
+                            if (path.toString().endsWith(".properties"))
+                            {
+                                for (String optionName : options)
+                                {
+                                    boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, optionName);
+
+                                    if (!option)
+                                    {
+                                        properties.put("matchBlocks",
+                                                Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList()
+                                                        .remove(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
+                                        );
+                                        properties.put("ctmDisabled",
+                                                Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList()
+                                                        .get(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
+                                        );
+                                    }
+                                }
+
+                                for (String optionName : disabledOptions)
+                                {
+                                    boolean option = CTMS_OPTIONS_STORAGE.getOption(packName, optionName);
+
+                                    if (option)
+                                    {
+                                        properties.put("ctmDisabled",
+                                                Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList()
+                                                        .remove(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
+                                        );
+                                        properties.put("matchBlocks",
+                                                Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList()
+                                                        .get(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
                     }
                 }
                 folderPaths.clear();
-
-                if (!fileNamesMap.isEmpty())
-                {
-                    fileNamesMap.forEach((path, newPath) -> {
-                        try
-                        {
-                            Files.move(path, newPath);
-                        }
-                        catch (IOException e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                    MinecraftClient.getInstance().reloadResources();
-                }
+                MinecraftClient.getInstance().reloadResources();
             }
         }
         else
