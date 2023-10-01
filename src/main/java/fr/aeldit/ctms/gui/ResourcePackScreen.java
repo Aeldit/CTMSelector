@@ -90,7 +90,7 @@ public class ResourcePackScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             CTMBlocks.getCTMBlocks(packName).resetOptions();
-                            list.children().forEach(Entry::reset);
+                            CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
                             TEXTURES_HANDLING.updateUsedTextures(packName);
                             close();
                         })
@@ -101,7 +101,7 @@ public class ResourcePackScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                            list.children().forEach(Entry::cancelChanges);
+                            CTMBlocks.getCTMBlocks(packName).restoreUnsavedOptions();
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
@@ -110,14 +110,11 @@ public class ResourcePackScreen extends Screen
         );
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                            /*if (CTMBlocks.getCTMBlocks(packName).optionChanged())
+                            if (CTMBlocks.getCTMBlocks(packName).optionsChanged())
                             {
-                                CTMBlocks.getCTMBlocks(packName).saveOptions();
-                                list.children().forEach(Entry::update);
+                                CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
                                 TEXTURES_HANDLING.updateUsedTextures(packName);
-                            }*/
-                            list.children().forEach(Entry::update);
-                            TEXTURES_HANDLING.updateUsedTextures(packName);
+                            }
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
@@ -188,14 +185,6 @@ public class ResourcePackScreen extends Screen
             this.layout.forEachChild(this.children::add);
         }
 
-        public void reset()
-        {
-            button.setValue(true);
-        }
-
-        public void cancelChanges()
-        {}
-
         public void update()
         {
             button.setValue(CTMBlocks.getCTMBlocks(packName).contains(block));
@@ -215,16 +204,10 @@ public class ResourcePackScreen extends Screen
 
         @Override
         public void render(
-                @NotNull DrawContext context,
-                int index,
-                int y,
-                int x,
-                int entryWidth,
-                int entryHeight,
-                int mouseX,
-                int mouseY,
-                boolean hovered,
-                float delta)
+                @NotNull DrawContext context, int index, int y, int x,
+                int entryWidth, int entryHeight, int mouseX, int mouseY,
+                boolean hovered, float delta
+        )
         {
             context.drawTexture(block.identifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
             layout.forEachChild(child -> {

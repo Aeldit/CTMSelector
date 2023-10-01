@@ -75,11 +75,21 @@ public class CTMBlocks
 
     private final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
     private final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
-    //private final Set<CTMBlock> unsavedOptions = new HashSet<>();
+    private final Set<CTMBlock> unsavedOptions = new HashSet<>();
 
     public boolean contains(CTMBlock block)
     {
         return enabledCtmBlocks.contains(block);
+    }
+
+    public boolean optionsChanged()
+    {
+        return !unsavedOptions.isEmpty();
+    }
+
+    public void clearUnsavedOptions()
+    {
+        unsavedOptions.clear();
     }
 
     public void add(CTMBlock block)
@@ -103,6 +113,15 @@ public class CTMBlocks
         {
             enabledCtmBlocks.add(block);
         }
+
+        if (unsavedOptions.contains(block))
+        {
+            unsavedOptions.remove(block);
+        }
+        else
+        {
+            unsavedOptions.add(block);
+        }
     }
 
     public void resetOptions()
@@ -111,7 +130,7 @@ public class CTMBlocks
         enabledCtmBlocks.addAll(availableCtmBlocks);
     }
 
-    /*public void restoreUnsavedOptions()
+    public void restoreUnsavedOptions()
     {
         for (CTMBlock block : unsavedOptions)
         {
@@ -124,7 +143,8 @@ public class CTMBlocks
                 enabledCtmBlocks.add(block);
             }
         }
-    }*/
+        unsavedOptions.clear();
+    }
 
     private Set<CTMBlock> getAvailableCtmBlocks()
     {
