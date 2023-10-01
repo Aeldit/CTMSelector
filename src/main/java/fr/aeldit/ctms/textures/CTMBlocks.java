@@ -17,15 +17,14 @@
 
 package fr.aeldit.ctms.textures;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import java.util.*;
 
 public class CTMBlocks
 {
@@ -37,32 +36,84 @@ public class CTMBlocks
         }
     }
 
-    public static Map<String, CTMBlocks> ctmBlocksMap = new HashMap<>();
+    public final static Map<String, CTMBlocks> CTM_BLOCKS_MAP = new HashMap<>();
 
-    private final String packName;
+    public static Set<CTMBlock> getAvailableCtmBlocks(String packName)
+    {
+        return CTM_BLOCKS_MAP.containsKey(packName)
+                ? CTM_BLOCKS_MAP.get(packName).getAvailableCtmBlocks()
+                : new HashSet<>();
+    }
+
+    public static boolean getOptionValue(String packName, String blockName)
+    {
+        for (CTMBlock block : getCTMBlocks(packName).getAvailableCtmBlocks())
+        {
+            if (block.blockName.equals(blockName))
+            {
+                return getCTMBlocks(packName).contains(block);
+            }
+        }
+        return false;
+    }
+
+    public static @Nullable CTMBlocks getCTMBlocks(String packName)
+    {
+        return CTM_BLOCKS_MAP.getOrDefault(packName, null);
+    }
+
+    @Contract(" -> new")
+    public static @NotNull ArrayList<String> getEnabledPacks()
+    {
+        return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledNames());
+    }
 
     public CTMBlocks(String packName)
     {
-        this.packName = packName;
-        ctmBlocksMap.put(packName, this);
+        CTM_BLOCKS_MAP.put(packName, this);
     }
 
     private final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
     private final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
-
-    public void add(CTMBlock block)
-    {
-        availableCtmBlocks.add(block);
-    }
+    //private final Set<CTMBlock> unsavedOptions = new HashSet<>();
 
     public boolean contains(CTMBlock block)
     {
         return enabledCtmBlocks.contains(block);
     }
 
+    public void add(CTMBlock block)
+    {
+        availableCtmBlocks.add(block);
+    }
+
+    public void addEnabled(CTMBlock block)
+    {
+        add(block);
+        enabledCtmBlocks.add(block);
+    }
+
     public void toggle(CTMBlock block)
     {
-        if (availableCtmBlocks.contains(block))
+        if (enabledCtmBlocks.contains(block))
+        {
+            enabledCtmBlocks.remove(block);
+        }
+        else
+        {
+            enabledCtmBlocks.add(block);
+        }
+    }
+
+    public void resetOptions()
+    {
+        enabledCtmBlocks.clear();
+        enabledCtmBlocks.addAll(availableCtmBlocks);
+    }
+
+    /*public void restoreUnsavedOptions()
+    {
+        for (CTMBlock block : unsavedOptions)
         {
             if (enabledCtmBlocks.contains(block))
             {
@@ -72,12 +123,16 @@ public class CTMBlocks
             {
                 enabledCtmBlocks.add(block);
             }
-            TEXTURES_HANDLING.updateUsedTextures(packName);
         }
-    }
+    }*/
 
-    public Set<CTMBlock> getAvailableCtmBlocks()
+    private Set<CTMBlock> getAvailableCtmBlocks()
     {
         return availableCtmBlocks;
+    }
+
+    public Set<CTMBlock> getEnabledCtmBlocks()
+    {
+        return enabledCtmBlocks;
     }
 }

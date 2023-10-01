@@ -38,7 +38,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.CTMS_OPTIONS_STORAGE;
 import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
@@ -48,13 +47,10 @@ public class ResourcePackScreen extends Screen
     private final Screen parent;
     private OptionListWidget optionList;
     private ListWidget list;
-    // Used for when the player uses the escape key to exit the screen, which like the cancel button, reverts the modified but no saved options to their previous value
-    private boolean save = false;
-    private boolean reset = false;
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
-        super(CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
+        super(CTMBlocks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
                 ? Text.of(packName.replace(".zip", ""))
                 : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
         );
@@ -65,16 +61,6 @@ public class ResourcePackScreen extends Screen
     @Override
     public void close()
     {
-        if (save)
-        {
-            if (CTMS_OPTIONS_STORAGE.optionsChanged(packName) || reset)
-            {
-                CTMS_OPTIONS_STORAGE.setOption(packName);
-                TEXTURES_HANDLING.updateUsedTextures(packName);
-            }
-        }
-        save = false;
-        CTMS_OPTIONS_STORAGE.clearUnsavedOptionsMap(packName);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -83,7 +69,6 @@ public class ResourcePackScreen extends Screen
     {
         super.render(DrawContext, mouseX, mouseY, delta);
         DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
-        //optionList.render(DrawContext, mouseX, mouseY, delta);
     }
 
     @Override
@@ -95,20 +80,18 @@ public class ResourcePackScreen extends Screen
     @Override
     protected void init()
     {
-        //optionList = new OptionListWidget(client, width, height, 32, height - 32, 25);
-        //optionList.addAll(CTMS_OPTIONS_STORAGE.asConfigOptions(packName));
-        //addSelectableChild(optionList);
-
+        System.out.println(CTMBlocks.getCTMBlocks(packName).getEnabledCtmBlocks());
         list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
         addDrawableChild(list);
-        CTMBlocks.ctmBlocksMap.get(packName).getAvailableCtmBlocks().stream()
+        CTMBlocks.getAvailableCtmBlocks(packName).stream()
                 .sorted(Comparator.comparing(block -> block.getName().getString()))
                 .forEach(block -> list.add(block));
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                            CTMS_OPTIONS_STORAGE.resetOptions(packName);
-                            save = reset = true;
+                            CTMBlocks.getCTMBlocks(packName).resetOptions();
+                            list.children().forEach(Entry::reset);
+                            TEXTURES_HANDLING.updateUsedTextures(packName);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -118,7 +101,7 @@ public class ResourcePackScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                            save = false;
+                            list.children().forEach(Entry::cancelChanges);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
@@ -127,7 +110,14 @@ public class ResourcePackScreen extends Screen
         );
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                            save = true;
+                            /*if (CTMBlocks.getCTMBlocks(packName).optionChanged())
+                            {
+                                CTMBlocks.getCTMBlocks(packName).saveOptions();
+                                list.children().forEach(Entry::update);
+                                TEXTURES_HANDLING.updateUsedTextures(packName);
+                            }*/
+                            list.children().forEach(Entry::update);
+                            TEXTURES_HANDLING.updateUsedTextures(packName);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
@@ -136,6 +126,11 @@ public class ResourcePackScreen extends Screen
         );
     }
 
+    /**
+     * Modified by me to fit my purpose
+     *
+     * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
+     */
     private static class ListWidget extends ElementListWidget<Entry>
     {
         private final EntryBuilder builder = new EntryBuilder(client, width);
@@ -155,15 +150,17 @@ public class ResourcePackScreen extends Screen
 
     private record EntryBuilder(MinecraftClient client, int width)
     {
-        @Contract("_ -> new")
+        @Contract("_, _ -> new")
         public @NotNull Entry build(@NotNull CTMBlocks.CTMBlock block, String packName)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    .initially(CTMBlocks.ctmBlocksMap.get(packName).contains(block))
-                    .build(0, 0, 30, 20, Text.empty(), (button, value) -> CTMBlocks.ctmBlocksMap.get(packName).toggle(block));
+                    .initially(CTMBlocks.getCTMBlocks(packName).contains(block))
+                    .build(0, 0, 30, 20, Text.empty(),
+                            (button, value) -> CTMBlocks.getCTMBlocks(packName).toggle(block)
+                    );
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
@@ -181,7 +178,6 @@ public class ResourcePackScreen extends Screen
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
         private final CyclingButtonWidget<Boolean> button;
-        private static final MinecraftClient client = MinecraftClient.getInstance();
 
         Entry(CTMBlocks.CTMBlock block, LayoutWidget layout, CyclingButtonWidget<Boolean> button, String packName)
         {
@@ -192,9 +188,17 @@ public class ResourcePackScreen extends Screen
             this.layout.forEachChild(this.children::add);
         }
 
+        public void reset()
+        {
+            button.setValue(true);
+        }
+
+        public void cancelChanges()
+        {}
+
         public void update()
         {
-            button.setValue(CTMBlocks.ctmBlocksMap.get(packName).contains(block));
+            button.setValue(CTMBlocks.getCTMBlocks(packName).contains(block));
         }
 
         @Override

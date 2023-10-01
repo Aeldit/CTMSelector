@@ -17,6 +17,7 @@
 
 package fr.aeldit.ctms.gui;
 
+import fr.aeldit.ctms.textures.CTMBlocks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -39,7 +40,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.*;
+import static fr.aeldit.ctms.textures.CTMBlocks.CTM_BLOCKS_MAP;
+import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
@@ -75,7 +78,7 @@ public class CTMSScreen extends Screen
     protected void init()
     {
         int i = 0;
-        List<String> sortedPacksNames = new ArrayList<>(CTMS_OPTIONS_STORAGE.getOptionsMaps().keySet());
+        List<String> sortedPacksNames = new ArrayList<>(CTM_BLOCKS_MAP.keySet());
         Collections.sort(sortedPacksNames);
 
         for (String packName : sortedPacksNames)
@@ -83,7 +86,7 @@ public class CTMSScreen extends Screen
             // Temporary, will add a page system at some point
             if (i < 6)
             {
-                if (CTMS_OPTIONS_STORAGE.getEnabledPacks().contains("file/" + packName.replace(" (folder)", "")))
+                if (CTMBlocks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", "")))
                 {
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(packName.replace(".zip", "")),

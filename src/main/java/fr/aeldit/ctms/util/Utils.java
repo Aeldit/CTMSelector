@@ -17,7 +17,6 @@
 
 package fr.aeldit.ctms.util;
 
-import fr.aeldit.ctms.config.CTMSOptionsStorage;
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.FilesHandling;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ public class Utils
     public static final Logger CTMS_LOGGER = LoggerFactory.getLogger(CTMS_MODID);
 
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
-    public static final CTMSOptionsStorage CTMS_OPTIONS_STORAGE = new CTMSOptionsStorage();
 
     public static final ArrayList<CTMSelector> CTM_SELECTOR_ARRAY_LIST = new ArrayList<>(0);
 }
