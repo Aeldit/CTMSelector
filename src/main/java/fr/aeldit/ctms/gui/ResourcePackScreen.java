@@ -45,7 +45,6 @@ public class ResourcePackScreen extends Screen
 {
     private final String packName;
     private final Screen parent;
-    private OptionListWidget optionList;
     private ListWidget list;
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
@@ -164,30 +163,21 @@ public class ResourcePackScreen extends Screen
             layout.add(toggleButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
-            return new Entry(block, layout, toggleButton, packName);
+            return new Entry(block, layout);
         }
     }
 
     static class Entry extends ElementListWidget.Entry<Entry>
     {
         private final CTMBlocks.CTMBlock block;
-        private final String packName;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
-        private final CyclingButtonWidget<Boolean> button;
 
-        Entry(CTMBlocks.CTMBlock block, LayoutWidget layout, CyclingButtonWidget<Boolean> button, String packName)
+        Entry(CTMBlocks.CTMBlock block, LayoutWidget layout)
         {
             this.block = block;
-            this.packName = packName;
             this.layout = layout;
-            this.button = button;
             this.layout.forEachChild(this.children::add);
-        }
-
-        public void update()
-        {
-            button.setValue(CTMBlocks.getCTMBlocks(packName).contains(block));
         }
 
         @Override
