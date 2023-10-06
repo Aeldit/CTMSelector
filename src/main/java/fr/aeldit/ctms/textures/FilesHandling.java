@@ -106,17 +106,25 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties"))
                         {
+                            Properties properties = new Properties();
                             try
                             {
-                                Properties properties = new Properties();
-                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
                                 properties.load(new FileInputStream(path.toFile()));
+                            }
+                            catch (IOException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
 
-                                if (namespace.equals("minecraft") && properties.containsKey("matchBlocks"))
+                            if (!properties.isEmpty())
+                            {
+                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
+
+                                if (namespace.equals("minecraft") && properties.containsKey("matchBlocks")) // TODO -> Handle cases with spaces
                                 {
                                     String texture = properties.getProperty("matchBlocks").split(" ")[0];
 
-                                    if (properties.containsKey("faces")) // If the texture is only for some faces of a block, we use the name of the file
+                                    if (properties.containsKey("faces"))
                                     {
                                         packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
                                                 .replace(".properties", "")
@@ -147,7 +155,7 @@ public class FilesHandling
                                 }
                                 else // Modded cases
                                 {
-                                    if (properties.containsKey("tiles")) // TODO -> Handle cases with spaces
+                                    if (properties.containsKey("tiles"))
                                     {
                                         String[] tiles = properties.getProperty("tiles").split("-");
                                         StringBuilder identifierPath = new StringBuilder();
@@ -172,7 +180,7 @@ public class FilesHandling
                                                     new Identifier(namespace, identifierPath + "%s.png".formatted(properties.getProperty("blockTexture")))
                                             ));
                                         }
-                                        else if (properties.containsKey("faces")) // If the texture is only for some faces of a block, we use the name of the file
+                                        else if (properties.containsKey("faces"))
                                         {
                                             packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
                                                     .replace(".properties", "")
@@ -234,10 +242,6 @@ public class FilesHandling
                                     }
                                 }*/
                                 }
-                            }
-                            catch (IOException e)
-                            {
-                                throw new RuntimeException(e);
                             }
                         }
                     }
