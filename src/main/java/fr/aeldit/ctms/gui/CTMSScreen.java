@@ -33,6 +33,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -119,14 +120,7 @@ public class CTMSScreen extends Screen
             i++;
         }
 
-        ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
-                new ButtonTextures(new Identifier(CTMS_MODID + ":textures/gui/reload.png"), new Identifier(CTMS_MODID + ":textures/gui/reload.png")),
-                (button) -> {
-                    TEXTURES_HANDLING.load();
-                    MinecraftClient.getInstance().setScreen(this);
-                });
-        reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
-        addDrawableChild(reloadButton); // TODO -> Fix textures
+        addDrawableChild(getReloadButton()); // TODO -> Fix textures
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
@@ -142,10 +136,29 @@ public class CTMSScreen extends Screen
                         .build()
         );
 
+        addDrawableChild(getControlsButton());
+    }
+
+    @NotNull
+    private ButtonWidget getReloadButton()
+    {
+        ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
+                new ButtonTextures(new Identifier(CTMS_MODID, "textures/gui/sprites/reload.png"), new Identifier(CTMS_MODID, "textures/gui/sprite/reload_focused.png")),
+                (button) -> {
+                    TEXTURES_HANDLING.load();
+                    MinecraftClient.getInstance().setScreen(this);
+                });
+        reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
+        return reloadButton;
+    }
+
+    private @NotNull ButtonWidget getControlsButton()
+    {
         ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
-                new ButtonTextures(new Identifier(CTMS_MODID + ":textures/gui/controls.png"), new Identifier(CTMS_MODID + ":textures/gui/controls.png")),
-                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this)));
+                new ButtonTextures(new Identifier(CTMS_MODID + "textures/gui/sprites/controls.png"), new Identifier(CTMS_MODID + "textures/gui/sprites/controls_focused.png")),
+                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
+        );
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);
+        return controlsButton;
     }
 }
