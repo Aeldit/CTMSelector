@@ -109,10 +109,98 @@ public class FilesHandling
                             try
                             {
                                 Properties properties = new Properties();
-                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf("assets") + 1];
+                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
                                 properties.load(new FileInputStream(path.toFile()));
 
-                                if (properties.containsKey("faces"))
+                                if (namespace.equals("minecraft") && properties.containsKey("matchBlocks"))
+                                {
+                                    String texture = properties.getProperty("matchBlocks").split(" ")[0];
+
+                                    if (properties.containsKey("faces")) // If the texture is only for some faces of a block, we use the name of the file
+                                    {
+                                        packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                                .replace(".properties", "")
+                                                .replace(".txt", ""),
+                                                new Identifier("textures/block/%s.png".formatted(path.getFileName().toString()
+                                                        .replace(".properties", "")
+                                                        .replace(".txt", ""))
+                                                )));
+                                    }
+                                    else if (properties.containsKey("matchBlocks"))
+                                    {
+                                        for (String block : properties.getProperty("matchBlocks").split(" "))
+                                        {
+                                            packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(block,
+                                                    new Identifier("textures/block/%s.png".formatted(texture))
+                                            ));
+                                        }
+                                    }
+                                    else if (properties.containsKey("ctmDisabled"))
+                                    {
+                                        for (String block : properties.getProperty("ctmDisabled").split(" "))
+                                        {
+                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
+                                                    new Identifier("textures/block/%s.png".formatted(texture))
+                                            ));
+                                        }
+                                    }
+                                }
+                                else // Modded cases
+                                {
+                                    if (properties.containsKey("tiles")) // TODO -> Handle cases with spaces
+                                    {
+                                        String[] tiles = properties.getProperty("tiles").split("-");
+                                        StringBuilder identifierPath = new StringBuilder();
+
+                                        int index = Arrays.stream(path.toString().split("\\\\")).toList().indexOf("optifine") - 1;
+                                        String[] splitPath = path.toString().split("\\\\");
+
+                                        for (int i = 0; i < path.toString().split("\\\\").length - 1; i++)
+                                        {
+                                            if (i > index)
+                                            {
+                                                identifierPath.append(splitPath[i]).append("/");
+                                            }
+                                        }
+                                        identifierPath = new StringBuilder(identifierPath.toString().replace(".properties", ""));
+
+                                        if (properties.containsKey("blockTexture")) // Exclusive to this mod
+                                        {
+                                            packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                                    .replace(".properties", "")
+                                                    .replace(".txt", ""),
+                                                    new Identifier(namespace, identifierPath + "%s.png".formatted(properties.getProperty("blockTexture")))
+                                            ));
+                                        }
+                                        else if (properties.containsKey("faces")) // If the texture is only for some faces of a block, we use the name of the file
+                                        {
+                                            packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
+                                                    .replace(".properties", "")
+                                                    .replace(".txt", ""),
+                                                    new Identifier(namespace, identifierPath + "%s.png".formatted(tiles[0]))
+                                            ));
+                                        }
+                                        else if (properties.containsKey("matchBlocks"))
+                                        {
+                                            for (String block : properties.getProperty("matchBlocks").split(" "))
+                                            {
+                                                packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(block,
+                                                        new Identifier(namespace, identifierPath + "%s.png".formatted(tiles[0]))
+                                                ));
+                                            }
+                                        }
+                                        else if (properties.containsKey("ctmDisabled"))
+                                        {
+                                            for (String block : properties.getProperty("ctmDisabled").split(" "))
+                                            {
+                                                packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
+                                                        new Identifier(namespace, identifierPath + "%s.png".formatted(tiles[0]))
+                                                ));
+                                            }
+                                        }
+                                    }
+
+                                /*if (properties.containsKey("faces"))
                                 {
                                     packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
                                             .replace(".properties", "")
@@ -123,7 +211,7 @@ public class FilesHandling
                                             )
                                     ));
                                 }
-                                else if (properties.containsKey("matchBlocks")) // TODO -> handle more cases
+                                else if (properties.containsKey("matchBlocks"))
                                 {
                                     String texture = properties.getProperty("matchBlocks").split(" ")[0];
 
@@ -144,6 +232,7 @@ public class FilesHandling
                                                 new Identifier(namespace, "textures/block/%s.png".formatted(texture))
                                         ));
                                     }
+                                }*/
                                 }
                             }
                             catch (IOException e)
