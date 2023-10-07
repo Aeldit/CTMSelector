@@ -79,7 +79,6 @@ public class ResourcePackScreen extends Screen
     @Override
     protected void init()
     {
-        System.out.println(CTMBlocks.getCTMBlocks(packName).getEnabledCtmBlocks());
         list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
         addDrawableChild(list);
         CTMBlocks.getAvailableCtmBlocks(packName).stream()

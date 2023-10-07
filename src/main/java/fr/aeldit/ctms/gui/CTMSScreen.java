@@ -17,17 +17,16 @@
 
 package fr.aeldit.ctms.gui;
 
+import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
 import fr.aeldit.ctms.textures.CTMBlocks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -63,10 +62,10 @@ public class CTMSScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
+    public void render(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        super.render(DrawContext, mouseX, mouseY, delta);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
+        super.render(context, mouseX, mouseY, delta);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
     }
 
     @Override
@@ -139,11 +138,10 @@ public class CTMSScreen extends Screen
         addDrawableChild(getControlsButton());
     }
 
-    @NotNull
-    private ButtonWidget getReloadButton()
+    private @NotNull ButtonWidget getReloadButton()
     {
-        ButtonWidget reloadButton = new TexturedButtonWidget(width / 2 - 180, height - 28, 20, 20,
-                new ButtonTextures(new Identifier(CTMS_MODID, "textures/gui/sprites/reload.png"), new Identifier(CTMS_MODID, "textures/gui/sprite/reload_focused.png")),
+        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
+                new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 (button) -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
@@ -154,8 +152,8 @@ public class CTMSScreen extends Screen
 
     private @NotNull ButtonWidget getControlsButton()
     {
-        ButtonWidget controlsButton = new TexturedButtonWidget(width / 2 + 160, height - 28, 20, 20,
-                new ButtonTextures(new Identifier(CTMS_MODID + "textures/gui/sprites/controls.png"), new Identifier(CTMS_MODID + "textures/gui/sprites/controls_focused.png")),
+        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
+                new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
         );
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
