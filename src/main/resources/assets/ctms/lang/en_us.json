@@ -2,7 +2,7 @@
   "language.name": "English",
   "language.region": "United States",
   "language.code": "en_us",
-  "-------------------------------------------------CTMS_SCREEN-----------------------------------------------": "",
+  "-------------------------------------------------CTMS_SCREEN------------------------------------------------": "",
   "ctms.screen.title": "Resource Packs Configurations",
   "ctms.screen.packDisabled.tooltip": "§cThis resource pack is not enabled. \nTo enable this resource pack, go in §3Options > Resource Packs §c and select this resource pack",
   "ctms.screen.packDisabledTitle": " (not enabled)",
@@ -14,5 +14,7 @@
   "ctms.screen.config.save&quit": "Save & Quit",
   "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times if the pack is a zip file, because we need to edit the zip file, which we can't do if Minecraft is using the resource pack",
   "ctms.screen.reload.tooltip": "Reload the resource packs. You should use this if you added or removed resource packs from your resourcepacks folder",
-  "ctms.screen.controls.tooltip": "Opens the §6Controls§r screen"
+  "ctms.screen.controls.tooltip": "Opens the §6Controls§r screen",
+  "---------------------------------------------------TOASTS---------------------------------------------------": "",
+  "ctms.toast.packNotEnabled": "This resource pack is not enabled"
 }

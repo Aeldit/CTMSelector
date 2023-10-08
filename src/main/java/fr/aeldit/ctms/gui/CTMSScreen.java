@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
+import fr.aeldit.ctms.gui.toasts.PackNotEnabledToast;
 import fr.aeldit.ctms.textures.CTMBlocks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -90,7 +91,7 @@ public class CTMSScreen extends Screen
                 {
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
-                                            button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
+                                            button -> client.setScreen(new ResourcePackScreen(
                                                             this,
                                                             packName
                                                     )
@@ -102,13 +103,18 @@ public class CTMSScreen extends Screen
                 }
                 else
                 {
+                    /*
+                    When the pack is not loaded, we send a toast to the player
+                    This is because when a pack is not loaded, all textures
+                    that are not in minecraft appear as a bugged texture
+                     */
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(Formatting.ITALIC + packName.replace(".zip", "")),
-                                            button -> Objects.requireNonNull(client).setScreen(new ResourcePackScreen(
-                                                            this,
-                                                            packName
-                                                    )
-                                            )
+                                            button -> client.getToastManager().add(new PackNotEnabledToast(
+                                                    PackNotEnabledToast.Type.PACK_NOT_ENABLED,
+                                                    Text.translatable("ctms.toast.packNotEnabled"),
+                                                    null
+                                            ))
                                     )
                                     .tooltip(Tooltip.of(Text.translatable("ctms.screen.packDisabled.tooltip")))
                                     .dimensions(width / 2 - 205, 30 + 20 * i + 10 * i, 200, 20)
@@ -140,8 +146,8 @@ public class CTMSScreen extends Screen
 
     private @NotNull ButtonWidget getReloadButton()
     {
-        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
+        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
+                20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 (button) -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
@@ -152,8 +158,8 @@ public class CTMSScreen extends Screen
 
     private @NotNull ButtonWidget getControlsButton()
     {
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
+        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
+                20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
         );
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
