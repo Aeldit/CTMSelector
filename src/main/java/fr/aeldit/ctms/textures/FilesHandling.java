@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -119,72 +120,57 @@ public class FilesHandling
 
                             if (!properties.isEmpty())
                             {
-                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
+                                String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString()
+                                        .split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
 
-                                if (namespace.equals("minecraft") && properties.containsKey("matchBlocks")) // TODO -> Handle cases with spaces
+                                if (namespace.equals("minecraft")
+                                        && (properties.containsKey("matchBlocks") || properties.containsKey("ctmDisabled"))) // TODO -> Handle cases with spaces
                                 {
-                                    String texture = properties.getProperty("matchBlocks").split(" ")[0];
+                                    int index = Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2;
+                                    StringBuilder tmpPath = new StringBuilder();
+                                    String[] splitPath = path.toString().split("\\\\");
 
-                                    // Used to specify the texture to use (ex : animated texture aren't supported so we use this)
-                                    if (properties.containsKey("ctmsTexture"))
+                                    for (int i = 0; i < splitPath.length - 1; i++)
                                     {
-                                        int index = Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2;
-                                        StringBuilder tmpPath = new StringBuilder();
-                                        String[] splitPath = path.toString().split("\\\\");
-
-                                        for (int i = 0; i < splitPath.length - 1; i++)
+                                        if (i > index)
                                         {
-                                            if (i > index)
-                                            {
-                                                tmpPath.append(splitPath[i]).append("/");
-                                            }
-                                        }
-
-                                        if (properties.containsKey("matchBlocks"))
-                                        {
-                                            for (String block : properties.getProperty("matchBlocks").split(" "))
-                                            {
-                                                packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(block,
-                                                        new Identifier(tmpPath + "%s.png".formatted(properties.getProperty("ctmsTexture")))
-                                                ));
-                                            }
-                                        }
-                                        else if (properties.containsKey("ctmDisabled"))
-                                        {
-                                            for (String block : properties.getProperty("ctmDisabled").split(" "))
-                                            {
-                                                packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                        new Identifier("textures/block/%s.png".formatted(texture))
-                                                ));
-                                            }
+                                            tmpPath.append(splitPath[i]).append("/");
                                         }
                                     }
-                                    else if (properties.containsKey("faces"))
+
+                                    if (properties.containsKey("method") && properties.containsKey("tiles"))
                                     {
-                                        packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(path.getFileName().toString()
-                                                .replace(".properties", "")
-                                                .replace(".txt", ""),
-                                                new Identifier("textures/block/%s.png".formatted(path.getFileName().toString()
-                                                        .replace(".properties", "")
-                                                        .replace(".txt", ""))
-                                                )));
-                                    }
-                                    else if (properties.containsKey("matchBlocks"))
-                                    {
-                                        for (String block : properties.getProperty("matchBlocks").split(" "))
+                                        if (properties.getProperty("method").equals("ctm_compact"))
                                         {
-                                            packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(block,
-                                                    new Identifier("textures/block/%s.png".formatted(texture))
-                                            ));
-                                        }
-                                    }
-                                    else if (properties.containsKey("ctmDisabled"))
-                                    {
-                                        for (String block : properties.getProperty("ctmDisabled").split(" "))
-                                        {
-                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                    new Identifier("textures/block/%s.png".formatted(texture))
-                                            ));
+                                            String[] tiles = properties.getProperty("tiles").split("-");
+
+                                            if (tiles.length == 2)
+                                            {
+                                                // If there are 5 textures => the texture when not connected is present,
+                                                // so we use it
+                                                if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
+                                                {
+                                                    if (properties.containsKey("matchBlocks"))
+                                                    {
+                                                        for (String block : properties.getProperty("matchBlocks").split(" "))
+                                                        {
+                                                            packCtmBlocks.addEnabled(new CTMBlocks.CTMBlock(block,
+                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0]))
+                                                            ));
+                                                        }
+                                                    }
+
+                                                    if (properties.containsKey("ctmDisabled"))
+                                                    {
+                                                        for (String block : properties.getProperty("ctmDisabled").split(" "))
+                                                        {
+                                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
+                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0]))
+                                                            ));
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -272,16 +258,25 @@ public class FilesHandling
             {
                 for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
                 {
-                    try
-                    {
-                        List<String> options = new ArrayList<>();
-                        List<String> disabledOptions = new ArrayList<>();
-                        Properties properties = new Properties();
-                        properties.load(new FileInputStream(path.toFile()));
+                    List<String> enabledOptions = new ArrayList<>();
+                    List<String> disabledOptions = new ArrayList<>();
+                    Properties properties = new Properties();
 
+                    try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
+                    {
+                        properties.load(fileInputStream);
+                    }
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+
+                    if (!properties.isEmpty())
+                    {
+                        // Loads the enabled and disabled options from the file
                         if (properties.containsKey("matchBlocks"))
                         {
-                            options.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
+                            enabledOptions.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
                         }
                         if (properties.containsKey("ctmDisabled"))
                         {
@@ -292,19 +287,31 @@ public class FilesHandling
                         {
                             if (path.toString().endsWith(".properties"))
                             {
-                                for (String optionName : options)
+                                for (String optionName : enabledOptions)
                                 {
                                     boolean option = CTMBlocks.getOptionValue(packName, optionName);
 
                                     if (!option)
                                     {
-                                        properties.put("matchBlocks", new ArrayList<>(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList())
-                                                .remove(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
-                                        );
-                                        properties.put("ctmDisabled",
-                                                Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList()
-                                                        .get(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
-                                        );
+                                        if (properties.containsKey("matchBlocks"))
+                                        {
+                                            ArrayList<String> matchBlocks = new ArrayList<>(List.of(properties.getProperty("matchBlocks").split(" ")));
+                                            matchBlocks.remove(optionName);
+                                            properties.put("matchBlocks", matchBlocks.toString()
+                                                    .replace("[", "")
+                                                    .replace("]", "")
+                                                    .replace(",", "")
+                                            );
+
+                                            if (properties.containsKey("ctmDisabled"))
+                                            {
+                                                properties.put("ctmDisabled", properties.getProperty("ctmDisabled") + " " + optionName);
+                                            }
+                                            else
+                                            {
+                                                properties.put("ctmDisabled", optionName);
+                                            }
+                                        }
                                     }
                                 }
 
@@ -314,22 +321,52 @@ public class FilesHandling
 
                                     if (option)
                                     {
-                                        properties.put("ctmDisabled",
-                                                new ArrayList<>(Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList())
-                                                        .remove(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
-                                        );
-                                        properties.put("matchBlocks",
-                                                Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList()
-                                                        .get(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList().indexOf(optionName))
-                                        );
+                                        if (properties.containsKey("ctmDisabled"))
+                                        {
+                                            ArrayList<String> ctmDisabled = new ArrayList<>(List.of(properties.getProperty("ctmDisabled").split(" ")));
+                                            ctmDisabled.remove(optionName);
+                                            properties.put("ctmDisabled", ctmDisabled.toString()
+                                                    .replace("[", "")
+                                                    .replace("]", "")
+                                                    .replace(",", "")
+                                            );
+
+                                            if (properties.containsKey("matchBlocks"))
+                                            {
+                                                properties.put("matchBlocks", properties.getProperty("matchBlocks") + " " + optionName);
+                                            }
+                                            else
+                                            {
+                                                properties.put("matchBlocks", optionName);
+                                            }
+                                        }
                                     }
+                                }
+
+                                try (FileOutputStream fos = new FileOutputStream(path.toFile()))
+                                {
+                                    if (properties.containsKey("matchBlocks"))
+                                    {
+                                        if (properties.getProperty("matchBlocks").isEmpty())
+                                        {
+                                            properties.remove("matchBlocks");
+                                        }
+                                    }
+                                    if (properties.containsKey("ctmDisabled"))
+                                    {
+                                        if (properties.getProperty("ctmDisabled").isEmpty())
+                                        {
+                                            properties.remove("ctmDisabled");
+                                        }
+                                    }
+                                    properties.store(fos, null);
+                                }
+                                catch (IOException e)
+                                {
+                                    throw new RuntimeException(e);
                                 }
                             }
                         }
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
                     }
                 }
                 folderPaths.clear();

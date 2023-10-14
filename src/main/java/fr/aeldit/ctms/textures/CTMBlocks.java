@@ -47,6 +47,7 @@ public class CTMBlocks
 
     public static boolean getOptionValue(String packName, String blockName)
     {
+        System.out.println(getCTMBlocks(packName).getAvailableCtmBlocks());
         for (CTMBlock block : getCTMBlocks(packName).getAvailableCtmBlocks())
         {
             if (block.blockName.equals(blockName))

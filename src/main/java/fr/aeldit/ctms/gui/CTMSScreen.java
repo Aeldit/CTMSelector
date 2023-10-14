@@ -125,7 +125,7 @@ public class CTMSScreen extends Screen
             i++;
         }
 
-        addDrawableChild(getReloadButton()); // TODO -> Fix textures
+        addDrawableChild(getReloadButton());
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),

@@ -31,7 +31,10 @@ dependencies {
     modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     // Continuity
-    //modLocalRuntime "maven.modrinth:continuity:3.0.0-beta.3+1.20.1"
+    modLocalRuntime "maven.modrinth:continuity:3.0.0-beta.4+1.20.2"
+
+    // Dynamic FPS
+    modLocalRuntime "maven.modrinth:dynamic-fps:MJxmQ042"
 
     // zip4j
     implementation "net.lingala.zip4j:zip4j:2.11.5"
