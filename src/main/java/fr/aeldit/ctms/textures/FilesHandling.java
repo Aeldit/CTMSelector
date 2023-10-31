@@ -147,29 +147,43 @@ public class FilesHandling
                                     if (properties.containsKey("method") && properties.containsKey("tiles"))
                                     {
                                         // CTM_COMPACT method
+                                        // Comments in the next IF statement are also for the CTM and HORIZONTAL / VERTICAL methods
                                         if (properties.getProperty("method").equals("ctm_compact"))
                                         {
-                                            String[] tiles = properties.getProperty("tiles").split("-"); // TODO -> Handle cases with spaces
+                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
 
-                                            // Basic "start_texture-end_texture"
-                                            if (tiles.length == 2)
+                                            if (spacedTiles[0].contains("-"))
                                             {
-                                                // If there are 5 (0-4) textures => the texture when not connected is present,
-                                                // so we use it (texture 0)
-                                                if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
+                                                String[] tiles = properties.getProperty("tiles").split("-");
+
+                                                // Basic "start-end" textures
+                                                // +
+                                                // If the textures are referenced by name and their names are integers
+                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
                                                 {
-                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                                    // If there are 5 (0-4) textures => the texture when not connected is present,
+                                                    // so we use it (texture 0)
+                                                    if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
+                                                    {
+                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                                    }
                                                 }
                                             }
+                                            else // If no "file range" (ex: "0-4") is found for the textures to use, we use the first that comes
+                                            {
+                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
+                                            }
                                         }
+                                        // CTM method
                                         else if (properties.getProperty("method").equals("ctm"))
                                         {
-                                            String[] tiles = properties.getProperty("tiles").split("-");
+                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
 
-                                            // Basic "start_texture-end_texture"
-                                            if (tiles.length == 2)
+                                            if (spacedTiles[0].contains("-"))
                                             {
-                                                if (isDigits(tiles[0]))
+                                                String[] tiles = properties.getProperty("tiles").split("-");
+
+                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
                                                 {
                                                     // If there are 47 (0-46) textures => the texture when not connected is present,
                                                     // so we use it (texture 0)
@@ -179,19 +193,25 @@ public class FilesHandling
                                                     }
                                                 }
                                             }
+                                            else
+                                            {
+                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
+                                            }
                                         }
+                                        // HORIZONTAL and VERTICAL methods
                                         else if (properties.getProperty("method").equals("horizontal")
                                                 || properties.getProperty("method").equals("vertical")
                                                 || properties.getProperty("method").equals("horizontal+vertical")
                                                 || properties.getProperty("method").equals("vertical+horizontal")
                                         )
                                         {
-                                            String[] tiles = properties.getProperty("tiles").split("-");
+                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
 
-                                            // Basic "start_texture-end_texture"
-                                            if (tiles.length == 2)
+                                            if (spacedTiles[0].contains("-"))
                                             {
-                                                if (isDigits(tiles[0]))
+                                                String[] tiles = properties.getProperty("tiles").split("-");
+
+                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
                                                 {
                                                     // If there are 4 (0-3) textures => the texture when not connected is present,
                                                     // so we use it (texture 3)
@@ -200,6 +220,10 @@ public class FilesHandling
                                                         packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
                                                     }
                                                 }
+                                            }
+                                            else
+                                            {
+                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
                                             }
                                         }
                                     }
@@ -230,9 +254,22 @@ public class FilesHandling
         return true;
     }
 
-    private @NotNull ArrayList<CTMBlocks.CTMBlock> getCTMBlocksInProperties(@NotNull Properties properties, String tmpPath, String startTile)
+    private @NotNull ArrayList<CTMBlocks.CTMBlock> getCTMBlocksInProperties(
+            @NotNull Properties properties, String tmpPath, @NotNull String startTile
+    )
     {
         ArrayList<CTMBlocks.CTMBlock> ctmBlocks = new ArrayList<>();
+
+        // If the extension of the file is given
+        if (startTile.endsWith(".png"))
+        {
+            startTile = startTile.replace(".png", "");
+        }
+        // If the texture file is a full path
+        if (startTile.contains("/"))
+        {
+            tmpPath = "";
+        }
 
         if (properties.containsKey("matchBlocks"))
         {
