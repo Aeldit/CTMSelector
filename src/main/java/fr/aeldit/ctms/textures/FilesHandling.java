@@ -22,6 +22,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -154,7 +155,7 @@ public class FilesHandling
                                             if (tiles.length == 2)
                                             {
                                                 // If there are 5 (0-4) textures => the texture when not connected is present,
-                                                // so we use it
+                                                // so we use it (texture 0)
                                                 if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
                                                 {
                                                     packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
@@ -168,11 +169,36 @@ public class FilesHandling
                                             // Basic "start_texture-end_texture"
                                             if (tiles.length == 2)
                                             {
-                                                // If there are 47 (0-46) textures => the texture when not connected is present,
-                                                // so we use it
-                                                if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
+                                                if (isDigits(tiles[0]))
                                                 {
-                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                                    // If there are 47 (0-46) textures => the texture when not connected is present,
+                                                    // so we use it (texture 0)
+                                                    if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
+                                                    {
+                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (properties.getProperty("method").equals("horizontal")
+                                                || properties.getProperty("method").equals("vertical")
+                                                || properties.getProperty("method").equals("horizontal+vertical")
+                                                || properties.getProperty("method").equals("vertical+horizontal")
+                                        )
+                                        {
+                                            String[] tiles = properties.getProperty("tiles").split("-");
+
+                                            // Basic "start_texture-end_texture"
+                                            if (tiles.length == 2)
+                                            {
+                                                if (isDigits(tiles[0]))
+                                                {
+                                                    // If there are 4 (0-3) textures => the texture when not connected is present,
+                                                    // so we use it (texture 3)
+                                                    if (Integer.parseInt(tiles[0]) + 3 == Integer.parseInt(tiles[1]))
+                                                    {
+                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
+                                                    }
                                                 }
                                             }
                                         }
@@ -189,6 +215,19 @@ public class FilesHandling
                 folderPaths.clear();
             }
         }
+    }
+
+    @Contract(pure = true)
+    private boolean isDigits(@NotNull String s)
+    {
+        for (char c : s.toCharArray())
+        {
+            if (!Character.isDigit(c))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private @NotNull ArrayList<CTMBlocks.CTMBlock> getCTMBlocksInProperties(@NotNull Properties properties, String tmpPath, String startTile)
