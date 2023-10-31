@@ -28,31 +28,61 @@ import java.util.*;
 
 public class CTMBlocks
 {
-    public record CTMBlock(String blockName, Identifier identifier)
+    public static class CTMBlock
     {
+        private final String blockName;
+        private final Identifier identifier;
+        private boolean enabled;
+
+        public CTMBlock(String blockName, Identifier identifier, boolean enabled)
+        {
+            this.blockName = blockName;
+            this.identifier = identifier;
+            this.enabled = enabled;
+        }
+
         public Text getName()
         {
             return Text.of(blockName);
+        }
+
+        public Identifier getIdentifier()
+        {
+            return identifier;
+        }
+
+        public boolean getEnabled()
+        {
+            return enabled;
+        }
+
+        public void toggle()
+        {
+            this.enabled = !this.enabled;
+        }
+
+        public void setEnabled(boolean value)
+        {
+            this.enabled = value;
         }
     }
 
     public final static Map<String, CTMBlocks> CTM_BLOCKS_MAP = new HashMap<>();
 
-    public static Set<CTMBlock> getAvailableCtmBlocks(String packName)
+    public static List<CTMBlock> getAvailableCtmBlocks(String packName)
     {
         return CTM_BLOCKS_MAP.containsKey(packName)
                 ? CTM_BLOCKS_MAP.get(packName).getAvailableCtmBlocks()
-                : new HashSet<>();
+                : new ArrayList<>();
     }
 
     public static boolean getOptionValue(String packName, String blockName)
     {
-        System.out.println(getCTMBlocks(packName).getAvailableCtmBlocks());
         for (CTMBlock block : getCTMBlocks(packName).getAvailableCtmBlocks())
         {
             if (block.blockName.equals(blockName))
             {
-                return getCTMBlocks(packName).contains(block);
+                return block.getEnabled();
             }
         }
         return false;
@@ -74,14 +104,8 @@ public class CTMBlocks
         CTM_BLOCKS_MAP.put(packName, this);
     }
 
-    private final Set<CTMBlock> availableCtmBlocks = new HashSet<>();
-    private final Set<CTMBlock> enabledCtmBlocks = new HashSet<>();
+    private final List<CTMBlock> availableCtmBlocks = new ArrayList<>();
     private final Set<CTMBlock> unsavedOptions = new HashSet<>();
-
-    public boolean contains(CTMBlock block)
-    {
-        return enabledCtmBlocks.contains(block);
-    }
 
     public boolean optionsChanged()
     {
@@ -98,21 +122,11 @@ public class CTMBlocks
         availableCtmBlocks.add(block);
     }
 
-    public void addEnabled(CTMBlock block)
-    {
-        add(block);
-        enabledCtmBlocks.add(block);
-    }
-
     public void toggle(CTMBlock block)
     {
-        if (enabledCtmBlocks.contains(block))
+        if (availableCtmBlocks.contains(block))
         {
-            enabledCtmBlocks.remove(block);
-        }
-        else
-        {
-            enabledCtmBlocks.add(block);
+            availableCtmBlocks.get(availableCtmBlocks.indexOf(block)).toggle();
         }
 
         if (unsavedOptions.contains(block))
@@ -127,33 +141,23 @@ public class CTMBlocks
 
     public void resetOptions()
     {
-        enabledCtmBlocks.clear();
-        enabledCtmBlocks.addAll(availableCtmBlocks);
+        for (CTMBlock block : availableCtmBlocks)
+        {
+            block.setEnabled(true);
+        }
     }
 
     public void restoreUnsavedOptions()
     {
         for (CTMBlock block : unsavedOptions)
         {
-            if (enabledCtmBlocks.contains(block))
-            {
-                enabledCtmBlocks.remove(block);
-            }
-            else
-            {
-                enabledCtmBlocks.add(block);
-            }
+            availableCtmBlocks.get(availableCtmBlocks.indexOf(block)).setEnabled(!availableCtmBlocks.contains(block));
         }
         unsavedOptions.clear();
     }
 
-    private Set<CTMBlock> getAvailableCtmBlocks()
+    private List<CTMBlock> getAvailableCtmBlocks()
     {
         return availableCtmBlocks;
-    }
-
-    public Set<CTMBlock> getEnabledCtmBlocks()
-    {
-        return enabledCtmBlocks;
     }
 }

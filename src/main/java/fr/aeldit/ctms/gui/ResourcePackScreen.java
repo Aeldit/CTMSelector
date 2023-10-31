@@ -34,6 +34,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +46,6 @@ public class ResourcePackScreen extends Screen
 {
     private final String packName;
     private final Screen parent;
-    private ListWidget list;
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
@@ -79,11 +79,17 @@ public class ResourcePackScreen extends Screen
     @Override
     protected void init()
     {
-        list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
+        ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
         addDrawableChild(list);
-        CTMBlocks.getAvailableCtmBlocks(packName).stream()
-                .sorted(Comparator.comparing(block -> block.getName().getString()))
-                .forEach(block -> list.add(block));
+
+        // Sorts the blocks alphabetically
+        List<CTMBlocks.CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
+        toSort.sort(Comparator.comparing(block -> block.getName().getString()));
+
+        for (CTMBlocks.CTMBlock block : toSort)
+        {
+            list.add(block);
+        }
 
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
@@ -152,7 +158,8 @@ public class ResourcePackScreen extends Screen
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    .initially(CTMBlocks.getCTMBlocks(packName).contains(block))
+                    //.initially(CTMBlocks.getCTMBlocks(packName).contains(block))
+                    .initially(block.getEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
                             (button, value) -> CTMBlocks.getCTMBlocks(packName).toggle(block)
                     );
@@ -198,7 +205,7 @@ public class ResourcePackScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(block.identifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(block.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);
