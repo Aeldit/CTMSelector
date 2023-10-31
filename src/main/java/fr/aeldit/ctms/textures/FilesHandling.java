@@ -130,6 +130,7 @@ public class FilesHandling
                                         || properties.containsKey("ctmTilesDisabled"))
                                 )
                                 {
+                                    // Acquires the path used for the Identifier
                                     int index = Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2;
                                     StringBuilder tmpPath = new StringBuilder();
                                     String[] splitPath = path.toString().split("\\\\");
@@ -140,7 +141,7 @@ public class FilesHandling
                                         {
                                             tmpPath.append(splitPath[i]).append("/");
                                         }
-                                    }
+                                    } // End of the Identifier path acquirement
 
                                     if (properties.containsKey("method") && properties.containsKey("tiles"))
                                     {
@@ -149,53 +150,29 @@ public class FilesHandling
                                         {
                                             String[] tiles = properties.getProperty("tiles").split("-"); // TODO -> Handle cases with spaces
 
+                                            // Basic "start_texture-end_texture"
                                             if (tiles.length == 2)
                                             {
-                                                // If there are 5 textures => the texture when not connected is present,
+                                                // If there are 5 (0-4) textures => the texture when not connected is present,
                                                 // so we use it
                                                 if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
                                                 {
-                                                    if (properties.containsKey("matchBlocks"))
-                                                    {
-                                                        for (String block : properties.getProperty("matchBlocks").split(" "))
-                                                        {
-                                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0])),
-                                                                    true
-                                                            ));
-                                                        }
-                                                    }
-                                                    else if (properties.containsKey("matchTiles"))
-                                                    {
-                                                        for (String block : properties.getProperty("matchTiles").split(" "))
-                                                        {
-                                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0])),
-                                                                    true
-                                                            ));
-                                                        }
-                                                    }
+                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                                }
+                                            }
+                                        }
+                                        else if (properties.getProperty("method").equals("ctm"))
+                                        {
+                                            String[] tiles = properties.getProperty("tiles").split("-");
 
-                                                    if (properties.containsKey("ctmDisabled"))
-                                                    {
-                                                        for (String block : properties.getProperty("ctmDisabled").split(" "))
-                                                        {
-                                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0])),
-                                                                    false
-                                                            ));
-                                                        }
-                                                    }
-                                                    else if (properties.containsKey("ctmTilesDisabled"))
-                                                    {
-                                                        for (String block : properties.getProperty("ctmTilesDisabled").split(" "))
-                                                        {
-                                                            packCtmBlocks.add(new CTMBlocks.CTMBlock(block,
-                                                                    new Identifier(tmpPath + "%s.png".formatted(tiles[0])),
-                                                                    false
-                                                            ));
-                                                        }
-                                                    }
+                                            // Basic "start_texture-end_texture"
+                                            if (tiles.length == 2)
+                                            {
+                                                // If there are 47 (0-46) textures => the texture when not connected is present,
+                                                // so we use it
+                                                if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
+                                                {
+                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
                                                 }
                                             }
                                         }
@@ -212,6 +189,54 @@ public class FilesHandling
                 folderPaths.clear();
             }
         }
+    }
+
+    private @NotNull ArrayList<CTMBlocks.CTMBlock> getCTMBlocksInProperties(@NotNull Properties properties, String tmpPath, String startTile)
+    {
+        ArrayList<CTMBlocks.CTMBlock> ctmBlocks = new ArrayList<>();
+
+        if (properties.containsKey("matchBlocks"))
+        {
+            for (String block : properties.getProperty("matchBlocks").split(" "))
+            {
+                ctmBlocks.add(new CTMBlocks.CTMBlock(block,
+                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        true
+                ));
+            }
+        }
+        else if (properties.containsKey("matchTiles"))
+        {
+            for (String block : properties.getProperty("matchTiles").split(" "))
+            {
+                ctmBlocks.add(new CTMBlocks.CTMBlock(block,
+                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        true
+                ));
+            }
+        }
+
+        if (properties.containsKey("ctmDisabled"))
+        {
+            for (String block : properties.getProperty("ctmDisabled").split(" "))
+            {
+                ctmBlocks.add(new CTMBlocks.CTMBlock(block,
+                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        false
+                ));
+            }
+        }
+        else if (properties.containsKey("ctmTilesDisabled"))
+        {
+            for (String block : properties.getProperty("ctmTilesDisabled").split(" "))
+            {
+                ctmBlocks.add(new CTMBlocks.CTMBlock(block,
+                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        false
+                ));
+            }
+        }
+        return ctmBlocks;
     }
 
     private boolean isZipCtmPack(String packPath)
@@ -277,7 +302,7 @@ public class FilesHandling
         return folderPaths;
     }
 
-    public void updateUsedTextures(@NotNull String packName)
+    public void updateUsedTextures(@NotNull String packName) // TODO -> make work with zip files
     {
         if (packName.endsWith(" (folder)"))
         {
@@ -289,6 +314,7 @@ public class FilesHandling
                     List<String> disabledBlocks = new ArrayList<>();
                     List<String> enabledTiles = new ArrayList<>();
                     List<String> disabledTiles = new ArrayList<>();
+
                     Properties properties = new Properties();
 
                     try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
@@ -321,6 +347,7 @@ public class FilesHandling
                             disabledTiles.addAll(Arrays.stream(properties.getProperty("ctmTilesDisabled").split(" ")).toList());
                         }
 
+                        // Toggles the options in the file
                         if (path.toString().contains(ctmPath.replace("/", "\\")))
                         {
                             if (path.toString().endsWith(".properties"))

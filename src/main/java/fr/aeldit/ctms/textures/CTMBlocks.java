@@ -31,19 +31,41 @@ public class CTMBlocks
     public static class CTMBlock
     {
         private final String blockName;
+        private final String prettyName;
         private final Identifier identifier;
         private boolean enabled;
 
-        public CTMBlock(String blockName, Identifier identifier, boolean enabled)
+        public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
         {
             this.blockName = blockName;
             this.identifier = identifier;
             this.enabled = enabled;
+
+            String[] tmp = blockName.split("_");
+            StringBuilder stringBuilder = new StringBuilder();
+            int index = 0;
+
+            for (String str : tmp)
+            {
+                stringBuilder.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
+
+                if (index < tmp.length - 1)
+                {
+                    stringBuilder.append(" ");
+                }
+                index++;
+            }
+            this.prettyName = stringBuilder.toString();
         }
 
         public Text getName()
         {
-            return Text.of(blockName);
+            return Text.of(prettyName);
+        }
+
+        public String getBlockName()
+        {
+            return blockName;
         }
 
         public Identifier getIdentifier()
@@ -80,7 +102,7 @@ public class CTMBlocks
     {
         for (CTMBlock block : getCTMBlocks(packName).getAvailableCtmBlocks())
         {
-            if (block.blockName.equals(blockName))
+            if (block.getBlockName().equals(blockName))
             {
                 return block.getEnabled();
             }
@@ -120,6 +142,11 @@ public class CTMBlocks
     public void add(CTMBlock block)
     {
         availableCtmBlocks.add(block);
+    }
+
+    public void addAll(@NotNull ArrayList<CTMBlock> ctmBlockArrayList)
+    {
+        ctmBlockArrayList.forEach(this::add);
     }
 
     public void toggle(CTMBlock block)
