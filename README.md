@@ -1,4 +1,4 @@
-![banner](https://github.com/Aeldit/CTMSelector/blob/1.20.x/images/banner_small.png?raw=true)
+![banner](https://github.com/Aeldit/CTMSelector/blob/1.20.2/images/banner_small.png?raw=true)
 <!-- modrinth_exclude.start -->
 > ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge (this overrides the
 > LICENSE)
@@ -18,8 +18,9 @@ or
 
 | Supported MC Version | Up to date | Last version |
 |:--------------------:|:----------:|:------------:|
-|        1.19.4        |     ✅      |    latest    |
-|        1.20.x        |     ✅      |    latest    |
+|        1.19.4        |     ❌      |    0.1.2     |
+|        1.20.x        |     ❌      |    0.1.2     |
+|        1.20.2        |     ✅      |    latest    |
 
 </details>
 

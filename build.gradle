@@ -91,9 +91,9 @@ modrinth {
     versionName = "[$project.minecraft_version] $archivesBaseName"
     versionNumber = "$version"
     // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType = "release" // This is the default -- can also be `beta` or `alpha`
+    versionType = "beta" // The default is `release` -- can also be `beta` or `alpha`
     uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.20", "1.20.1"] // Must be an array, even with only one version
+    gameVersions = ["1.20.2"] // Must be an array, even with only one version
     loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
         // scope.type
@@ -105,6 +105,6 @@ modrinth {
     }
     changelog = file("changelogs/latest.md").exists() ? file("changelogs/latest.md").getText() : "No changelog provided"
     syncBodyFrom = rootProject.file("README.md").text
-    debugMode = false // Stops version from being published
+    debugMode = true // Stops version from being published
 }
 tasks.modrinth.dependsOn(tasks.modrinthSyncBody)

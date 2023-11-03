@@ -496,7 +496,7 @@ public class FilesHandling
         return folderPaths;
     }
 
-    public void updateUsedTextures(@NotNull String packName) // TODO -> make work with zip files
+    public void updateUsedTextures(@NotNull String packName)
     {
         if (packName.endsWith(" (folder)"))
         {
