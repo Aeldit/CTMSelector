@@ -12,7 +12,7 @@
  * This version of the GNU Lesser General Public License incorporates
  * the terms and conditions of version 3 of the GNU General Public
  * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/Cyan)
+ * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
  */
 
 package fr.aeldit.ctms;

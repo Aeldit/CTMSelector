@@ -73,7 +73,7 @@ public class CTMBlocks
             return identifier;
         }
 
-        public boolean getEnabled()
+        public boolean isEnabled()
         {
             return enabled;
         }
@@ -104,7 +104,7 @@ public class CTMBlocks
         {
             if (block.getBlockName().equals(blockName))
             {
-                return block.getEnabled();
+                return block.isEnabled();
             }
         }
         return false;
@@ -126,7 +126,9 @@ public class CTMBlocks
         CTM_BLOCKS_MAP.put(packName, this);
     }
 
+    // List of all the CTM blocks found in the pack
     private final List<CTMBlock> availableCtmBlocks = new ArrayList<>();
+    // Used for the cancel button
     private final Set<CTMBlock> unsavedOptions = new HashSet<>();
 
     public boolean optionsChanged()

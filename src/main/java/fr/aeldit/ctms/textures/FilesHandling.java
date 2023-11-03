@@ -12,12 +12,13 @@
  * This version of the GNU Lesser General Public License incorporates
  * the terms and conditions of version 3 of the GNU General Public
  * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/Cyan)
+ * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
  */
 
 package fr.aeldit.ctms.textures;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
@@ -38,7 +39,7 @@ public class FilesHandling
 {
     private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
     private final String ctmPath = "assets/minecraft/optifine/ctm/connect/";
-    private final Set<Path> folderPaths = new HashSet<>();
+    private final List<Path> folderPaths = new ArrayList<>();
 
     public void load() // TODO -> categories with file tree
     {
@@ -456,13 +457,13 @@ public class FilesHandling
         return Files.exists(Path.of(resourcePacksDir + "\\" + packName + "\\" + ctmPath));
     }
 
-    private Set<FileHeader> listFilesInZipPack(String packPath)
+    private List<FileHeader> listFilesInZipPack(String packPath)
     {
-        Set<FileHeader> fileHeaders;
+        List<FileHeader> fileHeaders;
 
         try (net.lingala.zip4j.ZipFile tmpZipFile = new net.lingala.zip4j.ZipFile(packPath))
         {
-            fileHeaders = new HashSet<>(tmpZipFile.getFileHeaders());
+            fileHeaders = tmpZipFile.getFileHeaders();
         }
         catch (IOException e)
         {
@@ -479,11 +480,11 @@ public class FilesHandling
      * @param packFolder The folder whose files will be listed and returned
      * @return Returns the files present in the folder {@code packFolder}
      */
-    private Set<Path> listFilesInFolderPack(@NotNull File packFolder)
+    private List<Path> listFilesInFolderPack(@NotNull File packFolder)
     {
         for (File file : packFolder.listFiles())
         {
-            if (file.isFile() && file.getName().endsWith(".properties")) // || file.getName().endsWith(".txt")))
+            if (file.isFile() && file.getName().endsWith(".properties"))
             {
                 folderPaths.add(file.toPath());
             }
@@ -717,205 +718,169 @@ public class FilesHandling
 
             if (isZipCtmPack(packPath))
             {
-                Map<String, Path> headersPath = new HashMap<>();
+                Map<String, byte[]> headersBytes = new HashMap<>();
 
-                for (FileHeader fileHeader : listFilesInZipPack(packPath))
+                try (ZipFile zipFile = new ZipFile(packPath))
                 {
-                    if (fileHeader.toString().endsWith(".properties"))
+                    for (FileHeader fileHeader : listFilesInZipPack(packPath))
                     {
-                        List<String> enabledBlocks = new ArrayList<>();
-                        List<String> disabledBlocks = new ArrayList<>();
-                        List<String> enabledTiles = new ArrayList<>();
-                        List<String> disabledTiles = new ArrayList<>();
-
-                        Properties properties = new Properties();
-
-                        try (net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(packPath))
+                        if (fileHeader.toString().endsWith(".properties"))
                         {
+                            List<String> enabledBlocks = new ArrayList<>();
+                            List<String> disabledBlocks = new ArrayList<>();
+                            List<String> enabledTiles = new ArrayList<>();
+                            List<String> disabledTiles = new ArrayList<>();
+
+                            Properties properties = new Properties();
                             properties.load(zipFile.getInputStream(fileHeader));
-                        }
-                        catch (IOException e)
-                        {
-                            throw new RuntimeException(e);
-                        }
 
-                        if (!properties.isEmpty())
-                        {
-                            // Loads the enabled and disabled options from the file
-                            if (properties.containsKey("matchBlocks"))
+                            if (!properties.isEmpty())
                             {
-                                enabledBlocks.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
-                            }
-                            else if (properties.containsKey("matchTiles"))
-                            {
-                                enabledTiles.addAll(Arrays.stream(properties.getProperty("matchTiles").split(" ")).toList());
-                            }
-
-                            if (properties.containsKey("ctmDisabled"))
-                            {
-                                disabledBlocks.addAll(Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList());
-                            }
-                            else if (properties.containsKey("ctmTilesDisabled"))
-                            {
-                                disabledTiles.addAll(Arrays.stream(properties.getProperty("ctmTilesDisabled").split(" ")).toList());
-                            }
-
-                            // Toggles the options in the file
-                            if (fileHeader.toString().contains(ctmPath))
-                            {
-                                boolean changed = false;
-
-                                // ENABLED BLOCKS
-                                for (String optionName : enabledBlocks)
+                                // Loads the enabled and disabled options from the file
+                                if (properties.containsKey("matchBlocks"))
                                 {
-                                    boolean option = CTMBlocks.getOptionValue(packName, optionName);
-
-                                    if (!option)
-                                    {
-                                        if (properties.containsKey("matchBlocks"))
-                                        {
-                                            changed = true;
-                                            ArrayList<String> matchBlocks = new ArrayList<>(List.of(properties.getProperty("matchBlocks").split(" ")));
-                                            matchBlocks.remove(optionName);
-                                            properties.put("matchBlocks", matchBlocks.toString()
-                                                    .replace("[", "")
-                                                    .replace("]", "")
-                                                    .replace(",", "")
-                                            );
-
-                                            if (properties.containsKey("ctmDisabled"))
-                                            {
-                                                properties.put("ctmDisabled", properties.getProperty("ctmDisabled") + " " + optionName);
-                                            }
-                                            else
-                                            {
-                                                properties.put("ctmDisabled", optionName);
-                                            }
-                                        }
-                                    }
+                                    enabledBlocks.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
+                                }
+                                else if (properties.containsKey("matchTiles"))
+                                {
+                                    enabledTiles.addAll(Arrays.stream(properties.getProperty("matchTiles").split(" ")).toList());
                                 }
 
-                                // ENABLED TILES
-                                for (String optionName : enabledTiles)
+                                if (properties.containsKey("ctmDisabled"))
                                 {
-                                    boolean option = CTMBlocks.getOptionValue(packName, optionName);
-
-                                    if (!option)
-                                    {
-                                        if (properties.containsKey("matchTiles"))
-                                        {
-                                            changed = true;
-                                            ArrayList<String> matchBlocks = new ArrayList<>(List.of(properties.getProperty("matchTiles").split(" ")));
-                                            matchBlocks.remove(optionName);
-                                            properties.put("matchTiles", matchBlocks.toString()
-                                                    .replace("[", "")
-                                                    .replace("]", "")
-                                                    .replace(",", "")
-                                            );
-
-                                            if (properties.containsKey("ctmTilesDisabled"))
-                                            {
-                                                properties.put("ctmTilesDisabled", properties.getProperty("ctmTilesDisabled") + " " + optionName);
-                                            }
-                                            else
-                                            {
-                                                properties.put("ctmTilesDisabled", optionName);
-                                            }
-                                        }
-                                    }
+                                    disabledBlocks.addAll(Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList());
+                                }
+                                else if (properties.containsKey("ctmTilesDisabled"))
+                                {
+                                    disabledTiles.addAll(Arrays.stream(properties.getProperty("ctmTilesDisabled").split(" ")).toList());
                                 }
 
-                                // DISABLED BLOCKS
-                                for (String optionName : disabledBlocks)
+                                // Toggles the options in the file
+                                if (fileHeader.toString().contains(ctmPath))
                                 {
-                                    boolean option = CTMBlocks.getOptionValue(packName, optionName);
+                                    boolean changed = false;
 
-                                    if (option)
+                                    // ENABLED BLOCKS
+                                    for (String optionName : enabledBlocks)
                                     {
-                                        if (properties.containsKey("ctmDisabled"))
-                                        {
-                                            changed = true;
-                                            ArrayList<String> ctmDisabled = new ArrayList<>(List.of(properties.getProperty("ctmDisabled").split(" ")));
-                                            ctmDisabled.remove(optionName);
-                                            properties.put("ctmDisabled", ctmDisabled.toString()
-                                                    .replace("[", "")
-                                                    .replace("]", "")
-                                                    .replace(",", "")
-                                            );
+                                        boolean option = CTMBlocks.getOptionValue(packName, optionName);
 
+                                        if (!option)
+                                        {
                                             if (properties.containsKey("matchBlocks"))
                                             {
-                                                properties.put("matchBlocks", properties.getProperty("matchBlocks") + " " + optionName);
-                                            }
-                                            else
-                                            {
-                                                properties.put("matchBlocks", optionName);
+                                                changed = true;
+                                                ArrayList<String> matchBlocks = new ArrayList<>(List.of(properties.getProperty("matchBlocks").split(" ")));
+                                                matchBlocks.remove(optionName);
+                                                properties.put("matchBlocks", matchBlocks.toString()
+                                                        .replace("[", "")
+                                                        .replace("]", "")
+                                                        .replace(",", "")
+                                                );
+
+                                                if (properties.containsKey("ctmDisabled"))
+                                                {
+                                                    properties.put("ctmDisabled", properties.getProperty("ctmDisabled") + " " + optionName);
+                                                }
+                                                else
+                                                {
+                                                    properties.put("ctmDisabled", optionName);
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                // DISABLED TILES
-                                for (String optionName : disabledTiles)
-                                {
-                                    boolean option = CTMBlocks.getOptionValue(packName, optionName);
-
-                                    if (option)
+                                    // ENABLED TILES
+                                    for (String optionName : enabledTiles)
                                     {
-                                        if (properties.containsKey("ctmTilesDisabled"))
-                                        {
-                                            changed = true;
-                                            ArrayList<String> ctmDisabled = new ArrayList<>(List.of(properties.getProperty("ctmTilesDisabled").split(" ")));
-                                            ctmDisabled.remove(optionName);
-                                            properties.put("ctmTilesDisabled", ctmDisabled.toString()
-                                                    .replace("[", "")
-                                                    .replace("]", "")
-                                                    .replace(",", "")
-                                            );
+                                        boolean option = CTMBlocks.getOptionValue(packName, optionName);
 
+                                        if (!option)
+                                        {
                                             if (properties.containsKey("matchTiles"))
                                             {
-                                                properties.put("matchTiles", properties.getProperty("matchTiles") + " " + optionName);
+                                                changed = true;
+                                                ArrayList<String> matchBlocks = new ArrayList<>(List.of(properties.getProperty("matchTiles").split(" ")));
+                                                matchBlocks.remove(optionName);
+                                                properties.put("matchTiles", matchBlocks.toString()
+                                                        .replace("[", "")
+                                                        .replace("]", "")
+                                                        .replace(",", "")
+                                                );
+
+                                                if (properties.containsKey("ctmTilesDisabled"))
+                                                {
+                                                    properties.put("ctmTilesDisabled", properties.getProperty("ctmTilesDisabled") + " " + optionName);
+                                                }
+                                                else
+                                                {
+                                                    properties.put("ctmTilesDisabled", optionName);
+                                                }
                                             }
-                                            else
+                                        }
+                                    }
+
+                                    // DISABLED BLOCKS
+                                    for (String optionName : disabledBlocks)
+                                    {
+                                        boolean option = CTMBlocks.getOptionValue(packName, optionName);
+
+                                        if (option)
+                                        {
+                                            if (properties.containsKey("ctmDisabled"))
                                             {
-                                                properties.put("matchTiles", optionName);
+                                                changed = true;
+                                                ArrayList<String> ctmDisabled = new ArrayList<>(List.of(properties.getProperty("ctmDisabled").split(" ")));
+                                                ctmDisabled.remove(optionName);
+                                                properties.put("ctmDisabled", ctmDisabled.toString()
+                                                        .replace("[", "")
+                                                        .replace("]", "")
+                                                        .replace(",", "")
+                                                );
+
+                                                if (properties.containsKey("matchBlocks"))
+                                                {
+                                                    properties.put("matchBlocks", properties.getProperty("matchBlocks") + " " + optionName);
+                                                }
+                                                else
+                                                {
+                                                    properties.put("matchBlocks", optionName);
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                if (changed)
-                                {
-                                    Path tmpPath = Path.of(resourcePacksDir + "\\" + "ctmsTmp");
-
-                                    if (!Files.exists(tmpPath))
+                                    // DISABLED TILES
+                                    for (String optionName : disabledTiles)
                                     {
-                                        try
+                                        boolean option = CTMBlocks.getOptionValue(packName, optionName);
+
+                                        if (option)
                                         {
-                                            Files.createDirectories(tmpPath);
+                                            if (properties.containsKey("ctmTilesDisabled"))
+                                            {
+                                                changed = true;
+                                                ArrayList<String> ctmDisabled = new ArrayList<>(List.of(properties.getProperty("ctmTilesDisabled").split(" ")));
+                                                ctmDisabled.remove(optionName);
+                                                properties.put("ctmTilesDisabled", ctmDisabled.toString()
+                                                        .replace("[", "")
+                                                        .replace("]", "")
+                                                        .replace(",", "")
+                                                );
+
+                                                if (properties.containsKey("matchTiles"))
+                                                {
+                                                    properties.put("matchTiles", properties.getProperty("matchTiles") + " " + optionName);
+                                                }
+                                                else
+                                                {
+                                                    properties.put("matchTiles", optionName);
+                                                }
+                                            }
                                         }
-                                        catch (IOException e)
-                                        {
-                                            throw new RuntimeException(e);
-                                        }
                                     }
 
-                                    Path tmpFilePath = Path.of(tmpPath + "\\"
-                                            + fileHeader.toString().split("/")[fileHeader.toString().split("/").length - 1]);
-                                    headersPath.put(fileHeader.toString(), tmpFilePath);
-
-                                    try
-                                    {
-                                        Files.deleteIfExists(tmpFilePath);
-                                        Files.createFile(tmpFilePath);
-                                    }
-                                    catch (IOException e)
-                                    {
-                                        throw new RuntimeException(e);
-                                    }
-
-                                    try (FileOutputStream fos = new FileOutputStream(tmpFilePath.toFile()))
+                                    if (changed)
                                     {
                                         if (properties.containsKey("matchBlocks"))
                                         {
@@ -946,35 +911,48 @@ public class FilesHandling
                                                 properties.remove("ctmTilesDisabled");
                                             }
                                         }
-                                        properties.store(fos, null);
-                                    }
-                                    catch (IOException e)
-                                    {
-                                        throw new RuntimeException(e);
+
+                                        // We take the properties in a byte array
+                                        // so we can write it in the zip later
+                                        byte[] tmp = properties.toString()
+                                                .replace("{", "")
+                                                .replace("}", "")
+                                                .replace(", ", "\n")
+                                                .getBytes();
+                                        headersBytes.put(fileHeader.toString(), tmp);
                                     }
                                 }
                             }
                         }
                     }
                 }
-
-                Map<String, String> env = new HashMap<>();
-                env.put("create", "true");
-                Path path = Paths.get(packPath);
-                URI uri = URI.create("jar:" + path.toUri());
-
-                try (FileSystem fs = FileSystems.newFileSystem(uri, env))
-                {
-                    for (Map.Entry<String, Path> entry : headersPath.entrySet())
-                    {
-                        Path nf = fs.getPath(entry.getKey());
-                        // TODO -> test with an array of bytes instead of a file
-                        Files.write(nf, Files.readAllBytes(entry.getValue()), StandardOpenOption.CREATE);
-                    }
-                }
                 catch (IOException e)
                 {
                     throw new RuntimeException(e);
+                }
+
+                if (!headersBytes.isEmpty())
+                {
+                    // Mounts the zip file and adds files to it using the FileSystem
+                    // The bytes written in the files are the ones we obtain
+                    // from the properties files
+                    Map<String, String> env = new HashMap<>();
+                    env.put("create", "true");
+                    Path path = Paths.get(packPath);
+                    URI uri = URI.create("jar:" + path.toUri());
+
+                    try (FileSystem fs = FileSystems.newFileSystem(uri, env))
+                    {
+                        for (Map.Entry<String, byte[]> entry : headersBytes.entrySet())
+                        {
+                            Path nf = fs.getPath(entry.getKey());
+                            Files.write(nf, entry.getValue(), StandardOpenOption.CREATE);
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);

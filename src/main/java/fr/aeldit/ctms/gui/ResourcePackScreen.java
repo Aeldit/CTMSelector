@@ -158,8 +158,7 @@ public class ResourcePackScreen extends Screen
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    //.initially(CTMBlocks.getCTMBlocks(packName).contains(block))
-                    .initially(block.getEnabled())
+                    .initially(block.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
                             (button, value) -> CTMBlocks.getCTMBlocks(packName).toggle(block)
                     );
