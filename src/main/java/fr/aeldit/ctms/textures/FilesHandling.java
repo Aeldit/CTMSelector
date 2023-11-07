@@ -72,117 +72,7 @@ public class FilesHandling
 
                                 if (!properties.isEmpty())
                                 {
-                                    loadOptions(properties, packCtmBlocks, fileHeader.toString(), zipFileOrFolder);
-                                    /*String namespace = fileHeader.toString().split("/")[1];
-
-                                    if (namespace.equals("minecraft")
-                                            && (properties.containsKey("matchBlocks")
-                                            || properties.containsKey("matchTiles")
-                                            || properties.containsKey("ctmDisabled")
-                                            || properties.containsKey("ctmTilesDisabled"))
-                                    )
-                                    {
-                                        // Acquires the path used for the Identifier
-                                        int index = Arrays.stream(fileHeader.toString().split("/")).toList().indexOf(zipFileOrFolder.getName()) + 2;
-                                        StringBuilder tmpPath = new StringBuilder();
-                                        String[] splitPath = fileHeader.toString().split("/");
-
-                                        for (int i = 0; i < splitPath.length - 1; i++)
-                                        {
-                                            if (i > index)
-                                            {
-                                                tmpPath.append(splitPath[i]).append("/");
-                                            }
-                                        } // End of the Identifier path acquirement
-
-                                        if (properties.containsKey("method") && properties.containsKey("tiles"))
-                                        {
-                                            // CTM_COMPACT method
-                                            // Comments in the next IF statement are also for the CTM and HORIZONTAL / VERTICAL methods
-                                            if (properties.getProperty("method").equals("ctm_compact"))
-                                            {
-                                                String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                                if (spacedTiles[0].contains("-"))
-                                                {
-                                                    String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                    // Basic "start-end" textures
-                                                    // +
-                                                    // If the textures are referenced by name and their names are integers
-                                                    if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                    {
-                                                        // If there are 5 (0-4) textures => the texture when not connected is present,
-                                                        // so we use it (texture 0)
-                                                        if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
-                                                        {
-                                                            packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
-                                                        }
-                                                    }
-                                                }
-                                                else // If no "file range" (ex: "0-4") is found for the textures to use, we use the first that comes
-                                                {
-                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                                }
-                                            }
-                                            // CTM method
-                                            else if (properties.getProperty("method").equals("ctm"))
-                                            {
-                                                String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                                if (spacedTiles[0].contains("-"))
-                                                {
-                                                    String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                    if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                    {
-                                                        // If there are 47 (0-46) textures => the texture when not connected is present,
-                                                        // so we use it (texture 0)
-                                                        if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
-                                                        {
-                                                            packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
-                                                        }
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                                }
-                                            }
-                                            // HORIZONTAL and VERTICAL methods
-                                            else if (properties.getProperty("method").equals("horizontal")
-                                                    || properties.getProperty("method").equals("vertical")
-                                                    || properties.getProperty("method").equals("horizontal+vertical")
-                                                    || properties.getProperty("method").equals("vertical+horizontal")
-                                            )
-                                            {
-                                                String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                                if (spacedTiles[0].contains("-"))
-                                                {
-                                                    String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                    if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                    {
-                                                        // If there are 4 (0-3) textures => the texture when not connected is present,
-                                                        // so we use it (texture 3)
-                                                        if (Integer.parseInt(tiles[0]) + 3 == Integer.parseInt(tiles[1]))
-                                                        {
-                                                            packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
-                                                        }
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else // Modded cases TODO -> implement
-                                    {
-                                        System.out.println("Not implemented");
-                                    }*/
+                                    loadOptions(properties, packCtmBlocks, fileHeader.toString(), zipFileOrFolder, "/");
                                 }
                             }
                         }
@@ -220,118 +110,7 @@ public class FilesHandling
 
                             if (!properties.isEmpty())
                             {
-                                loadOptions(properties, packCtmBlocks, path.toString(), zipFileOrFolder);
-                                /*String namespace = path.toString().split("\\\\")[Arrays.stream(path.toString()
-                                        .split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
-
-                                if (namespace.equals("minecraft")
-                                        && (properties.containsKey("matchBlocks")
-                                        || properties.containsKey("matchTiles")
-                                        || properties.containsKey("ctmDisabled")
-                                        || properties.containsKey("ctmTilesDisabled"))
-                                )
-                                {
-                                    // Acquires the path used for the Identifier
-                                    int index = Arrays.stream(path.toString().split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2;
-                                    StringBuilder tmpPath = new StringBuilder();
-                                    String[] splitPath = path.toString().split("\\\\");
-
-                                    for (int i = 0; i < splitPath.length - 1; i++)
-                                    {
-                                        if (i > index)
-                                        {
-                                            tmpPath.append(splitPath[i]).append("/");
-                                        }
-                                    } // End of the Identifier path acquirement
-
-                                    if (properties.containsKey("method") && properties.containsKey("tiles"))
-                                    {
-                                        // CTM_COMPACT method
-                                        // Comments in the next IF statement are also for the CTM and HORIZONTAL / VERTICAL methods
-                                        if (properties.getProperty("method").equals("ctm_compact"))
-                                        {
-                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                            if (spacedTiles[0].contains("-"))
-                                            {
-                                                String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                // Basic "start-end" textures
-                                                // +
-                                                // If the textures are referenced by name and their names are integers
-                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                {
-                                                    // If there are 5 (0-4) textures => the texture when not connected is present,
-                                                    // so we use it (texture 0)
-                                                    if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
-                                                    {
-                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
-                                                    }
-                                                }
-                                            }
-                                            else // If no "file range" (ex: "0-4") is found for the textures to use, we use the first that comes
-                                            {
-                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                            }
-                                        }
-                                        // CTM method
-                                        else if (properties.getProperty("method").equals("ctm"))
-                                        {
-                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                            if (spacedTiles[0].contains("-"))
-                                            {
-                                                String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                {
-                                                    // If there are 47 (0-46) textures => the texture when not connected is present,
-                                                    // so we use it (texture 0)
-                                                    if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
-                                                    {
-                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                            }
-                                        }
-                                        // HORIZONTAL and VERTICAL methods
-                                        else if (properties.getProperty("method").equals("horizontal")
-                                                || properties.getProperty("method").equals("vertical")
-                                                || properties.getProperty("method").equals("horizontal+vertical")
-                                                || properties.getProperty("method").equals("vertical+horizontal")
-                                        )
-                                        {
-                                            String[] spacedTiles = properties.getProperty("tiles").split(" ");
-
-                                            if (spacedTiles[0].contains("-"))
-                                            {
-                                                String[] tiles = properties.getProperty("tiles").split("-");
-
-                                                if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
-                                                {
-                                                    // If there are 4 (0-3) textures => the texture when not connected is present,
-                                                    // so we use it (texture 3)
-                                                    if (Integer.parseInt(tiles[0]) + 3 == Integer.parseInt(tiles[1]))
-                                                    {
-                                                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
-                                            }
-                                        }
-                                    }
-                                }
-                                else // Modded cases TODO -> implement
-                                {
-                                    System.out.println("Not implemented");
-                                }*/
+                                loadOptions(properties, packCtmBlocks, path.toString(), zipFileOrFolder, "\\\\");
                             }
                         }
                     }
@@ -341,10 +120,12 @@ public class FilesHandling
         }
     }
 
-    private void loadOptions(Properties properties, CTMBlocks packCtmBlocks, @NotNull String path, @NotNull File zipFileOrFolder)
+    private void loadOptions(Properties properties, CTMBlocks packCtmBlocks, @NotNull String path,
+                             @NotNull File zipFileOrFolder, String pathSep
+    )
     {
-        String namespace = path.split("\\\\")[Arrays.stream(path
-                .split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2];
+        String namespace = path.split(pathSep)[Arrays.stream(path
+                .split(pathSep)).toList().indexOf(zipFileOrFolder.getName()) + 2];
 
         if (namespace.equals("minecraft")
                 && (properties.containsKey("matchBlocks")
@@ -354,9 +135,9 @@ public class FilesHandling
         )
         {
             // Acquires the path used for the Identifier
-            int index = Arrays.stream(path.split("\\\\")).toList().indexOf(zipFileOrFolder.getName()) + 2;
+            int index = Arrays.stream(path.split(pathSep)).toList().indexOf(zipFileOrFolder.getName()) + 2;
             StringBuilder tmpPath = new StringBuilder();
-            String[] splitPath = path.split("\\\\");
+            String[] splitPath = path.split(pathSep);
 
             for (int i = 0; i < splitPath.length - 1; i++)
             {
