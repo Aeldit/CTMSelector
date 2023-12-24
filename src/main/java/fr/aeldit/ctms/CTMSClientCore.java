@@ -38,12 +38,6 @@ public class CTMSClientCore implements ClientModInitializer
     {
         TEXTURES_HANDLING.load();
 
-        KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "cyanlib.keybindings.openScreen.config",
-                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_U,
-                "cyanlib.keybindings.category"
-        ));
-
         // Loads the icons pack when the client starts
         ClientLifecycleEvents.CLIENT_STARTED.register(client ->
                 {
@@ -53,6 +47,12 @@ public class CTMSClientCore implements ClientModInitializer
                     }
                 }
         );
+
+        KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "cyanlib.keybindings.openScreen.config",
+                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_U,
+                "cyanlib.keybindings.category"
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (packScreenKey.wasPressed())

@@ -60,6 +60,7 @@ public class FilesHandling
             )
             {
                 CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName());
+                ctmPacks.add(zipFileOrFolder.getName());
 
                 try (ZipFile zipFile = new ZipFile(zipFileOrFolder))
                 {

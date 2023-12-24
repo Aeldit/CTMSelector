@@ -25,13 +25,11 @@ public class CTMPack
 {
     private final String name;
     private final Identifier identifier;
-    private boolean enabled;
 
-    public CTMPack(@NotNull String name, Identifier identifier, boolean enabled)
+    public CTMPack(@NotNull String name, Identifier identifier)
     {
         this.name = name;
         this.identifier = identifier;
-        this.enabled = enabled;
     }
 
     public String getNameAsString()
@@ -47,15 +45,5 @@ public class CTMPack
     public Identifier getIdentifier()
     {
         return identifier;
-    }
-
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    public void toggle()
-    {
-        enabled = !enabled;
     }
 }

@@ -76,6 +76,7 @@ public class NewCTMSScreen extends Screen
     @Override
     protected void init()
     {
+        TEXTURES_HANDLING.load();
         ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
         addDrawableChild(list);
 
@@ -98,78 +99,9 @@ public class NewCTMSScreen extends Screen
         addDrawableChild(getControlsButton());
     }
 
-    /*@Override
-    protected void init()
-    {
-        int i = 0;
-        List<String> sortedPacksNames = new ArrayList<>(CTM_BLOCKS_MAP.keySet());
-        Collections.sort(sortedPacksNames);
-
-        for (String packName : sortedPacksNames)
-        {
-            // Temporary, will add a page system at some point
-            if (i < 6)
-            {
-                if (CTMPacks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", "")))
-                {
-                    addDrawableChild(
-                            ButtonWidget.builder(Text.of(packName.replace(".zip", "")),
-                                            button -> client.setScreen(new ResourcePackScreen(
-                                                            this,
-                                                            packName
-                                                    )
-                                            )
-                                    )
-                                    .dimensions(width / 2 - 205, 30 + 20 * i + 10 * i, 200, 20)
-                                    .build()
-                    );
-                }
-                else
-                {
-                    /*
-                    When the pack is not loaded, we send a toast to the player
-                    This is because when a pack is not loaded, all textures
-                    that are not in minecraft appear as a bugged texture
-                     *
-                    addDrawableChild(
-                            ButtonWidget.builder(Text.of(Formatting.ITALIC + packName.replace(".zip", "")),
-                                            button -> client.getToastManager().add(new PackNotEnabledToast(
-                                                    PackNotEnabledToast.Type.PACK_NOT_ENABLED,
-                                                    Text.translatable("ctms.toast.packNotEnabled"),
-                                                    null
-                                            ))
-                                    )
-                                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.packDisabled.tooltip")))
-                                    .dimensions(width / 2 - 205, 30 + 20 * i + 10 * i, 200, 20)
-                                    .build()
-                    );
-                }
-            }
-            i++;
-        }
-
-        addDrawableChild(getReloadButton());
-
-        addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
-                                button -> Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks"))
-                        )
-                        .dimensions(width / 2 - 154, height - 28, 150, 20)
-                        .build()
-        );
-
-        addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 + 4, height - 28, 150, 20)
-                        .build()
-        );
-
-        addDrawableChild(getControlsButton());
-    }*/
-
     private @NotNull ButtonWidget getReloadButton()
     {
-        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
+        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 100, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 (button) -> {
                     TEXTURES_HANDLING.load();
@@ -181,7 +113,7 @@ public class NewCTMSScreen extends Screen
 
     private @NotNull ButtonWidget getControlsButton()
     {
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
+        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 80, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
         );

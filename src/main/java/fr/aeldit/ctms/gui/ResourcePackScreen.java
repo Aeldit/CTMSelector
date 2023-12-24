@@ -48,6 +48,7 @@ public class ResourcePackScreen extends Screen
 {
     private final String packName;
     private final Screen parent;
+    private final boolean enabled;
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
@@ -57,6 +58,7 @@ public class ResourcePackScreen extends Screen
         );
         this.packName = packName;
         this.parent = parent;
+        this.enabled = CTMPacks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""));
     }
 
     @Override
@@ -81,50 +83,53 @@ public class ResourcePackScreen extends Screen
     @Override
     protected void init()
     {
-        ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
-        addDrawableChild(list);
-
-        // Sorts the blocks alphabetically
-        List<CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
-        toSort.sort(Comparator.comparing(block -> block.getName().getString()));
-
-        for (CTMBlock block : toSort)
+        if (enabled)
         {
-            list.add(block);
+            ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
+            addDrawableChild(list);
+
+            // Sorts the blocks alphabetically
+            List<CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
+            toSort.sort(Comparator.comparing(block -> block.getName().getString()));
+
+            for (CTMBlock block : toSort)
+            {
+                list.add(block);
+            }
+
+            addDrawableChild(
+                    ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                                CTMBlocks.getCTMBlocks(packName).resetOptions();
+                                CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
+                                TEXTURES_HANDLING.updateUsedTextures(packName);
+                                close();
+                            })
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                            .dimensions(10, 6, 100, 20)
+                            .build()
+            );
+
+            addDrawableChild(
+                    ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
+                                if (CTMBlocks.getCTMBlocks(packName).optionsChanged())
+                                {
+                                    CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
+                                    TEXTURES_HANDLING.updateUsedTextures(packName);
+                                }
+                                close();
+                            })
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
+                            .dimensions(width / 2 + 4, height - 28, 150, 20)
+                            .build()
+            );
         }
-
-        addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                            CTMBlocks.getCTMBlocks(packName).resetOptions();
-                            CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
-                            TEXTURES_HANDLING.updateUsedTextures(packName);
-                            close();
-                        })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                        .dimensions(10, 6, 100, 20)
-                        .build()
-        );
-
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
                             CTMBlocks.getCTMBlocks(packName).restoreUnsavedOptions();
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
-                        .dimensions(width / 2 - 154, height - 28, 150, 20)
-                        .build()
-        );
-        addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                            if (CTMBlocks.getCTMBlocks(packName).optionsChanged())
-                            {
-                                CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
-                                TEXTURES_HANDLING.updateUsedTextures(packName);
-                            }
-                            close();
-                        })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
-                        .dimensions(width / 2 + 4, height - 28, 150, 20)
+                        .dimensions(enabled ? width / 2 - 154 : width / 2 - 75, height - 28, 150, 20)
                         .build()
         );
     }
