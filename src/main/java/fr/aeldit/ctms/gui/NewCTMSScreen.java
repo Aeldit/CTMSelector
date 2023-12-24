@@ -18,39 +18,37 @@
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
-import fr.aeldit.ctms.gui.toasts.PackNotEnabledToast;
+import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.screen.ScreenTexts;
+import net.minecraft.client.gui.widget.*;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
+import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.textures.CTMBlocks.CTM_BLOCKS_MAP;
 import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
 import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
-public class CTMSScreen extends Screen
+public class NewCTMSScreen extends Screen
 {
     private final Screen parent;
 
-    public CTMSScreen(Screen parent)
+    public NewCTMSScreen(Screen parent)
     {
         super(Text.translatable("ctms.screen.title"));
         this.parent = parent;
@@ -63,10 +61,10 @@ public class CTMSScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
     {
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
+        super.render(DrawContext, mouseX, mouseY, delta);
+        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
     @Override
@@ -76,6 +74,31 @@ public class CTMSScreen extends Screen
     }
 
     @Override
+    protected void init()
+    {
+        ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
+        addDrawableChild(list);
+
+        List<CTMPack> toSort = new ArrayList<>(CTMPacks.getAvailableCtmPacks());
+        // Sorts the blocks alphabetically
+        toSort.sort(Comparator.comparing(CTMPack::getNameAsString));
+
+        for (CTMPack ctmPack : toSort)
+        {
+            list.add(ctmPack);
+        }
+
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("ctms.screen.done"), button -> close())
+                        .dimensions(width / 2 - 75, height - 28, 150, 20)
+                        .build()
+        );
+
+        addDrawableChild(getReloadButton());
+        addDrawableChild(getControlsButton());
+    }
+
+    /*@Override
     protected void init()
     {
         int i = 0;
@@ -107,7 +130,7 @@ public class CTMSScreen extends Screen
                     When the pack is not loaded, we send a toast to the player
                     This is because when a pack is not loaded, all textures
                     that are not in minecraft appear as a bugged texture
-                     */
+                     *
                     addDrawableChild(
                             ButtonWidget.builder(Text.of(Formatting.ITALIC + packName.replace(".zip", "")),
                                             button -> client.getToastManager().add(new PackNotEnabledToast(
@@ -142,7 +165,7 @@ public class CTMSScreen extends Screen
         );
 
         addDrawableChild(getControlsButton());
-    }
+    }*/
 
     private @NotNull ButtonWidget getReloadButton()
     {
@@ -164,5 +187,104 @@ public class CTMSScreen extends Screen
         );
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
         return controlsButton;
+    }
+
+    /**
+     * Modified by me to fit my purpose
+     *
+     * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
+     */
+    private static class ListWidget extends ElementListWidget<Entry>
+    {
+        private final EntryBuilder builder = new EntryBuilder(client, width);
+        private final Screen parent;
+
+        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                          Screen parent
+        )
+        {
+            super(client, width, height, top, bottom, itemHeight);
+            this.parent = parent;
+        }
+
+        @Override
+        protected int getScrollbarPositionX()
+        {
+            return this.width / 2 + 160;
+        }
+
+        @Override
+        public int getRowWidth()
+        {
+            return 280;
+        }
+
+        public void add(CTMPack pack)
+        {
+            addEntry(builder.build(pack, parent));
+        }
+    }
+
+    private record EntryBuilder(MinecraftClient client, int width)
+    {
+        @Contract("_, _ -> new")
+        public @NotNull Entry build(@NotNull CTMPack pack, @NotNull Screen parent)
+        {
+            var layout = DirectionalLayoutWidget.horizontal().spacing(10);
+            var text = new TextWidget(180, 24, pack.getName(), client.textRenderer);
+            var followButton = ButtonWidget.builder(
+                            Text.translatable("ctms.screen.open"),
+                            button -> client.setScreen(new ResourcePackScreen(parent, pack.getNameAsString()))
+                    )
+                    .dimensions(0, 0, 40, 20)
+                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.open.tooltip")))
+                    .build();
+            text.alignCenter();
+            layout.add(text);
+            layout.add(followButton);
+            layout.refreshPositions();
+            layout.setX(width / 2 - layout.getWidth() / 2 + 22);
+            return new Entry(pack, layout);
+        }
+    }
+
+    static class Entry extends ElementListWidget.Entry<Entry>
+    {
+        private final CTMPack pack;
+        private final LayoutWidget layout;
+        private final List<ClickableWidget> children = Lists.newArrayList();
+
+        Entry(CTMPack pack, LayoutWidget layout)
+        {
+            this.pack = pack;
+            this.layout = layout;
+            this.layout.forEachChild(this.children::add);
+        }
+
+        @Override
+        public List<? extends Selectable> selectableChildren()
+        {
+            return children;
+        }
+
+        @Override
+        public List<? extends Element> children()
+        {
+            return children;
+        }
+
+        @Override
+        public void render(
+                @NotNull DrawContext context, int index, int y, int x,
+                int entryWidth, int entryHeight, int mouseX, int mouseY,
+                boolean hovered, float delta
+        )
+        {
+            context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
+            layout.forEachChild(child -> {
+                child.setY(y);
+                child.render(context, mouseX, mouseY, delta);
+            });
+        }
     }
 }

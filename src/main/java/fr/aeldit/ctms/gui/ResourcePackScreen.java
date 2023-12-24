@@ -12,12 +12,14 @@
  * This version of the GNU Lesser General Public License incorporates
  * the terms and conditions of version 3 of the GNU General Public
  * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/Cyan)
+ * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
  */
 
 package fr.aeldit.ctms.gui;
 
+import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.CTMBlocks;
+import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -49,7 +51,7 @@ public class ResourcePackScreen extends Screen
 
     public ResourcePackScreen(Screen parent, @NotNull String packName)
     {
-        super(CTMBlocks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
+        super(CTMPacks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
                 ? Text.of(packName.replace(".zip", ""))
                 : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
         );
@@ -83,10 +85,10 @@ public class ResourcePackScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        List<CTMBlocks.CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
+        List<CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
         toSort.sort(Comparator.comparing(block -> block.getName().getString()));
 
-        for (CTMBlocks.CTMBlock block : toSort)
+        for (CTMBlock block : toSort)
         {
             list.add(block);
         }
@@ -143,7 +145,7 @@ public class ResourcePackScreen extends Screen
             this.packName = packName;
         }
 
-        public void add(CTMBlocks.CTMBlock block)
+        public void add(CTMBlock block)
         {
             addEntry(builder.build(block, packName));
         }
@@ -152,7 +154,7 @@ public class ResourcePackScreen extends Screen
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMBlocks.CTMBlock block, String packName)
+        public @NotNull Entry build(@NotNull CTMBlock block, String packName)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
@@ -174,11 +176,11 @@ public class ResourcePackScreen extends Screen
 
     static class Entry extends ElementListWidget.Entry<Entry>
     {
-        private final CTMBlocks.CTMBlock block;
+        private final CTMBlock block;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
 
-        Entry(CTMBlocks.CTMBlock block, LayoutWidget layout)
+        Entry(CTMBlock block, LayoutWidget layout)
         {
             this.block = block;
             this.layout = layout;
