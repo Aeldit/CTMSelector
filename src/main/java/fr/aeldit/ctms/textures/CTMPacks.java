@@ -40,6 +40,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class CTMPacks
 {
     private static final List<CTMPack> AVAILABLE_CTM_PACKS = new ArrayList<>();
+    // Contains key:value pairs like so : <packName:ID>
     private static final Map<String, Integer> packsIDs = new HashMap<>();
     private int packsNumber = 0;
 
@@ -49,6 +50,12 @@ public class CTMPacks
         return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledNames());
     }
 
+    /**
+     * Adds the pack and its ID (determined by the number of packs that have already been added) to the packIds map
+     * + adds the same pack to AVAILABLE_CTM_PACKS (its Identifier is defined here)
+     *
+     * @param packName The name of the pack
+     */
     public void add(String packName)
     {
         if (!packsIDs.containsKey(packName))
@@ -70,7 +77,7 @@ public class CTMPacks
         return AVAILABLE_CTM_PACKS;
     }
 
-    public void createIconsPack()
+    public void createIconsPack() // TODO -> Get pack.png correctly on reload
     {
         if (!getAvailableCtmPacks().isEmpty())
         {

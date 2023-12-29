@@ -110,6 +110,15 @@ public class ResourcePackScreen extends Screen
             );
 
             addDrawableChild(
+                    ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
+                                CTMBlocks.getCTMBlocks(packName).restoreUnsavedOptions();
+                                close();
+                            })
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
+                            .dimensions(width / 2 - 154, height - 28, 150, 20)
+                            .build()
+            );
+            addDrawableChild(
                     ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
                                 if (CTMBlocks.getCTMBlocks(packName).optionsChanged())
                                 {
@@ -123,15 +132,14 @@ public class ResourcePackScreen extends Screen
                             .build()
             );
         }
-        addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                            CTMBlocks.getCTMBlocks(packName).restoreUnsavedOptions();
-                            close();
-                        })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
-                        .dimensions(enabled ? width / 2 - 154 : width / 2 - 75, height - 28, 150, 20)
-                        .build()
-        );
+        else
+        {
+            addDrawableChild(
+                    ButtonWidget.builder(Text.translatable("ctms.screen.done"), button -> close())
+                            .dimensions(width / 2 - 75, height - 28, 150, 20)
+                            .build()
+            );
+        }
     }
 
     /**

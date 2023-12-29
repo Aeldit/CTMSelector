@@ -27,16 +27,22 @@ public class CTMBlocks
 {
     public final static Map<String, CTMBlocks> CTM_BLOCKS_MAP = new HashMap<>();
 
+    public void reload()
+    {
+        availableCTMBlocks.clear();
+        unsavedOptions.clear();
+    }
+
     public static List<CTMBlock> getAvailableCtmBlocks(String packName)
     {
         return CTM_BLOCKS_MAP.containsKey(packName)
-                ? CTM_BLOCKS_MAP.get(packName).getAvailableCtmBlocks()
+                ? CTM_BLOCKS_MAP.get(packName).getAvailableCTMBlocks()
                 : new ArrayList<>();
     }
 
     public static boolean getOptionValue(String packName, String blockName)
     {
-        for (CTMBlock block : getCTMBlocks(packName).getAvailableCtmBlocks())
+        for (CTMBlock block : getCTMBlocks(packName).getAvailableCTMBlocks())
         {
             if (block.getBlockName().equals(blockName))
             {
@@ -57,7 +63,7 @@ public class CTMBlocks
     }
 
     // List of all the CTM blocks found in the pack
-    private final List<CTMBlock> availableCtmBlocks = new ArrayList<>();
+    private final List<CTMBlock> availableCTMBlocks = new ArrayList<>();
     // Used for the cancel button
     private final Set<CTMBlock> unsavedOptions = new HashSet<>();
 
@@ -73,7 +79,7 @@ public class CTMBlocks
 
     public void add(CTMBlock block)
     {
-        availableCtmBlocks.add(block);
+        availableCTMBlocks.add(block);
     }
 
     public void addAll(@NotNull ArrayList<CTMBlock> ctmBlockArrayList)
@@ -83,9 +89,9 @@ public class CTMBlocks
 
     public void toggle(CTMBlock block)
     {
-        if (availableCtmBlocks.contains(block))
+        if (availableCTMBlocks.contains(block))
         {
-            availableCtmBlocks.get(availableCtmBlocks.indexOf(block)).toggle();
+            availableCTMBlocks.get(availableCTMBlocks.indexOf(block)).toggle();
         }
 
         if (unsavedOptions.contains(block))
@@ -100,7 +106,7 @@ public class CTMBlocks
 
     public void resetOptions()
     {
-        for (CTMBlock block : availableCtmBlocks)
+        for (CTMBlock block : availableCTMBlocks)
         {
             block.setEnabled(true);
         }
@@ -110,13 +116,13 @@ public class CTMBlocks
     {
         for (CTMBlock block : unsavedOptions)
         {
-            availableCtmBlocks.get(availableCtmBlocks.indexOf(block)).setEnabled(!availableCtmBlocks.contains(block));
+            availableCTMBlocks.get(availableCTMBlocks.indexOf(block)).setEnabled(!availableCTMBlocks.contains(block));
         }
         unsavedOptions.clear();
     }
 
-    private List<CTMBlock> getAvailableCtmBlocks()
+    private List<CTMBlock> getAvailableCTMBlocks()
     {
-        return availableCtmBlocks;
+        return availableCTMBlocks;
     }
 }

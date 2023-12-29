@@ -39,7 +39,7 @@ import static fr.aeldit.ctms.textures.CTMBlocks.CTM_BLOCKS_MAP;
 public class FilesHandling
 {
     private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
-    private final String ctmPath = "assets/minecraft/optifine/ctm/connect/";
+    private final String ctmPath = "assets/minecraft/optifine/ctm/";
     private final List<Path> folderPaths = new ArrayList<>();
 
     public void load() // TODO -> categories with file tree
@@ -60,6 +60,7 @@ public class FilesHandling
             )
             {
                 CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName());
+                packCtmBlocks.reload();
                 ctmPacks.add(zipFileOrFolder.getName());
 
                 try (ZipFile zipFile = new ZipFile(zipFileOrFolder))
@@ -91,6 +92,7 @@ public class FilesHandling
             )
             {
                 CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName() + " (folder)");
+                packCtmBlocks.reload();
                 ctmPacks.add(zipFileOrFolder.getName() + " (folder)");
 
                 for (Path path : listFilesInFolderPack(zipFileOrFolder))
@@ -255,6 +257,14 @@ public class FilesHandling
         return true;
     }
 
+    /**
+     * Acquires the blocks in the given properties file
+     *
+     * @param properties The properties object
+     * @param tmpPath    The path to the texture
+     * @param startTile  The texture
+     * @return An arraylist of {@link CTMBlock} containing the blocks with their Identifier initialized
+     */
     private @NotNull ArrayList<CTMBlock> getCTMBlocksInProperties(
             @NotNull Properties properties, String tmpPath, @NotNull String startTile
     )
@@ -388,8 +398,8 @@ public class FilesHandling
                 for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
                 {
                     List<String> enabledBlocks = new ArrayList<>();
-                    List<String> disabledBlocks = new ArrayList<>();
                     List<String> enabledTiles = new ArrayList<>();
+                    List<String> disabledBlocks = new ArrayList<>();
                     List<String> disabledTiles = new ArrayList<>();
 
                     Properties properties = new Properties();
@@ -454,8 +464,8 @@ public class FilesHandling
                         if (fileHeader.toString().endsWith(".properties"))
                         {
                             List<String> enabledBlocks = new ArrayList<>();
-                            List<String> disabledBlocks = new ArrayList<>();
                             List<String> enabledTiles = new ArrayList<>();
+                            List<String> disabledBlocks = new ArrayList<>();
                             List<String> disabledTiles = new ArrayList<>();
 
                             Properties properties = new Properties();
@@ -524,8 +534,10 @@ public class FilesHandling
         load();
     }
 
-    private void fillBlocksLists(@NotNull Properties properties, List<String> enabledBlocks, List<String> enabledTiles,
-                                 List<String> disabledBlocks, List<String> disabledTiles
+    private void fillBlocksLists(
+            @NotNull Properties properties,
+            List<String> enabledBlocks, List<String> enabledTiles,
+            List<String> disabledBlocks, List<String> disabledTiles
     )
     {
         if (properties.containsKey("matchBlocks"))
@@ -585,9 +597,10 @@ public class FilesHandling
         }
     }
 
-    private boolean updateProperties(String packName, Properties properties,
-                                     @NotNull List<String> enabledBlocks, List<String> disabledBlocks,
-                                     List<String> enabledTiles, List<String> disabledTiles
+    private boolean updateProperties(
+            String packName, Properties properties,
+            @NotNull List<String> enabledBlocks, @NotNull List<String> enabledTiles,
+            @NotNull List<String> disabledBlocks, @NotNull List<String> disabledTiles
     )
     {
         boolean changed = false;

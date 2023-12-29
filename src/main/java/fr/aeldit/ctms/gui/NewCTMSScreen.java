@@ -22,6 +22,7 @@ import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -29,12 +30,15 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -90,8 +94,16 @@ public class NewCTMSScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.done"), button -> close())
-                        .dimensions(width / 2 - 75, height - 28, 150, 20)
+                ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
+                                button -> Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks"))
+                        )
+                        .dimensions(width / 2 - 154, height - 28, 150, 20)
+                        .build()
+        );
+
+        addDrawableChild(
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
+                        .dimensions(width / 2 + 4, height - 28, 150, 20)
                         .build()
         );
 
@@ -101,7 +113,7 @@ public class NewCTMSScreen extends Screen
 
     private @NotNull ButtonWidget getReloadButton()
     {
-        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 100, height - 28, 20, 20, 0, 0,
+        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 (button) -> {
                     TEXTURES_HANDLING.load();
@@ -113,7 +125,7 @@ public class NewCTMSScreen extends Screen
 
     private @NotNull ButtonWidget getControlsButton()
     {
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 80, height - 28, 20, 20, 0, 0,
+        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
         );
