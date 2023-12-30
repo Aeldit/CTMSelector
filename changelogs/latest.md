@@ -1,5 +1,4 @@
-🫧 Changed :
+🌈 Changed :
 
-- The resource pack screen (the one where you can select the blocks)
-  have been remade using code from the Vwoops mod made by dicedpixels
-  (https://modrinth.com/mod/vwoops). I then adapted this code to my needs
+- The main screen of the mod (the one where you can select the packs) have been remade
+  to be a proper list, and now has the packs icons displaying next to them
