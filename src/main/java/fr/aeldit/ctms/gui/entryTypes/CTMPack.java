@@ -39,7 +39,7 @@ public class CTMPack
     private final List<CTMBlock> ctmBlocks = new ArrayList<>();
     private final List<CTMBlock> unsavedOptions = new ArrayList<>();
 
-    public CTMPack(@NotNull String name, boolean isFolder)
+    public CTMPack(String name, boolean isFolder)
     {
         this.name = name;
         this.isFolder = isFolder;

@@ -17,7 +17,7 @@
 
 package fr.aeldit.ctms;
 
-import fr.aeldit.ctms.gui.NewCTMSScreen;
+import fr.aeldit.ctms.gui.CTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -34,12 +34,12 @@ public class CTMSClientCore implements ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load(false);
+        TEXTURES_HANDLING.load();
 
         // Loads the icons pack when the client starts
         ClientLifecycleEvents.CLIENT_STARTED.register(client ->
                 {
-                    if (!CTM_PACKS.getAvailableCtmPacks().isEmpty())
+                    if (!CTM_PACKS.getAvailableCTMPacks().isEmpty())
                     {
                         MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
                     }
@@ -55,7 +55,7 @@ public class CTMSClientCore implements ClientModInitializer
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (packScreenKey.wasPressed())
             {
-                client.setScreen(new NewCTMSScreen(null));
+                client.setScreen(new CTMSScreen(null));
             }
         });
 

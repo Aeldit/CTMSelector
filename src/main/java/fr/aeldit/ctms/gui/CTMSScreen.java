@@ -46,11 +46,11 @@ import java.util.Objects;
 import static fr.aeldit.ctms.util.Utils.*;
 
 @Environment(EnvType.CLIENT)
-public class NewCTMSScreen extends Screen
+public class CTMSScreen extends Screen
 {
     private final Screen parent;
 
-    public NewCTMSScreen(Screen parent)
+    public CTMSScreen(Screen parent)
     {
         super(Text.translatable("ctms.screen.title"));
         this.parent = parent;
@@ -82,7 +82,7 @@ public class NewCTMSScreen extends Screen
         ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
         addDrawableChild(list);
 
-        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCtmPacks());
+        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
         // Sorts the blocks alphabetically
         toSort.sort(Comparator.comparing(CTMPack::getName));
 

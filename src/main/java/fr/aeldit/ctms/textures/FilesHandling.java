@@ -24,7 +24,6 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -43,34 +42,81 @@ public class FilesHandling
     private final String ctmPath = "assets/minecraft/optifine/ctm/";
     private final List<Path> folderPaths = new ArrayList<>();
 
-    public void load()
+    public boolean packsChanged(@NotNull List<CTMPack> previousAvailableCTMPacks, @NotNull List<CTMPack> availableCTMPacks)
     {
-        load(true);
+        if (previousAvailableCTMPacks.size() != availableCTMPacks.size())
+        {
+            return true;
+        }
+
+        boolean changed = false;
+        int ctr = 0;
+        int size = previousAvailableCTMPacks.size();
+
+        for (CTMPack ctmPack : previousAvailableCTMPacks)
+        {
+            for (CTMPack ctmPack1 : availableCTMPacks)
+            {
+                if (ctmPack.getName().equals(ctmPack1.getName()))
+                {
+                    ctr++;
+                    break;
+                }
+            }
+        }
+
+        if (ctr != size)
+        {
+            changed = true;
+        }
+
+        ctr = 0;
+
+        for (CTMPack ctmPack : availableCTMPacks)
+        {
+            for (CTMPack ctmPack1 : previousAvailableCTMPacks)
+            {
+                if (ctmPack.getName().equals(ctmPack1.getName()))
+                {
+                    ctr++;
+                    break;
+                }
+            }
+        }
+
+        if (ctr != size)
+        {
+            changed = true;
+        }
+        return changed;
     }
 
-    public void load(boolean reload) // TODO -> categories with file tree
+    public void load() // TODO -> categories with file tree
     {
-        if (!reload)
+        // Obtains the ctm packs before the reload to check later if any of them
+        // was removed, or if any were added
+        List<CTMPack> previousAvailableCTMPacks = null;
+        if (CTM_PACKS != null)
         {
-            CTM_PACKS = new CTMPacks();
+            previousAvailableCTMPacks = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
+            CTM_PACKS.clearAvailableCTMPacks();
         }
+
+        CTM_PACKS = new CTMPacks();
 
         if (!Files.exists(resourcePacksDir))
         {
             return;
         }
 
-        for (File zipFileOrFolder : resourcePacksDir.toFile().listFiles())
+        for (File file : resourcePacksDir.toFile().listFiles())
         {
-            if (zipFileOrFolder.isFile()
-                    && zipFileOrFolder.getName().endsWith(".zip")
-                    && isZipCtmPack(zipFileOrFolder.toString())
-            )
+            if (file.isFile() && file.getName().endsWith(".zip") && isZipCtmPack(file.toString()))
             {
-                CTMPack ctmPack = new CTMPack(zipFileOrFolder.getName(), false);
+                CTMPack ctmPack = new CTMPack(file.getName(), false);
                 CTM_PACKS.add(ctmPack);
 
-                try (ZipFile zipFile = new ZipFile(zipFileOrFolder))
+                try (ZipFile zipFile = new ZipFile(file))
                 {
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
                     {
@@ -83,7 +129,7 @@ public class FilesHandling
 
                                 if (!properties.isEmpty())
                                 {
-                                    loadOptions(properties, ctmPack, fileHeader.toString(), zipFileOrFolder, "/");
+                                    loadOptions(properties, ctmPack, fileHeader.toString(), file, "/");
                                 }
                             }
                         }
@@ -94,18 +140,14 @@ public class FilesHandling
                     throw new RuntimeException(e);
                 }
             }
-            else if (zipFileOrFolder.isDirectory()
-                    && isFolderCtmPack(zipFileOrFolder.getName())
-            )
+            else if (file.isDirectory() && isFolderCtmPack(file.getName()))
             {
-                CTMPack ctmPack = new CTMPack(zipFileOrFolder.getName(), true);
+                CTMPack ctmPack = new CTMPack(file.getName(), true);
                 CTM_PACKS.add(ctmPack);
 
-                for (Path path : listFilesInFolderPack(zipFileOrFolder))
+                for (Path path : listFilesInFolderPack(file))
                 {
-                    if (path.toString().contains(ctmPath.replace("/", "\\"))
-                            && path.toFile().isFile()
-                    )
+                    if (path.toString().contains(ctmPath.replace("/", "\\")) && path.toFile().isFile())
                     {
                         if (path.toString().endsWith(".properties"))
                         {
@@ -122,7 +164,7 @@ public class FilesHandling
 
                             if (!properties.isEmpty())
                             {
-                                loadOptions(properties, ctmPack, path.toString(), zipFileOrFolder, "\\\\");
+                                loadOptions(properties, ctmPack, path.toString(), file, "\\\\");
                             }
                         }
                     }
@@ -130,7 +172,12 @@ public class FilesHandling
                 folderPaths.clear();
             }
         }
-        CTM_PACKS.createIconsPack(reload);
+
+        // If the packs changed, we create a new iconsPack
+        if (previousAvailableCTMPacks != null && packsChanged(previousAvailableCTMPacks, CTM_PACKS.getAvailableCTMPacks()))
+        {
+            CTM_PACKS.createIconsPack();
+        }
     }
 
     private void loadOptions(Properties properties, CTMPack ctmPack, @NotNull String path,
@@ -244,13 +291,9 @@ public class FilesHandling
                 }
             }
         }
-        /*else // Modded cases TODO -> implement
-        {
-            CTMS_LOGGER.info("[CTM Selector] Didn't load the '{}' textures in {} (modded cases are not implement yet)", zipFileOrFolder.getName(), path);
-        }*/
+        // TODO -> implement modded cases
     }
 
-    @Contract(pure = true)
     private boolean isDigits(@NotNull String s)
     {
         for (char c : s.toCharArray())
@@ -272,7 +315,7 @@ public class FilesHandling
      * @return An arraylist of {@link CTMBlock} containing the blocks with their Identifier initialized
      */
     private @NotNull ArrayList<CTMBlock> getCTMBlocksInProperties(
-            @NotNull Properties properties, String tmpPath, @NotNull String startTile
+            Properties properties, String tmpPath, @NotNull String startTile
     )
     {
         ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
@@ -334,9 +377,9 @@ public class FilesHandling
 
     private boolean isZipCtmPack(String packPath)
     {
-        try
+        try (ZipFile tmpZipFile = new ZipFile(packPath))
         {
-            for (FileHeader fileHeader : listFilesInZipPack(packPath))
+            for (FileHeader fileHeader : tmpZipFile.getFileHeaders())
             {
                 if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(ctmPath))
                 {
@@ -344,7 +387,7 @@ public class FilesHandling
                 }
             }
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -353,28 +396,13 @@ public class FilesHandling
 
     private boolean isFolderCtmPack(String packName)
     {
-        return Files.exists(Path.of(resourcePacksDir + "\\" + packName + "\\" + ctmPath));
-    }
-
-    private List<FileHeader> listFilesInZipPack(String packPath)
-    {
-        List<FileHeader> fileHeaders;
-
-        try (ZipFile tmpZipFile = new ZipFile(packPath))
-        {
-            fileHeaders = tmpZipFile.getFileHeaders();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return fileHeaders;
+        return Files.exists(Path.of(resourcePacksDir + "/" + packName + "/" + ctmPath));
     }
 
     /**
      * Lists the files in the given folder
      * <p>
-     * {@code folderPaths.clear()} must be called after the iteration over the result of this functions, to prevent any weird behavior
+     * {@code folderPaths.clearAvailableCTMPacks()} must be called after the iteration over the result of this functions, to prevent any weird behavior
      *
      * @param packFolder The folder whose files will be listed and returned
      * @return Returns the files present in the folder {@code packFolder}
@@ -395,13 +423,10 @@ public class FilesHandling
         return folderPaths;
     }
 
-    //public void updateUsedTextures(@NotNull String packName)
     public void updateUsedTextures(@NotNull CTMPack ctmPack)
     {
         if (ctmPack.isFolder())
         {
-            /*if (isFolderCtmPack(packName.replace(" (folder)", "")))
-            {*/
             for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + ctmPack.getName())))
             {
                 List<String> enabledBlocks = new ArrayList<>();
@@ -450,7 +475,6 @@ public class FilesHandling
             }
             folderPaths.clear();
             MinecraftClient.getInstance().reloadResources();
-            //}
         }
         else
         {
@@ -604,11 +628,6 @@ public class FilesHandling
         }
     }
 
-    /*private boolean updateProperties(
-            String packName, Properties properties,
-            @NotNull List<String> enabledBlocks, @NotNull List<String> enabledTiles,
-            @NotNull List<String> disabledBlocks, @NotNull List<String> disabledTiles
-    )*/
     private boolean updateProperties(
             CTMPack ctmPack, Properties properties,
             @NotNull List<String> enabledBlocks, @NotNull List<String> enabledTiles,
