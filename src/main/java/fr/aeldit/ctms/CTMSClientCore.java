@@ -27,24 +27,24 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
-import static fr.aeldit.ctms.util.Utils.*;
+import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load();
+        TEXTURES_HANDLING.load(true);
 
         // Loads the icons pack when the client starts
-        ClientLifecycleEvents.CLIENT_STARTED.register(client ->
-                {
-                    if (!CTM_PACKS.getAvailableCTMPacks().isEmpty())
-                    {
-                        MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
-                    }
-                }
-        );
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            if (MinecraftClient.getInstance().getResourcePackManager().getNames().contains("file/__CTMS_Icons__"))
+            {
+                MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
+                MinecraftClient.getInstance().reloadResourcesConcurrently();
+            }
+        });
 
         KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "cyanlib.keybindings.openScreen.config",

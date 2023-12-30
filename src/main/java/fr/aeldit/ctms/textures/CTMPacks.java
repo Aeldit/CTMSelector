@@ -83,7 +83,7 @@ public class CTMPacks
     /**
      * Creates a custom resource pack that will contain the pack.png of each CTM resource pack
      */
-    public void createIconsPack()
+    public void createIconsPack(boolean initial)
     {
         if (!getAvailableCTMPacks().isEmpty())
         {
@@ -176,6 +176,10 @@ public class CTMPacks
                 throw new RuntimeException(e);
             }
         }
-        MinecraftClient.getInstance().reloadResources();
+
+        if (!initial)
+        {
+            MinecraftClient.getInstance().reloadResources();
+        }
     }
 }

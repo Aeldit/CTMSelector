@@ -91,7 +91,12 @@ public class FilesHandling
         return changed;
     }
 
-    public void load() // TODO -> categories with file tree
+    public void load()
+    {
+        load(false);
+    }
+
+    public void load(boolean initial) // TODO -> categories with file tree
     {
         // Obtains the ctm packs before the reload to check later if any of them
         // was removed, or if any were added
@@ -174,9 +179,9 @@ public class FilesHandling
         }
 
         // If the packs changed, we create a new iconsPack
-        if (previousAvailableCTMPacks != null && packsChanged(previousAvailableCTMPacks, CTM_PACKS.getAvailableCTMPacks()))
+        if (initial || (previousAvailableCTMPacks != null && packsChanged(previousAvailableCTMPacks, CTM_PACKS.getAvailableCTMPacks())))
         {
-            CTM_PACKS.createIconsPack();
+            CTM_PACKS.createIconsPack(initial);
         }
     }
 
