@@ -9,6 +9,7 @@
   "ctms.screen.done": "Done",
   "ctms.screen.open": "Open",
   "ctms.screen.open.tooltip": "Opens the screen associated with the resource pack",
+  "ctms.screen.confirmReload": "Packs were added in your resourcepacks folder, so a resources reload is needed to display the packs icon correctly",
   "--------------------------------------------RESOURCE_PACK_SCREEN--------------------------------------------": "",
   "ctms.screen.config.reset": "Reset",
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (§aON§f)",

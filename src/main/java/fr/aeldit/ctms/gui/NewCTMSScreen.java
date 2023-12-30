@@ -19,7 +19,6 @@ package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
-import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -44,8 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.util.Utils.*;
 
 @Environment(EnvType.CLIENT)
 public class NewCTMSScreen extends Screen
@@ -84,9 +82,9 @@ public class NewCTMSScreen extends Screen
         ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
         addDrawableChild(list);
 
-        List<CTMPack> toSort = new ArrayList<>(CTMPacks.getAvailableCtmPacks());
+        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCtmPacks());
         // Sorts the blocks alphabetically
-        toSort.sort(Comparator.comparing(CTMPack::getNameAsString));
+        toSort.sort(Comparator.comparing(CTMPack::getName));
 
         for (CTMPack ctmPack : toSort)
         {
@@ -107,30 +105,21 @@ public class NewCTMSScreen extends Screen
                         .build()
         );
 
-        addDrawableChild(getReloadButton());
-        addDrawableChild(getControlsButton());
-    }
-
-    private @NotNull ButtonWidget getReloadButton()
-    {
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
-                (button) -> {
+                button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
                 });
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
-        return reloadButton;
-    }
+        addDrawableChild(reloadButton);
 
-    private @NotNull ButtonWidget getControlsButton()
-    {
         ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
                 20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
                 (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
         );
         controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        return controlsButton;
+        addDrawableChild(controlsButton);
     }
 
     /**
@@ -163,22 +152,22 @@ public class NewCTMSScreen extends Screen
             return 280;
         }
 
-        public void add(CTMPack pack)
+        public void add(CTMPack ctmPack)
         {
-            addEntry(builder.build(pack, parent));
+            addEntry(builder.build(ctmPack, parent));
         }
     }
 
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMPack pack, @NotNull Screen parent)
+        public @NotNull Entry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-            var text = new TextWidget(180, 24, pack.getName(), client.textRenderer);
+            var text = new TextWidget(180, 24, ctmPack.getNameAsText(), client.textRenderer);
             var followButton = ButtonWidget.builder(
                             Text.translatable("ctms.screen.open"),
-                            button -> client.setScreen(new ResourcePackScreen(parent, pack.getNameAsString()))
+                            button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
                     )
                     .dimensions(0, 0, 40, 20)
                     .tooltip(Tooltip.of(Text.translatable("ctms.screen.open.tooltip")))
@@ -188,7 +177,7 @@ public class NewCTMSScreen extends Screen
             layout.add(followButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2 + 22);
-            return new Entry(pack, layout);
+            return new Entry(ctmPack, layout);
         }
     }
 

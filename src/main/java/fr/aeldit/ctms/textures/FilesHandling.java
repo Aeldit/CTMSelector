@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
+import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
@@ -34,7 +35,7 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 
-import static fr.aeldit.ctms.textures.CTMBlocks.CTM_BLOCKS_MAP;
+import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
 
 public class FilesHandling
 {
@@ -42,10 +43,17 @@ public class FilesHandling
     private final String ctmPath = "assets/minecraft/optifine/ctm/";
     private final List<Path> folderPaths = new ArrayList<>();
 
-    public void load() // TODO -> categories with file tree
+    public void load()
     {
-        CTM_BLOCKS_MAP.clear();
-        CTMPacks ctmPacks = new CTMPacks();
+        load(true);
+    }
+
+    public void load(boolean reload) // TODO -> categories with file tree
+    {
+        if (!reload)
+        {
+            CTM_PACKS = new CTMPacks();
+        }
 
         if (!Files.exists(resourcePacksDir))
         {
@@ -59,9 +67,8 @@ public class FilesHandling
                     && isZipCtmPack(zipFileOrFolder.toString())
             )
             {
-                CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName());
-                packCtmBlocks.reload();
-                ctmPacks.add(zipFileOrFolder.getName());
+                CTMPack ctmPack = new CTMPack(zipFileOrFolder.getName(), false);
+                CTM_PACKS.add(ctmPack);
 
                 try (ZipFile zipFile = new ZipFile(zipFileOrFolder))
                 {
@@ -76,7 +83,7 @@ public class FilesHandling
 
                                 if (!properties.isEmpty())
                                 {
-                                    loadOptions(properties, packCtmBlocks, fileHeader.toString(), zipFileOrFolder, "/");
+                                    loadOptions(properties, ctmPack, fileHeader.toString(), zipFileOrFolder, "/");
                                 }
                             }
                         }
@@ -91,9 +98,8 @@ public class FilesHandling
                     && isFolderCtmPack(zipFileOrFolder.getName())
             )
             {
-                CTMBlocks packCtmBlocks = new CTMBlocks(zipFileOrFolder.getName() + " (folder)");
-                packCtmBlocks.reload();
-                ctmPacks.add(zipFileOrFolder.getName() + " (folder)");
+                CTMPack ctmPack = new CTMPack(zipFileOrFolder.getName(), true);
+                CTM_PACKS.add(ctmPack);
 
                 for (Path path : listFilesInFolderPack(zipFileOrFolder))
                 {
@@ -116,7 +122,7 @@ public class FilesHandling
 
                             if (!properties.isEmpty())
                             {
-                                loadOptions(properties, packCtmBlocks, path.toString(), zipFileOrFolder, "\\\\");
+                                loadOptions(properties, ctmPack, path.toString(), zipFileOrFolder, "\\\\");
                             }
                         }
                     }
@@ -124,10 +130,10 @@ public class FilesHandling
                 folderPaths.clear();
             }
         }
-        ctmPacks.createIconsPack();
+        CTM_PACKS.createIconsPack(reload);
     }
 
-    private void loadOptions(Properties properties, CTMBlocks packCtmBlocks, @NotNull String path,
+    private void loadOptions(Properties properties, CTMPack ctmPack, @NotNull String path,
                              @NotNull File zipFileOrFolder, String pathSep
     )
     {
@@ -175,13 +181,13 @@ public class FilesHandling
                             // so we use it (texture 0)
                             if (Integer.parseInt(tiles[0]) + 4 == Integer.parseInt(tiles[1]))
                             {
-                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
                             }
                         }
                     }
                     else // If no "file range" (ex: "0-4") is found for the textures to use, we use the first that comes
                     {
-                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
+                        ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
                     }
                 }
                 // CTM method
@@ -199,13 +205,13 @@ public class FilesHandling
                             // so we use it (texture 0)
                             if (Integer.parseInt(tiles[0]) + 46 == Integer.parseInt(tiles[1]))
                             {
-                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
+                                ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[0]));
                             }
                         }
                     }
                     else
                     {
-                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
+                        ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
                     }
                 }
                 // HORIZONTAL and VERTICAL methods
@@ -227,21 +233,21 @@ public class FilesHandling
                             // so we use it (texture 3)
                             if (Integer.parseInt(tiles[0]) + 3 == Integer.parseInt(tiles[1]))
                             {
-                                packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
+                                ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), tiles[1]));
                             }
                         }
                     }
                     else
                     {
-                        packCtmBlocks.addAll(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
+                        ctmPack.addAllBlocks(getCTMBlocksInProperties(properties, tmpPath.toString(), spacedTiles[0]));
                     }
                 }
             }
         }
-        else // Modded cases TODO -> implement
+        /*else // Modded cases TODO -> implement
         {
-            System.out.println("Not implemented");
-        }
+            CTMS_LOGGER.info("[CTM Selector] Didn't load the '{}' textures in {} (modded cases are not implement yet)", zipFileOrFolder.getName(), path);
+        }*/
     }
 
     @Contract(pure = true)
@@ -389,69 +395,70 @@ public class FilesHandling
         return folderPaths;
     }
 
-    public void updateUsedTextures(@NotNull String packName)
+    //public void updateUsedTextures(@NotNull String packName)
+    public void updateUsedTextures(@NotNull CTMPack ctmPack)
     {
-        if (packName.endsWith(" (folder)"))
+        if (ctmPack.isFolder())
         {
-            if (isFolderCtmPack(packName.replace(" (folder)", "")))
+            /*if (isFolderCtmPack(packName.replace(" (folder)", "")))
+            {*/
+            for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + ctmPack.getName())))
             {
-                for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + packName.replace(" (folder)", ""))))
+                List<String> enabledBlocks = new ArrayList<>();
+                List<String> enabledTiles = new ArrayList<>();
+                List<String> disabledBlocks = new ArrayList<>();
+                List<String> disabledTiles = new ArrayList<>();
+
+                Properties properties = new Properties();
+
+                try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
                 {
-                    List<String> enabledBlocks = new ArrayList<>();
-                    List<String> enabledTiles = new ArrayList<>();
-                    List<String> disabledBlocks = new ArrayList<>();
-                    List<String> disabledTiles = new ArrayList<>();
+                    properties.load(fileInputStream);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
 
-                    Properties properties = new Properties();
+                if (!properties.isEmpty())
+                {
+                    // Loads the enabled and disabled options from the file
+                    fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                    try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
+                    // Toggles the options in the file
+                    if (path.toString().contains(ctmPath.replace("/", "\\")))
                     {
-                        properties.load(fileInputStream);
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-
-                    if (!properties.isEmpty())
-                    {
-                        // Loads the enabled and disabled options from the file
-                        fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
-
-                        // Toggles the options in the file
-                        if (path.toString().contains(ctmPath.replace("/", "\\")))
+                        if (path.toString().endsWith(".properties"))
                         {
-                            if (path.toString().endsWith(".properties"))
-                            {
-                                boolean changed = updateProperties(packName, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
+                            boolean changed = updateProperties(ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                                if (changed)
+                            if (changed)
+                            {
+                                try (FileOutputStream fos = new FileOutputStream(path.toFile()))
                                 {
-                                    try (FileOutputStream fos = new FileOutputStream(path.toFile()))
-                                    {
-                                        removeEmptyKeys(properties);
-                                        properties.store(fos, null);
-                                    }
-                                    catch (IOException e)
-                                    {
-                                        throw new RuntimeException(e);
-                                    }
+                                    removeEmptyKeys(properties);
+                                    properties.store(fos, null);
+                                }
+                                catch (IOException e)
+                                {
+                                    throw new RuntimeException(e);
                                 }
                             }
                         }
                     }
                 }
-                folderPaths.clear();
-                MinecraftClient.getInstance().reloadResources();
             }
+            folderPaths.clear();
+            MinecraftClient.getInstance().reloadResources();
+            //}
         }
         else
         {
             // We disable the pack and reload the resources because the reloading makes the zip file accessible for writing
-            MinecraftClient.getInstance().getResourcePackManager().disable("file/" + packName);
+            MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
             MinecraftClient.getInstance().reloadResources();
 
-            String packPath = resourcePacksDir + "\\" + packName;
+            String packPath = resourcePacksDir + "\\" + ctmPack.getName();
 
             if (isZipCtmPack(packPath))
             {
@@ -479,9 +486,9 @@ public class FilesHandling
                                 // Toggles the options in the file
                                 if (fileHeader.toString().contains(ctmPath))
                                 {
-                                    boolean changed = updateProperties(packName, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
+                                    boolean changed = updateProperties(ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                                    if (changed) // TODO -> Fix
+                                    if (changed)
                                     {
                                         removeEmptyKeys(properties);
 
@@ -528,7 +535,7 @@ public class FilesHandling
                     }
                 }
             }
-            MinecraftClient.getInstance().getResourcePackManager().enable("file/" + packName);
+            MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
             MinecraftClient.getInstance().reloadResources();
         }
         load();
@@ -597,8 +604,13 @@ public class FilesHandling
         }
     }
 
-    private boolean updateProperties(
+    /*private boolean updateProperties(
             String packName, Properties properties,
+            @NotNull List<String> enabledBlocks, @NotNull List<String> enabledTiles,
+            @NotNull List<String> disabledBlocks, @NotNull List<String> disabledTiles
+    )*/
+    private boolean updateProperties(
+            CTMPack ctmPack, Properties properties,
             @NotNull List<String> enabledBlocks, @NotNull List<String> enabledTiles,
             @NotNull List<String> disabledBlocks, @NotNull List<String> disabledTiles
     )
@@ -608,7 +620,7 @@ public class FilesHandling
         // ENABLED BLOCKS
         for (String optionName : enabledBlocks)
         {
-            boolean option = CTMBlocks.getOptionValue(packName, optionName);
+            boolean option = ctmPack.getOptionValue(optionName);
 
             if (!option)
             {
@@ -638,7 +650,7 @@ public class FilesHandling
         // ENABLED TILES
         for (String optionName : enabledTiles)
         {
-            boolean option = CTMBlocks.getOptionValue(packName, optionName);
+            boolean option = ctmPack.getOptionValue(optionName);
 
             if (!option)
             {
@@ -668,7 +680,7 @@ public class FilesHandling
         // DISABLED BLOCKS
         for (String optionName : disabledBlocks)
         {
-            boolean option = CTMBlocks.getOptionValue(packName, optionName);
+            boolean option = ctmPack.getOptionValue(optionName);
 
             if (option)
             {
@@ -698,7 +710,7 @@ public class FilesHandling
         // DISABLED TILES
         for (String optionName : disabledTiles)
         {
-            boolean option = CTMBlocks.getOptionValue(packName, optionName);
+            boolean option = ctmPack.getOptionValue(optionName);
 
             if (option)
             {

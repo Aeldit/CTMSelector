@@ -71,13 +71,13 @@ public class CTMBlock
         return enabled;
     }
 
-    public void toggle()
-    {
-        this.enabled = !this.enabled;
-    }
-
     public void setEnabled(boolean value)
     {
         this.enabled = value;
+    }
+
+    public void toggle()
+    {
+        this.enabled = !this.enabled;
     }
 }

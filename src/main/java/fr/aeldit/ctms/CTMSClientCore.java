@@ -17,7 +17,7 @@
 
 package fr.aeldit.ctms;
 
-import fr.aeldit.ctms.gui.CTMSScreen;
+import fr.aeldit.ctms.gui.NewCTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -27,21 +27,19 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
-import static fr.aeldit.ctms.textures.CTMPacks.getAvailableCtmPacks;
-import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.util.Utils.*;
 
 public class CTMSClientCore implements ClientModInitializer
 {
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load();
+        TEXTURES_HANDLING.load(false);
 
         // Loads the icons pack when the client starts
         ClientLifecycleEvents.CLIENT_STARTED.register(client ->
                 {
-                    if (!getAvailableCtmPacks().isEmpty())
+                    if (!CTM_PACKS.getAvailableCtmPacks().isEmpty())
                     {
                         MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
                     }
@@ -57,7 +55,7 @@ public class CTMSClientCore implements ClientModInitializer
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (packScreenKey.wasPressed())
             {
-                client.setScreen(new CTMSScreen(null));
+                client.setScreen(new NewCTMSScreen(null));
             }
         });
 

@@ -39,9 +39,9 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class CTMPacks
 {
-    private static final List<CTMPack> AVAILABLE_CTM_PACKS = new ArrayList<>();
+    private final List<CTMPack> availableCtmPacks = new ArrayList<>();
     // Contains key:value pairs like so : <packName:ID>
-    private static final Map<String, Integer> packsIDs = new HashMap<>();
+    private final Map<String, Integer> packsIDs = new HashMap<>();
     private int packsNumber = 0;
 
     @Contract(" -> new")
@@ -53,32 +53,34 @@ public class CTMPacks
     /**
      * Adds the pack and its ID (determined by the number of packs that have already been added) to the packIds map
      * + adds the same pack to AVAILABLE_CTM_PACKS (its Identifier is defined here)
-     *
-     * @param packName The name of the pack
      */
-    public void add(String packName)
+    //public void add(String packName)
+    public void add(@NotNull CTMPack ctmPack)
     {
-        if (!packsIDs.containsKey(packName))
+        if (!packsIDs.containsKey(ctmPack.getName()))
         {
-            packsIDs.put(packName, packsNumber);
-            AVAILABLE_CTM_PACKS.add(new CTMPack(
-                    packName, new Identifier("ctms", "%s.png".formatted(packsNumber++))
-            ));
+            packsIDs.put(ctmPack.getName(), packsNumber);
+
+            ctmPack.setIconId(packsNumber);
+            ctmPack.setIdentifier(new Identifier("ctms", "%s.png".formatted(packsNumber)));
+
+            availableCtmPacks.add(ctmPack);
+            packsNumber++;
         }
     }
 
-    public static Map<String, Integer> getPacksIDs()
+    public List<CTMPack> getAvailableCtmPacks()
     {
-        return packsIDs;
+        return availableCtmPacks;
     }
 
-    public static List<CTMPack> getAvailableCtmPacks()
+    /**
+     * Creates a custom resource pack that will contain the pack.png of each CTM resource pack
+     */
+    public void createIconsPack(boolean reload) // TODO -> Get pack.png correctly on reload
     {
-        return AVAILABLE_CTM_PACKS;
-    }
+        boolean changed = false;
 
-    public void createIconsPack() // TODO -> Get pack.png correctly on reload
-    {
         if (!getAvailableCtmPacks().isEmpty())
         {
             Path packsPath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
@@ -86,7 +88,8 @@ public class CTMPacks
             Path mcmetaPath = Path.of(packPath + "/pack.mcmeta");
             Path iconsPackPath = Path.of(packPath + "/assets/ctms");
 
-            if (!Files.exists(packPath))
+            // Creates the pack if it doesn't exist or of files directories are missing
+            if (!Files.exists(iconsPackPath))
             {
                 try
                 {
@@ -101,24 +104,25 @@ public class CTMPacks
                 }
             }
 
-            // Adds the icons (pack.png) of each CTM pack into a special resource pack that is used for the main screen of the mod
+            // Adds the icon (pack.png) of each CTM pack into a special resource pack that is used for the main screen of the mod
             try
             {
                 for (CTMPack ctmPack : getAvailableCtmPacks())
                 {
                     // If the file already exists, we don't add it
-                    if (!Files.exists(Path.of(iconsPackPath + "/%d.png".formatted(getPacksIDs().get(ctmPack.getNameAsString())))))
+                    if (!Files.exists(Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId()))))
                     {
-                        if (ctmPack.getNameAsString().endsWith(".zip"))
+                        changed = true;
+                        if (ctmPack.getName().endsWith(".zip"))
                         {
-                            try (ZipFile zipFile = new ZipFile(packsPath + "/" + ctmPack.getNameAsString()))
+                            try (ZipFile zipFile = new ZipFile(packsPath + "/" + ctmPack.getName()))
                             {
                                 for (FileHeader fileHeader : zipFile.getFileHeaders())
                                 {
                                     if (fileHeader.toString().equals("pack.png"))
                                     {
                                         // Extracts the file 'pack.png' from the zip file to the icons pack
-                                        try (ZipFile zipFile1 = new ZipFile(packsPath + "/" + ctmPack.getNameAsString()))
+                                        try (ZipFile zipFile1 = new ZipFile(packsPath + "/" + ctmPack.getName()))
                                         {
                                             zipFile1.extractFile("pack.png",
                                                     iconsPackPath.toString()
@@ -133,7 +137,7 @@ public class CTMPacks
                                         try
                                         {
                                             Files.move(Path.of(iconsPackPath + "/pack.png"),
-                                                    Path.of(iconsPackPath + "/%d.png".formatted(getPacksIDs().get(ctmPack.getNameAsString())))
+                                                    Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId()))
                                             );
                                         }
                                         catch (IOException e)
@@ -151,10 +155,10 @@ public class CTMPacks
                         }
                         else
                         {
-                            if (!Files.exists(Path.of(iconsPackPath + "/%s.png".formatted(ctmPack.getNameAsString()))))
+                            if (!Files.exists(Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId()))))
                             {
-                                Files.copy(Path.of(packsPath + "/" + ctmPack.getNameAsString().replace(" (folder)", "") + "/pack.png"),
-                                        Path.of(iconsPackPath + "/%d.png".formatted(getPacksIDs().get(ctmPack.getNameAsString()))),
+                                Files.copy(Path.of(packsPath + "/" + ctmPack.getName() + "/pack.png"),
+                                        Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId())),
                                         REPLACE_EXISTING
                                 );
                             }
@@ -166,6 +170,11 @@ public class CTMPacks
             {
                 throw new RuntimeException(e);
             }
+        }
+
+        if (changed && reload)
+        {
+            MinecraftClient.getInstance().reloadResources();
         }
     }
 }

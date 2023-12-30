@@ -18,7 +18,7 @@
 package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
-import fr.aeldit.ctms.textures.CTMBlocks;
+import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -46,19 +46,19 @@ import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 @Environment(EnvType.CLIENT)
 public class ResourcePackScreen extends Screen
 {
-    private final String packName;
     private final Screen parent;
+    private final CTMPack ctmPack;
     private final boolean enabled;
 
-    public ResourcePackScreen(Screen parent, @NotNull String packName)
+    public ResourcePackScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
-        super(CTMPacks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""))
-                ? Text.of(packName.replace(".zip", ""))
-                : Text.of(Formatting.ITALIC + packName.replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
+        super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
+                ? Text.of(ctmPack.getName().replace(".zip", ""))
+                : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
         );
-        this.packName = packName;
         this.parent = parent;
-        this.enabled = CTMPacks.getEnabledPacks().contains("file/" + packName.replace(" (folder)", ""));
+        this.ctmPack = ctmPack;
+        this.enabled = CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName());
     }
 
     @Override
@@ -85,11 +85,11 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, packName);
+            ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, ctmPack);
             addDrawableChild(list);
 
             // Sorts the blocks alphabetically
-            List<CTMBlock> toSort = new ArrayList<>(CTMBlocks.getAvailableCtmBlocks(packName));
+            List<CTMBlock> toSort = new ArrayList<>(ctmPack.getCtmBlocks());
             toSort.sort(Comparator.comparing(block -> block.getName().getString()));
 
             for (CTMBlock block : toSort)
@@ -99,9 +99,9 @@ public class ResourcePackScreen extends Screen
 
             addDrawableChild(
                     ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                                CTMBlocks.getCTMBlocks(packName).resetOptions();
-                                CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
-                                TEXTURES_HANDLING.updateUsedTextures(packName);
+                                ctmPack.resetOptions();
+                                ctmPack.clearUnsavedOptions();
+                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                                 close();
                             })
                             .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -111,7 +111,7 @@ public class ResourcePackScreen extends Screen
 
             addDrawableChild(
                     ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                                CTMBlocks.getCTMBlocks(packName).restoreUnsavedOptions();
+                                ctmPack.restoreUnsavedOptions();
                                 close();
                             })
                             .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
@@ -120,10 +120,10 @@ public class ResourcePackScreen extends Screen
             );
             addDrawableChild(
                     ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                                if (CTMBlocks.getCTMBlocks(packName).optionsChanged())
+                                if (ctmPack.optionsChanged())
                                 {
-                                    CTMBlocks.getCTMBlocks(packName).clearUnsavedOptions();
-                                    TEXTURES_HANDLING.updateUsedTextures(packName);
+                                    ctmPack.clearUnsavedOptions();
+                                    TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                                 }
                                 close();
                             })
@@ -150,24 +150,24 @@ public class ResourcePackScreen extends Screen
     private static class ListWidget extends ElementListWidget<Entry>
     {
         private final EntryBuilder builder = new EntryBuilder(client, width);
-        private final String packName;
+        private final CTMPack ctmPack;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, String packName)
+        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMPack ctmPack)
         {
             super(client, width, height, top, bottom, itemHeight);
-            this.packName = packName;
+            this.ctmPack = ctmPack;
         }
 
         public void add(CTMBlock block)
         {
-            addEntry(builder.build(block, packName));
+            addEntry(builder.build(block, ctmPack));
         }
     }
 
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMBlock block, String packName)
+        public @NotNull Entry build(@NotNull CTMBlock block, CTMPack ctmPack)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
@@ -175,7 +175,7 @@ public class ResourcePackScreen extends Screen
                     .omitKeyText()
                     .initially(block.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> CTMBlocks.getCTMBlocks(packName).toggle(block)
+                            (button, value) -> ctmPack.toggle(block)
                     );
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
