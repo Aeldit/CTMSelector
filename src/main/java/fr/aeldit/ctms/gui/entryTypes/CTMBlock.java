@@ -17,9 +17,12 @@
 
 package fr.aeldit.ctms.gui.entryTypes;
 
+import fr.aeldit.ctms.textures.controls.Controls;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 public class CTMBlock
 {
@@ -27,6 +30,7 @@ public class CTMBlock
     private final String prettyName;
     private final Identifier identifier;
     private boolean enabled;
+    private final ArrayList<Controls> groups = new ArrayList<>();
 
     public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
     {
@@ -68,6 +72,13 @@ public class CTMBlock
 
     public boolean isEnabled()
     {
+        for (Controls controls : groups)
+        {
+            if (!controls.isEnabled())
+            {
+                return false;
+            }
+        }
         return enabled;
     }
 
@@ -79,5 +90,10 @@ public class CTMBlock
     public void toggle()
     {
         this.enabled = !this.enabled;
+    }
+
+    public void addToGroup(Controls controlsGroup)
+    {
+        groups.add(controlsGroup);
     }
 }

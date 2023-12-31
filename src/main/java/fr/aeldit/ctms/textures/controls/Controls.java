@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 public class Controls
 {
@@ -50,6 +48,7 @@ public class Controls
     private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
     private boolean isEnabled;
+    private final Path packPath;
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
@@ -60,6 +59,7 @@ public class Controls
         this.type = type;
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip;
+        this.packPath = packPath;
         this.propertiesFilesPaths.addAll(propertiesFilesPaths);
 
         if (texturePath == null)
@@ -116,6 +116,26 @@ public class Controls
         return Text.of(buttonTooltip);
     }
 
+    /**
+     * @return The path to each Properties file contained by the Controls
+     */
+    public ArrayList<Path> getPropertiesFilesPaths()
+    {
+        if (propertiesFilesPaths.isEmpty())
+        {
+            return new ArrayList<>();
+        }
+
+        ArrayList<Path> paths = new ArrayList<>();
+        Path resourcePackPath = Path.of(packPath + "/assets");
+
+        for (String s : propertiesFilesPaths)
+        {
+            paths.add(Path.of(resourcePackPath + "/" + s.replace(":", "/")));
+        }
+        return paths;
+    }
+
     public Identifier getIdentifier()
     {
         return identifier;
@@ -162,28 +182,5 @@ public class Controls
             return properties.getProperty("matchTiles");
         }
         return null;
-    }
-
-    public @NotNull Set<String> getFilesOrOptionsNames()
-    {
-        if (propertiesFilesPaths.isEmpty())
-        {
-            return new HashSet<>(0);
-        }
-
-        Set<String> paths = new HashSet<>();
-
-        propertiesFilesPaths.forEach(filePath -> {
-                    StringBuilder translation = new StringBuilder();
-
-                    for (String str : filePath.split("/")[filePath.split("/").length - 1].replace(".properties", "").split("_"))
-                    {
-                        translation.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
-                        translation.append(" ");
-                    }
-                    paths.add(translation.substring(0, translation.length() - 1)); // Removes the space at the end of the string
-                }
-        );
-        return paths;
     }
 }

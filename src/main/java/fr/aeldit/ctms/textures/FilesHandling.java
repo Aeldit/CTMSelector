@@ -19,6 +19,7 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
@@ -34,8 +35,8 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 
-import static fr.aeldit.ctms.textures.CTMSelector.isFolderPackEligible;
-import static fr.aeldit.ctms.textures.CTMSelector.isZipPackEligible;
+import static fr.aeldit.ctms.textures.CTMSelector.hasFolderPackControls;
+import static fr.aeldit.ctms.textures.CTMSelector.hasZipPackControls;
 import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
 
 public class FilesHandling
@@ -123,7 +124,7 @@ public class FilesHandling
                 CTMPack ctmPack = new CTMPack(file.getName(), false);
                 CTM_PACKS.add(ctmPack);
 
-                if (isZipPackEligible(file.getName()))
+                if (hasZipPackControls(file.getName()))
                 {
                     ctmPack.createCtmSelector();
                 }
@@ -157,7 +158,9 @@ public class FilesHandling
                 CTMPack ctmPack = new CTMPack(file.getName(), true);
                 CTM_PACKS.add(ctmPack);
 
-                if (isFolderPackEligible(file.toPath()))
+                boolean hasControls = hasFolderPackControls(file.toPath());
+
+                if (hasControls)
                 {
                     ctmPack.createCtmSelector();
                 }
@@ -187,6 +190,19 @@ public class FilesHandling
                     }
                 }
                 folderPaths.clear();
+
+                if (hasControls)
+                {
+                    ctmPack.getCtmSelector().initBlocksInControlsMap();
+                    for (CTMBlock ctmBlock : ctmPack.getCtmBlocks())
+                    {
+                        Controls controls = ctmPack.getCtmSelector().getControlsWithBlock(ctmBlock.getBlockName());
+                        if (controls != null)
+                        {
+                            ctmBlock.addToGroup(controls);
+                        }
+                    }
+                }
             }
         }
 

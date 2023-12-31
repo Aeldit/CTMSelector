@@ -22,26 +22,26 @@ import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CTMSelector
 {
     //=========================================================================
     // Static part
     //=========================================================================
-    public static boolean isFolderPackEligible(Path packPath)
+    public static boolean hasFolderPackControls(Path packPath)
     {
         return Files.exists(Path.of(packPath + "/ctm_selector.json"));
     }
 
-    public static boolean isZipPackEligible(String packPath)
+    public static boolean hasZipPackControls(String packPath)
     {
         try (ZipFile tmpZipFile = new ZipFile(packPath))
         {
@@ -67,6 +67,9 @@ public class CTMSelector
     private final Path path;
     private final String packName;
 
+    // Map<Controls, Map<Properties file, blocksNames>>
+    private final Map<String, Map<String, ArrayList<String>>> blocksInControlsMap = new HashMap<>();
+
     public CTMSelector(String packName)
     {
         this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
@@ -75,9 +78,91 @@ public class CTMSelector
         readFile();
     }
 
+    /**
+     * Adds to the {@code blocksInControlsMap} all the blocks names contained by each Properties file found in each {@code Controls}
+     */
+    public void initBlocksInControlsMap()
+    {
+        for (Controls controls : packControls)
+        {
+            blocksInControlsMap.putIfAbsent(controls.getGroupName(), new HashMap<>());
+
+            // Iterates over the properties files contained by the current controls object
+            for (Path path1 : controls.getPropertiesFilesPaths())
+            {
+                blocksInControlsMap
+                        .get(controls.getGroupName())
+                        .put(path1.toString(), getCTMBlocksNamesInProperties(path1));
+            }
+        }
+    }
+
     public List<Controls> getPackControls()
     {
         return packControls;
+    }
+
+    /**
+     * @param blockName The name of the block
+     * @return An arraylist containing all the controls that contain the block | {@code null} otherwise
+     */
+    public Controls getControlsWithBlock(String blockName) // TODO -> return an array containing all the controls instead of only one
+    {
+        for (Controls controls : packControls)
+        {
+            Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName(), null);
+            if (currentControls == null)
+            {
+                continue;
+            }
+
+            for (Path path1 : controls.getPropertiesFilesPaths())
+            {
+                if (currentControls.get(path1.toString()).contains(blockName))
+                {
+                    return controls;
+                }
+            }
+        }
+        return null;
+    }
+
+    private @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
+    {
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(new FileInputStream(String.valueOf(pathArg)));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        if (properties.isEmpty())
+        {
+            return new ArrayList<>();
+        }
+
+        ArrayList<String> ctmBlocks = new ArrayList<>();
+
+        if (properties.containsKey("matchBlocks"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
+        }
+        else if (properties.containsKey("matchTiles"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
+        }
+
+        if (properties.containsKey("ctmDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
+        }
+        else if (properties.containsKey("ctmTilesDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
+        }
+        return ctmBlocks;
     }
 
     public void readFile()
@@ -152,17 +237,5 @@ public class CTMSelector
     public boolean optionsChanged()
     {
         return !unsavedOptions.isEmpty();
-    }
-
-    public boolean getOptionValue(String groupName)
-    {
-        for (Controls controls : packControls)
-        {
-            if (controls.getGroupName().equals(groupName))
-            {
-                return controls.isEnabled();
-            }
-        }
-        return false;
     }
 }
