@@ -17,6 +17,7 @@
 
 package fr.aeldit.ctms.gui.entryTypes;
 
+import fr.aeldit.ctms.textures.CTMSelector;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,7 @@ public class CTMPack
 {
     private final String name;
     private final boolean isFolder;
+    private CTMSelector ctmSelector;
     private Identifier identifier;
     private int iconId;
 
@@ -43,6 +45,7 @@ public class CTMPack
     {
         this.name = name;
         this.isFolder = isFolder;
+        this.ctmSelector = null;
     }
 
     public String getName()
@@ -53,6 +56,21 @@ public class CTMPack
     public Text getNameAsText()
     {
         return isFolder ? Text.of(name + " (folder)") : Text.of(name);
+    }
+
+    public boolean isFolder()
+    {
+        return isFolder;
+    }
+
+    public CTMSelector getCtmSelector()
+    {
+        return ctmSelector;
+    }
+
+    public void createCtmSelector()
+    {
+        this.ctmSelector = new CTMSelector(this);
     }
 
     public Identifier getIdentifier()
@@ -73,11 +91,6 @@ public class CTMPack
     public void setIconId(int iconId)
     {
         this.iconId = iconId;
-    }
-
-    public boolean isFolder()
-    {
-        return isFolder;
     }
 
     //=========================================================================

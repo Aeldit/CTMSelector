@@ -18,26 +18,23 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
+import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CTMSelector
 {
-    private static final Map<String, List<Controls>> packsControlsMap = new HashMap<>();
-
-    public static List<Controls> getControls(String packName)
-    {
-        return packsControlsMap.getOrDefault(packName, new ArrayList<>(0));
-    }
-
     public static boolean isFolderPackEligible(Path packPath)
     {
         return Files.exists(Path.of(packPath + "/ctm_selector.json"));
@@ -65,31 +62,51 @@ public class CTMSelector
     //=========================================================================
     // Non-static part
     //=========================================================================
-    private final List<Controls> controls = new ArrayList<>();
+    private final List<Controls> packControls = new ArrayList<>();
     private final Path path;
+    private final CTMPack ctmPack;
 
-    public CTMSelector(String packName)
+    public CTMSelector(@NotNull CTMPack ctmPack)
     {
-        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
+        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + ctmPack.getName() + "/ctm_selector.json");
+        this.ctmPack = ctmPack;
 
         readFile();
-        packsControlsMap.put(packName, controls);
+    }
+
+    public List<Controls> getPackControls()
+    {
+        return packControls;
+    }
+
+    public CTMPack getCtmPack()
+    {
+        return ctmPack;
     }
 
     public void readFile()
     {
         if (Files.exists(path))
         {
+            ArrayList<Controls.ControlsRecord> controlsRecords = new ArrayList<>();
             try
             {
                 Gson gson = new Gson();
                 Reader reader = Files.newBufferedReader(path);
-                controls.addAll(Arrays.asList(gson.fromJson(reader, Controls[].class)));
+                controlsRecords.addAll(Arrays.asList(gson.fromJson(reader, Controls.ControlsRecord[].class)));
                 reader.close();
             }
             catch (IOException e)
             {
                 throw new RuntimeException(e);
+            }
+
+            for (Controls.ControlsRecord cr : controlsRecords)
+            {
+                packControls.add(new Controls(cr.type(), cr.groupName(), cr.buttonTooltip(),
+                        cr.propertiesFilesPaths(), cr.texturePath(), cr.isEnabled(),
+                        Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + ctmPack.getName()))
+                );
             }
         }
     }

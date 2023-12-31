@@ -34,6 +34,8 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 
+import static fr.aeldit.ctms.textures.CTMSelector.isFolderPackEligible;
+import static fr.aeldit.ctms.textures.CTMSelector.isZipPackEligible;
 import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
 
 public class FilesHandling
@@ -121,6 +123,11 @@ public class FilesHandling
                 CTMPack ctmPack = new CTMPack(file.getName(), false);
                 CTM_PACKS.add(ctmPack);
 
+                if (isZipPackEligible(file.getName()))
+                {
+                    ctmPack.createCtmSelector();
+                }
+
                 try (ZipFile zipFile = new ZipFile(file))
                 {
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
@@ -149,6 +156,11 @@ public class FilesHandling
             {
                 CTMPack ctmPack = new CTMPack(file.getName(), true);
                 CTM_PACKS.add(ctmPack);
+
+                if (isFolderPackEligible(file.toPath()))
+                {
+                    ctmPack.createCtmSelector();
+                }
 
                 for (Path path : listFilesInFolderPack(file))
                 {

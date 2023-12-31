@@ -18,21 +18,145 @@
 package fr.aeldit.ctms.textures.controls;
 
 import com.google.gson.annotations.SerializedName;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
-public record Controls(
-        @SerializedName("type") ControlsTypes type, @SerializedName("block_group") String blockGroup,
-        @SerializedName("button_title") String buttonTitle, @SerializedName("button_tooltip") String buttonTooltip,
-        @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths
-)
+public class Controls
 {
+    // The record will be used to serialize and deserialize the controls
+    public record ControlsRecord(
+            @SerializedName("type") String type,
+            @SerializedName("group_name") String groupName,
+            @SerializedName("button_tooltip") String buttonTooltip,
+            @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths,
+            @SerializedName("texture_path") String texturePath,
+            @SerializedName("enabled") boolean isEnabled
+    ) {}
+
+    private final String type;
+    private final String groupName;
+    private final String buttonTooltip;
+    private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
+    private final Identifier identifier;
+    private final Path packPath;
+    private boolean isEnabled;
+
+    public Controls(
+            @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
+            @NotNull ArrayList<String> propertiesFilesPaths, @Nullable String texturePath,
+            boolean isEnabled, Path packPath
+    )
+    {
+        this.type = type;
+        this.groupName = groupName;
+        this.buttonTooltip = buttonTooltip;
+        this.packPath = packPath;
+        this.propertiesFilesPaths.addAll(propertiesFilesPaths);
+
+        if (texturePath == null)
+        {
+            if (propertiesFilesPaths.isEmpty())
+            {
+                this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            }
+            else
+            {
+                String path = getImagePath(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(":", "/")));
+                if (path == null)
+                {
+                    this.identifier = new Identifier("textures/misc/unknown_pack.png");
+                }
+                else
+                {
+                    String pathFromFiles = propertiesFilesPaths.get(0);
+                    String namespace = pathFromFiles.contains(":") ? pathFromFiles.split(":")[0] : "minecraft";
+                    String newPath = "textures/block/" + path + ".png";
+                    this.identifier = new Identifier(namespace, newPath);
+                }
+            }
+        }
+        else
+        {
+            String namespace = texturePath.contains(":") ? texturePath.split(":")[0] : "minecraft";
+            String path = texturePath.contains(":") ? texturePath.split(":")[1] : texturePath;
+            this.identifier = new Identifier(namespace, path + ".png");
+        }
+
+        this.isEnabled = isEnabled;
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public Text getGroupName()
+    {
+        return Text.of(groupName);
+    }
+
+    public String getButtonTooltip()
+    {
+        return buttonTooltip;
+    }
+
+    public Identifier getIdentifier()
+    {
+        return identifier;
+    }
+
+    public boolean isEnabled()
+    {
+        return isEnabled;
+    }
+
+    public void toggle()
+    {
+        this.isEnabled = !this.isEnabled;
+    }
+
+    private @Nullable String getImagePath(Path path)
+    {
+        if (!Files.exists(path))
+        {
+            return null;
+        }
+
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(new FileInputStream(String.valueOf(path)));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (properties.containsKey("matchBlocks"))
+        {
+            return properties.getProperty("matchBlocks");
+        }
+        else if (properties.containsKey("matchTiles"))
+        {
+            return properties.getProperty("matchTiles");
+        }
+        return null;
+    }
+
     public @NotNull Set<String> getFilesOrOptionsNames()
     {
-        if (propertiesFilesPaths == null)
+        if (propertiesFilesPaths.isEmpty())
         {
             return new HashSet<>(0);
         }
