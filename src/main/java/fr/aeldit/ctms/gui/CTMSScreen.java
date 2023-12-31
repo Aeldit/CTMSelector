@@ -113,13 +113,6 @@ public class CTMSScreen extends Screen
                 });
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
         addDrawableChild(reloadButton);
-
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
-                20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
-                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
-        );
-        controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);
     }
 
     /**

@@ -32,43 +32,15 @@ import java.util.*;
 public class CTMSelector
 {
     private static final Map<String, List<Controls>> packsControlsMap = new HashMap<>();
-    private final List<Controls> controls = new ArrayList<>();
-    private final Path path;
-
-    public CTMSelector(String packName)
-    {
-        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "\\" + packName + "\\ctm_selector.json");
-
-        readFile();
-        packsControlsMap.put(packName, controls);
-    }
 
     public static List<Controls> getControls(String packName)
     {
         return packsControlsMap.getOrDefault(packName, new ArrayList<>(0));
     }
 
-    public void readFile()
-    {
-        if (Files.exists(path))
-        {
-            try
-            {
-                Gson gson = new Gson();
-                Reader reader = Files.newBufferedReader(path);
-                controls.addAll(Arrays.asList(gson.fromJson(reader, Controls[].class)));
-                reader.close();
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     public static boolean isFolderPackEligible(Path packPath)
     {
-        return Files.exists(Path.of(packPath + "\\ctm_selector.json"));
+        return Files.exists(Path.of(packPath + "/ctm_selector.json"));
     }
 
     public static boolean isZipPackEligible(String packPath)
@@ -88,5 +60,37 @@ public class CTMSelector
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+    //=========================================================================
+    // Non-static part
+    //=========================================================================
+    private final List<Controls> controls = new ArrayList<>();
+    private final Path path;
+
+    public CTMSelector(String packName)
+    {
+        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
+
+        readFile();
+        packsControlsMap.put(packName, controls);
+    }
+
+    public void readFile()
+    {
+        if (Files.exists(path))
+        {
+            try
+            {
+                Gson gson = new Gson();
+                Reader reader = Files.newBufferedReader(path);
+                controls.addAll(Arrays.asList(gson.fromJson(reader, Controls[].class)));
+                reader.close();
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

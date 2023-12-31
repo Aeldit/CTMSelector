@@ -17,27 +17,28 @@
 
 package fr.aeldit.ctms.gui;
 
-import fr.aeldit.ctms.gui.widgets.ControlsPackWidget;
+import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.Objects;
 
 @Environment(EnvType.CLIENT)
 public class ControlsScreen extends Screen
 {
     private final Screen parent;
-    private ControlsPackWidget controlsPackWidget;
+    private final CTMPack ctmPack;
 
-    public ControlsScreen(Screen parent)
+    public ControlsScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
-        super(Text.translatable("ctms.screen.controls.title"));
+        super(Text.of(Formatting.GOLD + ctmPack.getName() + Formatting.RESET + Text.translatable("ctms.screen.controls.title").getString()));
         this.parent = parent;
+        this.ctmPack = ctmPack;
     }
 
     @Override
@@ -50,7 +51,6 @@ public class ControlsScreen extends Screen
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
         renderBackgroundTexture(drawContext);
-        controlsPackWidget.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
         super.render(drawContext, mouseX, mouseY, delta);
     }
@@ -58,8 +58,5 @@ public class ControlsScreen extends Screen
     @Override
     protected void init()
     {
-        controlsPackWidget = new ControlsPackWidget(client, width, height, 32, height - 32, 25);
-        controlsPackWidget.addAll(Collections.singletonList(new ControlsPackWidget.ControlsPackEntry(MinecraftClient.getInstance(), controlsPackWidget)));
-        addSelectableChild(controlsPackWidget);
     }
 }

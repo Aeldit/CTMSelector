@@ -110,6 +110,15 @@ public class ResourcePackScreen extends Screen
             );
 
             addDrawableChild(
+                    ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
+                                    client.setScreen(new ControlsScreen(this, ctmPack))
+                            )
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
+                            .dimensions(width - 110, 6, 100, 20)
+                            .build()
+            );
+
+            addDrawableChild(
                     ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
                                 ctmPack.restoreUnsavedOptions();
                                 close();
