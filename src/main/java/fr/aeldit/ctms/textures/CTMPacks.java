@@ -164,10 +164,13 @@ public class CTMPacks
                     }
                     else
                     {
-                        Files.copy(Path.of(packsPath + "/" + ctmPack.getName() + "/pack.png"),
-                                Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId())),
-                                REPLACE_EXISTING
-                        );
+                        if (Files.exists(Path.of(packsPath + "/" + ctmPack.getName() + "/pack.png")))
+                        {
+                            Files.copy(Path.of(packsPath + "/" + ctmPack.getName() + "/pack.png"),
+                                    Path.of(iconsPackPath + "/%d.png".formatted(ctmPack.getIconId())),
+                                    REPLACE_EXISTING
+                            );
+                        }
                     }
                 }
             }
