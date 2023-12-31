@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
+import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;

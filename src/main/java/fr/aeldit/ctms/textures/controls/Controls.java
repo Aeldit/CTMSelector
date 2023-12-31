@@ -15,7 +15,7 @@
  * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
  */
 
-package fr.aeldit.ctms.textures;
+package fr.aeldit.ctms.textures.controls;
 
 import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public record Controls(
-        @SerializedName("type") String type, @SerializedName("block_group") String blockGroup,
+        @SerializedName("type") ControlsTypes type, @SerializedName("block_group") String blockGroup,
         @SerializedName("button_title") String buttonTitle, @SerializedName("button_tooltip") String buttonTooltip,
         @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths
 )
