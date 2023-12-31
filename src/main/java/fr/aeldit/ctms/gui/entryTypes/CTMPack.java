@@ -70,7 +70,7 @@ public class CTMPack
 
     public void createCtmSelector()
     {
-        this.ctmSelector = new CTMSelector(this);
+        this.ctmSelector = new CTMSelector(this.name);
     }
 
     public Identifier getIdentifier()

@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -26,7 +27,9 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.compress.utils.Lists;
@@ -37,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class ControlsScreen extends Screen
@@ -60,8 +65,8 @@ public class ControlsScreen extends Screen
     @Override
     public void render(@NotNull DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
-        drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xffffff);
         super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
     @Override
@@ -73,17 +78,54 @@ public class ControlsScreen extends Screen
     @Override
     protected void init()
     {
-        ControlsListWidget list = new ControlsListWidget(client, width, height, 32, height - 32, 25);
+        CTMSelector ctmSelector = ctmPack.getCtmSelector();
+
+        ControlsListWidget list = new ControlsListWidget(client, width, height, 32, height - 32, 25, ctmSelector);
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
         List<Controls> toSort = new ArrayList<>(ctmPack.getCtmSelector().getPackControls());
-        toSort.sort(Comparator.comparing(controls -> controls.getGroupName().getString()));
+        toSort.sort(Comparator.comparing(Controls::getGroupName));
 
         for (Controls controls : toSort)
         {
             list.add(controls);
         }
+
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                            ctmSelector.resetOptions();
+                            ctmSelector.clearUnsavedOptions();
+                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+                            close();
+                        })
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                        .dimensions(10, 6, 75, 20)
+                        .build()
+        );
+
+        addDrawableChild(
+                ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
+                            ctmSelector.restoreUnsavedOptions();
+                            close();
+                        })
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
+                        .dimensions(width / 2 - 154, height - 28, 150, 20)
+                        .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
+                            if (ctmSelector.optionsChanged())
+                            {
+                                ctmSelector.clearUnsavedOptions();
+                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+                            }
+                            close();
+                        })
+                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
+                        .dimensions(width / 2 + 4, height - 28, 150, 20)
+                        .build()
+        );
     }
 
     /**
@@ -94,31 +136,34 @@ public class ControlsScreen extends Screen
     private static class ControlsListWidget extends ElementListWidget<Entry>
     {
         private final EntryBuilder builder = new EntryBuilder(client, width);
+        private final CTMSelector ctmSelector;
 
-        public ControlsListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight)
+        public ControlsListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMSelector ctmSelector)
         {
             super(client, width, height, top, bottom, itemHeight);
+            this.ctmSelector = ctmSelector;
         }
 
         public void add(Controls controls)
         {
-            addEntry(builder.build(controls));
+            addEntry(builder.build(ctmSelector, controls));
         }
     }
 
     private record EntryBuilder(MinecraftClient client, int width)
     {
-        @Contract("_ -> new")
-        public @NotNull Entry build(@NotNull Controls controls)
+        @Contract("_, _ -> new")
+        public @NotNull Entry build(CTMSelector ctmSelector, @NotNull Controls controls)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, controls.getGroupName(), client.textRenderer);
+            var text = new TextWidget(160, 20 + 2, controls.getGroupNameAsText(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
                     .initially(controls.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> controls.toggle()
+                            (button, value) -> ctmSelector.toggle(controls)
                     );
+            toggleButton.setTooltip(Tooltip.of(controls.getButtonTooltip()));
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);

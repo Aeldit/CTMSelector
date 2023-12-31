@@ -18,12 +18,10 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -35,6 +33,9 @@ import java.util.List;
 
 public class CTMSelector
 {
+    //=========================================================================
+    // Static part
+    //=========================================================================
     public static boolean isFolderPackEligible(Path packPath)
     {
         return Files.exists(Path.of(packPath + "/ctm_selector.json"));
@@ -64,12 +65,12 @@ public class CTMSelector
     //=========================================================================
     private final List<Controls> packControls = new ArrayList<>();
     private final Path path;
-    private final CTMPack ctmPack;
+    private final String packName;
 
-    public CTMSelector(@NotNull CTMPack ctmPack)
+    public CTMSelector(String packName)
     {
-        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + ctmPack.getName() + "/ctm_selector.json");
-        this.ctmPack = ctmPack;
+        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
+        this.packName = packName;
 
         readFile();
     }
@@ -77,11 +78,6 @@ public class CTMSelector
     public List<Controls> getPackControls()
     {
         return packControls;
-    }
-
-    public CTMPack getCtmPack()
-    {
-        return ctmPack;
     }
 
     public void readFile()
@@ -101,13 +97,72 @@ public class CTMSelector
                 throw new RuntimeException(e);
             }
 
+            // Adds the controls properly initialized to the packControls array
             for (Controls.ControlsRecord cr : controlsRecords)
             {
                 packControls.add(new Controls(cr.type(), cr.groupName(), cr.buttonTooltip(),
-                        cr.propertiesFilesPaths(), cr.texturePath(), cr.isEnabled(),
-                        Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + ctmPack.getName()))
+                        cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(),
+                        Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName))
                 );
             }
         }
+    }
+
+    //=========================================================================
+    // Options handling
+    //=========================================================================
+    private final List<Controls> unsavedOptions = new ArrayList<>();
+
+    public void toggle(Controls controls)
+    {
+        if (packControls.contains(controls))
+        {
+            controls.toggle();
+        }
+
+        if (unsavedOptions.contains(controls))
+        {
+            unsavedOptions.remove(controls);
+        }
+        else
+        {
+            unsavedOptions.add(controls);
+        }
+    }
+
+    public void resetOptions()
+    {
+        packControls.forEach(ctmBlock -> ctmBlock.setEnabled(true));
+    }
+
+    public void restoreUnsavedOptions()
+    {
+        for (Controls controls : unsavedOptions)
+        {
+            packControls.get(packControls.indexOf(controls)).setEnabled(!packControls.contains(controls));
+        }
+        unsavedOptions.clear();
+    }
+
+    public void clearUnsavedOptions()
+    {
+        unsavedOptions.clear();
+    }
+
+    public boolean optionsChanged()
+    {
+        return !unsavedOptions.isEmpty();
+    }
+
+    public boolean getOptionValue(String groupName)
+    {
+        for (Controls controls : packControls)
+        {
+            if (controls.getGroupName().equals(groupName))
+            {
+                return controls.isEnabled();
+            }
+        }
+        return false;
     }
 }

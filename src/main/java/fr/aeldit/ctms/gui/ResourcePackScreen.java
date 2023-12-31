@@ -68,10 +68,10 @@ public class ResourcePackScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
-        super.render(DrawContext, mouseX, mouseY, delta);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
+        super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ResourcePackScreen extends Screen
                                 close();
                             })
                             .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                            .dimensions(10, 6, 100, 20)
+                            .dimensions(10, 6, 75, 20)
                             .build()
             );
 

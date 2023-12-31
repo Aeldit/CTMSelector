@@ -40,7 +40,7 @@ public class Controls
             @SerializedName("group_name") String groupName,
             @SerializedName("button_tooltip") String buttonTooltip,
             @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths,
-            @SerializedName("texture_path") String texturePath,
+            @SerializedName("screen_texture") String screenTexture,
             @SerializedName("enabled") boolean isEnabled
     ) {}
 
@@ -49,7 +49,6 @@ public class Controls
     private final String buttonTooltip;
     private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
-    private final Path packPath;
     private boolean isEnabled;
 
     public Controls(
@@ -61,12 +60,11 @@ public class Controls
         this.type = type;
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip;
-        this.packPath = packPath;
         this.propertiesFilesPaths.addAll(propertiesFilesPaths);
 
         if (texturePath == null)
         {
-            if (propertiesFilesPaths.isEmpty())
+            if (propertiesFilesPaths.isEmpty())// Case where no files where specified (this is also an error)
             {
                 this.identifier = new Identifier("textures/misc/unknown_pack.png");
             }
@@ -80,17 +78,19 @@ public class Controls
                 else
                 {
                     String pathFromFiles = propertiesFilesPaths.get(0);
-                    String namespace = pathFromFiles.contains(":") ? pathFromFiles.split(":")[0] : "minecraft";
+                    String namespace = pathFromFiles.split(":")[0];
                     String newPath = "textures/block/" + path + ".png";
                     this.identifier = new Identifier(namespace, newPath);
                 }
             }
         }
+        else if (!texturePath.contains(":")) // Case where the namespace is not specified
+        {
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+        }
         else
         {
-            String namespace = texturePath.contains(":") ? texturePath.split(":")[0] : "minecraft";
-            String path = texturePath.contains(":") ? texturePath.split(":")[1] : texturePath;
-            this.identifier = new Identifier(namespace, path + ".png");
+            this.identifier = new Identifier(texturePath.split(":")[0], texturePath.split(":")[1]);
         }
 
         this.isEnabled = isEnabled;
@@ -101,14 +101,19 @@ public class Controls
         return type;
     }
 
-    public Text getGroupName()
+    public String getGroupName()
+    {
+        return groupName;
+    }
+
+    public Text getGroupNameAsText()
     {
         return Text.of(groupName);
     }
 
-    public String getButtonTooltip()
+    public Text getButtonTooltip()
     {
-        return buttonTooltip;
+        return Text.of(buttonTooltip);
     }
 
     public Identifier getIdentifier()
@@ -119,6 +124,11 @@ public class Controls
     public boolean isEnabled()
     {
         return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        isEnabled = enabled;
     }
 
     public void toggle()
