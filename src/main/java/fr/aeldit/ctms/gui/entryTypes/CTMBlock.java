@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -95,5 +95,10 @@ public class CTMBlock
     public void addToGroup(Controls controlsGroup)
     {
         groups.add(controlsGroup);
+    }
+
+    public void addAllToGroup(@NotNull ArrayList<Controls> controlsGroupsArrayList)
+    {
+        controlsGroupsArrayList.forEach(this::addToGroup);
     }
 }

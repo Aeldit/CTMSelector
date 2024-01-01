@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -191,15 +191,17 @@ public class FilesHandling
                 }
                 folderPaths.clear();
 
+                // If the pack has a controls file, we initialize them for this pack
                 if (hasControls)
                 {
                     ctmPack.getCtmSelector().initBlocksInControlsMap();
+
                     for (CTMBlock ctmBlock : ctmPack.getCtmBlocks())
                     {
-                        Controls controls = ctmPack.getCtmSelector().getControlsWithBlock(ctmBlock.getBlockName());
-                        if (controls != null)
+                        ArrayList<Controls> controlsWithBlock = ctmPack.getCtmSelector().getControlsWithBlock(ctmBlock.getBlockName());
+                        if (!controlsWithBlock.isEmpty())
                         {
-                            ctmBlock.addToGroup(controls);
+                            ctmBlock.addAllToGroup(controlsWithBlock);
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -106,8 +106,10 @@ public class CTMSelector
      * @param blockName The name of the block
      * @return An arraylist containing all the controls that contain the block | {@code null} otherwise
      */
-    public Controls getControlsWithBlock(String blockName) // TODO -> return an array containing all the controls instead of only one
+    public ArrayList<Controls> getControlsWithBlock(String blockName)
     {
+        ArrayList<Controls> controlsArrayList = new ArrayList<>();
+
         for (Controls controls : packControls)
         {
             Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName(), null);
@@ -120,11 +122,11 @@ public class CTMSelector
             {
                 if (currentControls.get(path1.toString()).contains(blockName))
                 {
-                    return controls;
+                    controlsArrayList.add(controls);
                 }
             }
         }
-        return null;
+        return controlsArrayList;
     }
 
     private @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
