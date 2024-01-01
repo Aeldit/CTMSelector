@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -26,9 +26,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a CTM capable resource pack.
- * <p>
- * Contains methods to handle the options
+ * Represents a a CTM pack
+ *
+ * @apiNote {@link #name} holds the name of the associated resource pack
+ *         <ul>
+ *              <li>if it is a zip file : {@code "MyPackName.zip"}</li>
+ *              <li>if it is a folder : {@code "MyPackName"}</li>
+ *         </ul>
+ *         <p>
+ *         {@link #isFolder} holds whether the pack is a folder or a zip file
+ *         <p>
+ *         {@link #ctmSelector} holds the associated {@link CTMSelector} object
+ *         <p>
+ *         {@link #identifier} holds the identifier (the texture) that is
+ *         displayed next to the pack name in the
+ *         {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
+ *         <p>
+ *         {@link #iconId} holds the ID associated with this pack (used to get
+ *         the texture to display)
+ *         <p>
+ *         The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
+ *         of each block with CTM properties found in the pack
+ *         <p>
+ *         The {@link #unsavedOptions} ArrayList contains a {@link CTMBlock}
+ *         object of each changed options
+ *         <p>
+ *         The second part contains methods to handle the activation /
+ *         deactivation of each {@code CTMBlock} in this pack
  */
 public class CTMPack
 {

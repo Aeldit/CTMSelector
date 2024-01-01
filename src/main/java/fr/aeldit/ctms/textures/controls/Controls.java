@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -39,7 +39,8 @@ public class Controls
             @SerializedName("button_tooltip") String buttonTooltip,
             @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths,
             @SerializedName("screen_texture") String screenTexture,
-            @SerializedName("enabled") boolean isEnabled
+            @SerializedName("enabled") boolean isEnabled //,
+            //@SerializedName("priority") int priority // TODO -> implement the priority
     ) {}
 
     private final String type;
@@ -47,8 +48,9 @@ public class Controls
     private final String buttonTooltip;
     private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
-    private boolean isEnabled;
     private final Path packPath;
+    //private final int priority;
+    private boolean isEnabled;
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
@@ -70,7 +72,7 @@ public class Controls
             }
             else
             {
-                String path = getImagePath(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(":", "/")));
+                String path = getBlocksForImage(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(":", "/")));
                 if (path == null)
                 {
                     this.identifier = new Identifier("textures/misc/unknown_pack.png");
@@ -79,7 +81,7 @@ public class Controls
                 {
                     String pathFromFiles = propertiesFilesPaths.get(0);
                     String namespace = pathFromFiles.split(":")[0];
-                    String newPath = "textures/block/" + path + ".png";
+                    String newPath = "textures/block/" + (path.contains(" ") ? path.split(" ")[0] : path) + ".png";
                     this.identifier = new Identifier(namespace, newPath);
                 }
             }
@@ -156,7 +158,13 @@ public class Controls
         this.isEnabled = !this.isEnabled;
     }
 
-    private @Nullable String getImagePath(Path path)
+    /**
+     * @param path The path to the properties file
+     * @return A string containing the field {@code "matchBlocks"} or the field {@code "matchTiles"}
+     *         (ex: can be {@code "copper_block"} or {@code "copper_block exposed_copper weathered_copper oxidized_copper"},
+     *         where each block is separated by a space)
+     */
+    private @Nullable String getBlocksForImage(Path path)
     {
         if (!Files.exists(path))
         {
@@ -180,6 +188,14 @@ public class Controls
         else if (properties.containsKey("matchTiles"))
         {
             return properties.getProperty("matchTiles");
+        }
+        else if (properties.containsKey("ctmDisabled"))
+        {
+            return properties.getProperty("ctmDisabled");
+        }
+        else if (properties.containsKey("ctmTilesDisabled"))
+        {
+            return properties.getProperty("ctmTilesDisabled");
         }
         return null;
     }

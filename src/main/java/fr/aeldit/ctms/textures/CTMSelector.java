@@ -104,7 +104,7 @@ public class CTMSelector
 
     /**
      * @param blockName The name of the block
-     * @return An arraylist containing all the controls that contain the block | {@code null} otherwise
+     * @return An arraylist containing all the controls that contain the block | an empty ArrayList otherwise
      */
     public ArrayList<Controls> getControlsWithBlock(String blockName)
     {
@@ -187,9 +187,11 @@ public class CTMSelector
             // Adds the controls properly initialized to the packControls array
             for (Controls.ControlsRecord cr : controlsRecords)
             {
-                packControls.add(new Controls(cr.type(), cr.groupName(), cr.buttonTooltip(),
-                        cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(),
-                        Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName))
+                packControls.add(new Controls(
+                                cr.type(), cr.groupName(), cr.buttonTooltip(),
+                                cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(),
+                                Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
+                        )
                 );
             }
         }

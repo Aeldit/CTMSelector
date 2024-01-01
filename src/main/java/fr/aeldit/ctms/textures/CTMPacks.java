@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -37,10 +37,23 @@ import java.util.Map;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+/**
+ * Represents a a block found in a {@link java.util.Properties Properties} file
+ * that has the CTM method
+ *
+ * @apiNote The {@link #availableCTMPacks} ArrayList contains every
+ *         {@link CTMPack} that was found during the packs loading
+ *         <p>
+ *         The {@link #packsIDs} Map contains the unique ID
+ *         ({@code int}) associated with each {@link CTMPack}.
+ *         Its key:value pairs are like this : {@literal <packName:ID>}
+ *         <p>
+ *         {@link #packsNumber} holds the index of the next ID to be
+ *         added
+ */
 public class CTMPacks
 {
     private final List<CTMPack> availableCTMPacks = new ArrayList<>();
-    // Contains key:value pairs like so : <packName:ID>
     private final Map<String, Integer> packsIDs = new HashMap<>();
     private int packsNumber = 0;
 

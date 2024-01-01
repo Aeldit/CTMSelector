@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -90,7 +90,7 @@ public class ResourcePackScreen extends Screen
 
             // Sorts the blocks alphabetically
             List<CTMBlock> toSort = new ArrayList<>(ctmPack.getCtmBlocks());
-            toSort.sort(Comparator.comparing(block -> block.getName().getString()));
+            toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
 
             for (CTMBlock block : toSort)
             {
@@ -179,7 +179,7 @@ public class ResourcePackScreen extends Screen
         public @NotNull Entry build(@NotNull CTMBlock block, CTMPack ctmPack)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
+            var text = new TextWidget(160, 20 + 2, block.getPrettyName(), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
                     .initially(block.isEnabled())

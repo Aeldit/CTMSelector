@@ -201,7 +201,7 @@ public class FilesHandling
                         ArrayList<Controls> controlsWithBlock = ctmPack.getCtmSelector().getControlsWithBlock(ctmBlock.getBlockName());
                         if (!controlsWithBlock.isEmpty())
                         {
-                            ctmBlock.addAllToGroup(controlsWithBlock);
+                            ctmBlock.addAllContainingGroups(controlsWithBlock);
                         }
                     }
                 }
@@ -600,6 +600,15 @@ public class FilesHandling
         load();
     }
 
+    /**
+     * Loads the enabled and disabled options from the file into each ArrayList passed as arguments
+     *
+     * @param properties     The properties object
+     * @param enabledBlocks  The list of enabledBlocks
+     * @param enabledTiles   The list of enabledTiles
+     * @param disabledBlocks The list of disabledBlocks
+     * @param disabledTiles  The list of disabledTiles
+     */
     private void fillBlocksLists(
             @NotNull Properties properties,
             List<String> enabledBlocks, List<String> enabledTiles,

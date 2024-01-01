@@ -24,13 +24,30 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+/**
+ * Represents a a block found in a {@link java.util.Properties Properties} file
+ * that has the CTM method
+ *
+ * @apiNote The {@link #containingGroups} ArrayList contains every
+ *         {@link Controls} that contains this block
+ *         <p>
+ *         {@link #blockName} is in the form {@code "block_name"}
+ *         <p>
+ *         {@link #prettyName} is in the form {@code "Block Name"}
+ *         <p>
+ *         A block being enabled or disabled depends only on the state of
+ *         the field {@link #enabled} if the block is not contained
+ *         by any {@link Controls}. If the block is contained by at least 1
+ *         {@link Controls},
+ *         it depends on whether this group is activated or not
+ */
 public class CTMBlock
 {
     private final String blockName;
-    private final String prettyName;
+    private final Text prettyName;
     private final Identifier identifier;
+    private final ArrayList<Controls> containingGroups = new ArrayList<>();
     private boolean enabled;
-    private final ArrayList<Controls> groups = new ArrayList<>();
 
     public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
     {
@@ -38,6 +55,8 @@ public class CTMBlock
         this.identifier = identifier;
         this.enabled = enabled;
 
+        // Changes the lowercase and underscore separated string by replacing each '_' by a space
+        // and by capitalizing the first letter of each word
         String[] tmp = blockName.split("_");
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
@@ -52,12 +71,7 @@ public class CTMBlock
             }
             index++;
         }
-        this.prettyName = stringBuilder.toString();
-    }
-
-    public Text getName()
-    {
-        return Text.of(prettyName);
+        this.prettyName = Text.of(stringBuilder.toString());
     }
 
     public String getBlockName()
@@ -65,14 +79,29 @@ public class CTMBlock
         return blockName;
     }
 
+    public Text getPrettyName()
+    {
+        return prettyName;
+    }
+
     public Identifier getIdentifier()
     {
         return identifier;
     }
 
-    public boolean isEnabled()
+    public void addContainingGroup(Controls containingGroup)
     {
-        for (Controls controls : groups)
+        containingGroups.add(containingGroup);
+    }
+
+    public void addAllContainingGroups(@NotNull ArrayList<Controls> containingGroups)
+    {
+        containingGroups.forEach(this::addContainingGroup);
+    }
+
+    public boolean isEnabled() // TODO -> handle priorities with Controls
+    {
+        for (Controls controls : containingGroups)
         {
             if (!controls.isEnabled())
             {
@@ -90,15 +119,5 @@ public class CTMBlock
     public void toggle()
     {
         this.enabled = !this.enabled;
-    }
-
-    public void addToGroup(Controls controlsGroup)
-    {
-        groups.add(controlsGroup);
-    }
-
-    public void addAllToGroup(@NotNull ArrayList<Controls> controlsGroupsArrayList)
-    {
-        controlsGroupsArrayList.forEach(this::addToGroup);
     }
 }
