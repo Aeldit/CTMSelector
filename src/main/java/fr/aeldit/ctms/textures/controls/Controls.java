@@ -39,30 +39,49 @@ public class Controls
             @SerializedName("button_tooltip") String buttonTooltip,
             @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths,
             @SerializedName("screen_texture") String screenTexture,
-            @SerializedName("enabled") boolean isEnabled //,
-            //@SerializedName("priority") int priority // TODO -> implement the priority
+            @SerializedName("enabled") boolean isEnabled,
+            @SerializedName("priority") PRIORITY_LEVELS priority
     ) {}
+
+    /**
+     * Priorities work this way :
+     * <ul>
+     *     <li>If a group is disabled, the blocks in it are disabled</li>
+     *     <li>If a group contains a block that is disabled but the group is
+     *     enabled, the block is disabled</li>
+     * </ul>
+     *
+     * @implNote We could use a boolean here, but if we later want to add
+     *         more priority levels, this enum will be useful
+     */
+    public enum PRIORITY_LEVELS
+    {
+        LOW,
+        HIGH
+    }
 
     private final String type;
     private final String groupName;
-    private final String buttonTooltip;
+    private final Text buttonTooltip;
     private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
     private final Path packPath;
-    //private final int priority;
+    private final PRIORITY_LEVELS priority;
     private boolean isEnabled;
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesPaths, @Nullable String texturePath,
-            boolean isEnabled, Path packPath
+            boolean isEnabled, @Nullable PRIORITY_LEVELS priority, Path packPath
     )
     {
         this.type = type;
         this.groupName = groupName;
-        this.buttonTooltip = buttonTooltip;
-        this.packPath = packPath;
+        this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
         this.propertiesFilesPaths.addAll(propertiesFilesPaths);
+        this.isEnabled = isEnabled;
+        this.priority = priority == null ? PRIORITY_LEVELS.LOW : priority;
+        this.packPath = packPath;
 
         if (texturePath == null)
         {
@@ -94,8 +113,6 @@ public class Controls
         {
             this.identifier = new Identifier(texturePath.split(":")[0], texturePath.split(":")[1]);
         }
-
-        this.isEnabled = isEnabled;
     }
 
     public String getType()
@@ -115,7 +132,7 @@ public class Controls
 
     public Text getButtonTooltip()
     {
-        return Text.of(buttonTooltip);
+        return buttonTooltip;
     }
 
     /**
@@ -141,6 +158,11 @@ public class Controls
     public Identifier getIdentifier()
     {
         return identifier;
+    }
+
+    public PRIORITY_LEVELS getPriority()
+    {
+        return priority;
     }
 
     public boolean isEnabled()

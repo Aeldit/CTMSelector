@@ -99,11 +99,35 @@ public class CTMBlock
         containingGroups.forEach(this::addContainingGroup);
     }
 
-    public boolean isEnabled() // TODO -> handle priorities with Controls
+    /**
+     * If one of the {@link Controls} in {@link #containingGroups} has a
+     * priority level of
+     * {@link Controls.PRIORITY_LEVELS#HIGH PRIORITY_LEVELS.HIGH} and is
+     * disabled, we return {@code false}
+     * <p>
+     * Otherwise, we take the first {@link Controls} in the
+     * {@link #containingGroups} (if it's not empty) and return
+     * {@code false} if it is disabled
+     * <p>
+     * If none of the previous 2 conditions are met, we simply return
+     * the value of the {@link #enabled} field
+     */
+    public boolean isEnabled()
     {
         for (Controls controls : containingGroups)
         {
-            if (!controls.isEnabled())
+            if (controls.getPriority() == Controls.PRIORITY_LEVELS.HIGH)
+            {
+                if (!controls.isEnabled())
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (!containingGroups.isEmpty())
+        {
+            if (!containingGroups.get(0).isEnabled())
             {
                 return false;
             }
