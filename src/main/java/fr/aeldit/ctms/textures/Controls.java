@@ -15,7 +15,7 @@
  * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
  */
 
-package fr.aeldit.ctms.textures.controls;
+package fr.aeldit.ctms.textures;
 
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.text.Text;
@@ -34,13 +34,13 @@ public class Controls
 {
     // The record will be used to serialize and deserialize the controls
     public record ControlsRecord(
-            @SerializedName("type") String type,
-            @SerializedName("group_name") String groupName,
-            @SerializedName("button_tooltip") String buttonTooltip,
-            @SerializedName("properties_files") ArrayList<String> propertiesFilesPaths,
-            @SerializedName("screen_texture") String screenTexture,
+            @SerializedName("type") @NotNull String type,
+            @SerializedName("group_name") @NotNull String groupName,
+            @SerializedName("button_tooltip") @Nullable String buttonTooltip,
+            @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths, // TODO -> allow the user to put directories
+            @SerializedName("screen_texture") @Nullable String screenTexture,
             @SerializedName("enabled") boolean isEnabled,
-            @SerializedName("priority") PRIORITY_LEVELS priority
+            @SerializedName("priority") @Nullable PRIORITY_LEVELS priority
     ) {}
 
     /**
@@ -63,10 +63,14 @@ public class Controls
     private final String type;
     private final String groupName;
     private final Text buttonTooltip;
-    private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
-    private final Identifier identifier;
+    private final ArrayList<String> propertiesFilesStrings;
+    private final String texturePath;
     private final PRIORITY_LEVELS priority;
     private boolean isEnabled;
+
+    // The following fields are not in the file, and are used only in the code
+    private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
+    private final Identifier identifier;
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
@@ -77,14 +81,15 @@ public class Controls
         this.type = type;
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
+        this.propertiesFilesStrings = propertiesFilesPaths;
+        this.texturePath = texturePath;
+        this.isEnabled = isEnabled;
+        this.priority = priority == null ? PRIORITY_LEVELS.LOW : priority;
 
         for (String s : propertiesFilesPaths)
         {
             this.propertiesFilesPaths.add(Path.of(packPath + "/assets/" + s.replace(":", "/")));
         }
-
-        this.isEnabled = isEnabled;
-        this.priority = priority == null ? PRIORITY_LEVELS.LOW : priority;
 
         if (texturePath == null)
         {
@@ -118,11 +123,6 @@ public class Controls
         }
     }
 
-    public String getType()
-    {
-        return type;
-    }
-
     public String getGroupName()
     {
         return groupName;
@@ -138,6 +138,33 @@ public class Controls
         return buttonTooltip;
     }
 
+    public boolean isEnabled()
+    {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean isEnabled)
+    {
+        this.isEnabled = isEnabled;
+    }
+
+    public void toggle()
+    {
+        isEnabled = !isEnabled;
+    }
+
+    public PRIORITY_LEVELS getPriority()
+    {
+        return priority;
+    }
+
+    public ControlsRecord getRecord()
+    {
+        return new Controls.ControlsRecord(type, groupName, buttonTooltip.getString(),
+                propertiesFilesStrings, texturePath, isEnabled, priority
+        );
+    }
+
     /**
      * @return The path to each Properties file contained by the Controls
      */
@@ -149,26 +176,6 @@ public class Controls
     public Identifier getIdentifier()
     {
         return identifier;
-    }
-
-    public PRIORITY_LEVELS getPriority()
-    {
-        return priority;
-    }
-
-    public boolean isEnabled()
-    {
-        return isEnabled;
-    }
-
-    public void setEnabled(boolean enabled)
-    {
-        isEnabled = enabled;
-    }
-
-    public void toggle()
-    {
-        this.isEnabled = !this.isEnabled;
     }
 
     /**

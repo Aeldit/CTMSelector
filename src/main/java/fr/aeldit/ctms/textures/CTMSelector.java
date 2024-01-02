@@ -18,7 +18,7 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
-import fr.aeldit.ctms.textures.controls.Controls;
+import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -64,7 +65,7 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final List<Controls> packControls = new ArrayList<>();
-    private final Path path;
+    private final Path ctmSelectorJsonFilePath;
     private final String packName;
 
     // Map<Controls, Map<Properties file, blocksNames>>
@@ -72,7 +73,7 @@ public class CTMSelector
 
     public CTMSelector(String packName)
     {
-        this.path = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
+        this.ctmSelectorJsonFilePath = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
         this.packName = packName;
 
         readFile();
@@ -169,13 +170,13 @@ public class CTMSelector
 
     public void readFile()
     {
-        if (Files.exists(path))
+        if (Files.exists(ctmSelectorJsonFilePath))
         {
             ArrayList<Controls.ControlsRecord> controlsRecords = new ArrayList<>();
             try
             {
                 Gson gson = new Gson();
-                Reader reader = Files.newBufferedReader(path);
+                Reader reader = Files.newBufferedReader(ctmSelectorJsonFilePath);
                 controlsRecords.addAll(Arrays.asList(gson.fromJson(reader, Controls.ControlsRecord[].class)));
                 reader.close();
             }
@@ -224,7 +225,7 @@ public class CTMSelector
         packControls.forEach(ctmBlock -> ctmBlock.setEnabled(true));
     }
 
-    public void restoreUnsavedOptions()
+    public void restoreUnsavedOptions() // TODO -> restore the enabled state of the controls
     {
         for (Controls controls : unsavedOptions)
         {
@@ -241,5 +242,34 @@ public class CTMSelector
     public boolean optionsChanged()
     {
         return !unsavedOptions.isEmpty();
+    }
+
+    public void updateControlsStates()
+    {
+        ArrayList<Controls.ControlsRecord> controlsRecordsToWrite = new ArrayList<>();
+
+        for (Controls cr : packControls)
+        {
+            controlsRecordsToWrite.add(cr.getRecord());
+        }
+
+        if (ctmSelectorJsonFilePath.endsWith(".zip"))
+        {
+            // implement
+        }
+        else
+        {
+            try
+            {
+                Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
+                Writer writer = Files.newBufferedWriter(ctmSelectorJsonFilePath);
+                gsonWriter.toJson(controlsRecordsToWrite, writer);
+                writer.close();
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

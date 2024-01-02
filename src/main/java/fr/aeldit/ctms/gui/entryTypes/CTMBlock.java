@@ -17,7 +17,7 @@
 
 package fr.aeldit.ctms.gui.entryTypes;
 
-import fr.aeldit.ctms.textures.controls.Controls;
+import fr.aeldit.ctms.textures.Controls;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;

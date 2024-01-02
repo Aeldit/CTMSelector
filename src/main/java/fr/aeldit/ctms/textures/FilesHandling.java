@@ -19,7 +19,6 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
-import fr.aeldit.ctms.textures.controls.Controls;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;

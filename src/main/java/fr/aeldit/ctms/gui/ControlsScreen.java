@@ -19,7 +19,7 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.controls.Controls;
+import fr.aeldit.ctms.textures.Controls;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -95,6 +95,7 @@ public class ControlsScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             ctmSelector.resetOptions();
+                            ctmSelector.updateControlsStates();
                             ctmSelector.clearUnsavedOptions();
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
@@ -117,6 +118,7 @@ public class ControlsScreen extends Screen
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
                             if (ctmSelector.optionsChanged())
                             {
+                                ctmSelector.updateControlsStates();
                                 ctmSelector.clearUnsavedOptions();
                                 TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             }
