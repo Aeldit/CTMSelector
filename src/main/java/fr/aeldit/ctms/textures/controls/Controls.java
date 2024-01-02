@@ -63,9 +63,8 @@ public class Controls
     private final String type;
     private final String groupName;
     private final Text buttonTooltip;
-    private final ArrayList<String> propertiesFilesPaths = new ArrayList<>();
+    private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
-    private final Path packPath;
     private final PRIORITY_LEVELS priority;
     private boolean isEnabled;
 
@@ -78,10 +77,14 @@ public class Controls
         this.type = type;
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.propertiesFilesPaths.addAll(propertiesFilesPaths);
+
+        for (String s : propertiesFilesPaths)
+        {
+            this.propertiesFilesPaths.add(Path.of(packPath + "/assets/" + s.replace(":", "/")));
+        }
+
         this.isEnabled = isEnabled;
         this.priority = priority == null ? PRIORITY_LEVELS.LOW : priority;
-        this.packPath = packPath;
 
         if (texturePath == null)
         {
@@ -140,18 +143,7 @@ public class Controls
      */
     public ArrayList<Path> getPropertiesFilesPaths()
     {
-        if (propertiesFilesPaths.isEmpty())
-        {
-            return new ArrayList<>();
-        }
-
-        ArrayList<Path> paths = new ArrayList<>();
-
-        for (String s : propertiesFilesPaths)
-        {
-            paths.add(Path.of(packPath + "/assets/" + s.replace(":", "/")));
-        }
-        return paths;
+        return propertiesFilesPaths;
     }
 
     public Identifier getIdentifier()
