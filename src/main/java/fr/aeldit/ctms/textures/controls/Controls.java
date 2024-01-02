@@ -146,11 +146,10 @@ public class Controls
         }
 
         ArrayList<Path> paths = new ArrayList<>();
-        Path resourcePackPath = Path.of(packPath + "/assets");
 
         for (String s : propertiesFilesPaths)
         {
-            paths.add(Path.of(resourcePackPath + "/" + s.replace(":", "/")));
+            paths.add(Path.of(packPath + "/assets/" + s.replace(":", "/")));
         }
         return paths;
     }
