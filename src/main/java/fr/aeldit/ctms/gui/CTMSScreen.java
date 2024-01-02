@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -79,7 +79,7 @@ public class CTMSScreen extends Screen
     protected void init()
     {
         TEXTURES_HANDLING.load();
-        ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
+        ListWidget list = new ListWidget(client, width, height - 64, 28, 32, this);
         addDrawableChild(list);
 
         List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
@@ -88,6 +88,7 @@ public class CTMSScreen extends Screen
 
         for (CTMPack ctmPack : toSort)
         {
+            System.out.println(ctmPack.getName());
             list.add(ctmPack);
         }
 
@@ -110,16 +111,11 @@ public class CTMSScreen extends Screen
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
-                });
+                },
+                Text.empty()
+        );
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
         addDrawableChild(reloadButton);
-
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
-                20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
-                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
-        );
-        controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);
     }
 
     /**
@@ -132,11 +128,9 @@ public class CTMSScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final Screen parent;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
-                          Screen parent
-        )
+        public ListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
         {
-            super(client, width, height, top, bottom, itemHeight);
+            super(client, width, height, y, itemHeight);
             this.parent = parent;
         }
 

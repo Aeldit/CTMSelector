@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -100,7 +100,7 @@ public class CTMPacks
                     Files.createDirectory(packPath);
                     Files.createDirectories(iconsPackPath);
                     Files.createFile(mcmetaPath);
-                    Files.writeString(mcmetaPath, "{\"pack\": {\"pack_format\": 18, \"description\": \"CTMS packs icons\"}}");
+                    Files.writeString(mcmetaPath, "{\"pack\": {\"pack_format\": 22, \"description\": \"CTMS packs icons\"}}");
                 }
                 catch (IOException e)
                 {

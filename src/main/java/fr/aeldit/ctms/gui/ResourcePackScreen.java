@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -85,7 +85,7 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, ctmPack);
+            ListWidget list = new ListWidget(client, width, height - 64, 28, 24, ctmPack);
             addDrawableChild(list);
 
             // Sorts the blocks alphabetically
@@ -152,9 +152,9 @@ public class ResourcePackScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final CTMPack ctmPack;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMPack ctmPack)
+        public ListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, CTMPack ctmPack)
         {
-            super(client, width, height, top, bottom, itemHeight);
+            super(client, width, height, y, itemHeight);
             this.ctmPack = ctmPack;
         }
 

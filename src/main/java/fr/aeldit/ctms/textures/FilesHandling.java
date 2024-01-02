@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -96,7 +96,7 @@ public class FilesHandling
         load(false);
     }
 
-    public void load(boolean initial) // TODO -> categories with file tree
+    public void load(boolean initial)
     {
         // Obtains the ctm packs before the reload to check later if any of them
         // was removed, or if any were added
@@ -152,7 +152,7 @@ public class FilesHandling
 
                 for (Path path : listFilesInFolderPack(file))
                 {
-                    if (path.toString().contains(ctmPath.replace("/", "\\")) && path.toFile().isFile())
+                    if (path.toString().contains(Path.of(ctmPath).toString()) && path.toFile().isFile())
                     {
                         if (path.toString().endsWith(".properties"))
                         {
