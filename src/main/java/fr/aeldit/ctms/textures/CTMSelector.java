@@ -225,11 +225,11 @@ public class CTMSelector
         packControls.forEach(ctmBlock -> ctmBlock.setEnabled(true));
     }
 
-    public void restoreUnsavedOptions() // TODO -> restore the enabled state of the controls
+    public void restoreUnsavedOptions()
     {
         for (Controls controls : unsavedOptions)
         {
-            packControls.get(packControls.indexOf(controls)).setEnabled(!packControls.contains(controls));
+            packControls.get(packControls.indexOf(controls)).toggle();
         }
         unsavedOptions.clear();
     }
