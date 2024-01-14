@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -22,6 +22,8 @@ import fr.aeldit.ctms.textures.FilesHandling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.FileSystems;
+
 public class Utils
 {
     public static final String CTMS_MODID = "ctms";
@@ -29,6 +31,8 @@ public class Utils
 
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;
+
+    public static final String PATH_SEP = FileSystems.getDefault().getSeparator();
 
     //public static final ArrayList<CTMSelector> CTM_SELECTOR_ARRAY_LIST = new ArrayList<>(0);
 }

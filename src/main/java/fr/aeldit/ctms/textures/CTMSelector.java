@@ -172,12 +172,12 @@ public class CTMSelector
     {
         if (Files.exists(ctmSelectorJsonFilePath))
         {
-            ArrayList<Controls.ControlsRecord> controlsRecords = new ArrayList<>();
+            ArrayList<Controls.SerializableControls> serializableControls = new ArrayList<>();
             try
             {
                 Gson gson = new Gson();
                 Reader reader = Files.newBufferedReader(ctmSelectorJsonFilePath);
-                controlsRecords.addAll(Arrays.asList(gson.fromJson(reader, Controls.ControlsRecord[].class)));
+                serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
                 reader.close();
             }
             catch (IOException e)
@@ -186,7 +186,7 @@ public class CTMSelector
             }
 
             // Adds the controls properly initialized to the packControls array
-            for (Controls.ControlsRecord cr : controlsRecords)
+            for (Controls.SerializableControls cr : serializableControls)
             {
                 packControls.add(new Controls(
                                 cr.type(), cr.groupName(), cr.buttonTooltip(),
@@ -222,7 +222,7 @@ public class CTMSelector
 
     public void resetOptions()
     {
-        packControls.forEach(ctmBlock -> ctmBlock.setEnabled(true));
+        packControls.forEach(controls -> controls.setEnabled(true));
     }
 
     public void restoreUnsavedOptions()
@@ -244,13 +244,16 @@ public class CTMSelector
         return !unsavedOptions.isEmpty();
     }
 
+    /**
+     * Updates the 'enabled' field in the controls file
+     */
     public void updateControlsStates()
     {
-        ArrayList<Controls.ControlsRecord> controlsRecordsToWrite = new ArrayList<>();
+        ArrayList<Controls.SerializableControls> serializableControlsToWrite = new ArrayList<>();
 
         for (Controls cr : packControls)
         {
-            controlsRecordsToWrite.add(cr.getRecord());
+            serializableControlsToWrite.add(cr.getRecord());
         }
 
         if (ctmSelectorJsonFilePath.endsWith(".zip"))
@@ -263,7 +266,7 @@ public class CTMSelector
             {
                 Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = Files.newBufferedWriter(ctmSelectorJsonFilePath);
-                gsonWriter.toJson(controlsRecordsToWrite, writer);
+                gsonWriter.toJson(serializableControlsToWrite, writer);
                 writer.close();
             }
             catch (IOException e)

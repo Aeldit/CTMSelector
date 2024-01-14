@@ -23,6 +23,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,13 +34,13 @@ import java.util.Properties;
 public class Controls
 {
     // The record will be used to serialize and deserialize the controls
-    public record ControlsRecord(
+    public record SerializableControls(
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
-            @SerializedName("button_tooltip") @Nullable String buttonTooltip,
-            @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths, // TODO -> allow the user to put directories
-            @SerializedName("screen_texture") @Nullable String screenTexture,
+            @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
             @SerializedName("enabled") boolean isEnabled,
+            @SerializedName("button_tooltip") @Nullable String buttonTooltip,
+            @SerializedName("screen_texture") @Nullable String screenTexture,
             @SerializedName("priority") @Nullable PRIORITY_LEVELS priority
     ) {}
 
@@ -62,11 +63,11 @@ public class Controls
 
     private final String type;
     private final String groupName;
-    private final Text buttonTooltip;
     private final ArrayList<String> propertiesFilesStrings;
+    private boolean isEnabled;
+    private final Text buttonTooltip;
     private final String texturePath;
     private final PRIORITY_LEVELS priority;
-    private boolean isEnabled;
 
     // The following fields are not in the file, and are used only in the code
     private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
@@ -88,7 +89,19 @@ public class Controls
 
         for (String s : propertiesFilesPaths)
         {
-            this.propertiesFilesPaths.add(Path.of(packPath + "/assets/" + s.replace(":", "/")));
+            Path assetsInPackPath = Path.of(packPath + "/assets/" + s.replace(":", "/"));
+
+            if (!s.endsWith(".properties"))
+            {
+                if (Files.isDirectory(assetsInPackPath))
+                {
+                    addPropertiesFilesRec(assetsInPackPath.toFile());
+                }
+            }
+            else
+            {
+                this.propertiesFilesPaths.add(assetsInPackPath);
+            }
         }
 
         if (texturePath == null)
@@ -158,10 +171,10 @@ public class Controls
         return priority;
     }
 
-    public ControlsRecord getRecord()
+    public SerializableControls getRecord()
     {
-        return new Controls.ControlsRecord(type, groupName, buttonTooltip.getString(),
-                propertiesFilesStrings, texturePath, isEnabled, priority
+        return new SerializableControls(type, groupName, propertiesFilesStrings,
+                isEnabled, buttonTooltip.getString(), texturePath, priority
         );
     }
 
@@ -218,5 +231,25 @@ public class Controls
             return properties.getProperty("ctmTilesDisabled");
         }
         return null;
+    }
+
+    /**
+     * Searches the directory recursively to find every properties files inside it
+     *
+     * @param dir The directory
+     */
+    private void addPropertiesFilesRec(@NotNull File dir)
+    {
+        for (File file : dir.listFiles())
+        {
+            if (file.isDirectory())
+            {
+                addPropertiesFilesRec(file);
+            }
+            if (file.isFile() && file.toString().endsWith(".properties"))
+            {
+                this.propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
+            }
+        }
     }
 }
