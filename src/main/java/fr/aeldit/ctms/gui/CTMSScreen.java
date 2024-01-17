@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007

@@ -93,22 +93,8 @@ public class FilesHandling
         return changed;
     }
 
-    public void load()
+    public void load() // TODO -> categories with file tree
     {
-        load(false);
-    }
-
-    public void load(boolean initial) // TODO -> categories with file tree
-    {
-        // Obtains the ctm packs before the reload to check later if any of them
-        // was removed, or if any were added
-        List<CTMPack> previousAvailableCTMPacks = null;
-        if (CTM_PACKS != null)
-        {
-            previousAvailableCTMPacks = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
-            CTM_PACKS.clearAvailableCTMPacks();
-        }
-
         CTM_PACKS = new CTMPacks();
 
         if (!Files.exists(resourcePacksDir))
@@ -120,12 +106,12 @@ public class FilesHandling
         {
             if (file.isFile() && file.getName().endsWith(".zip") && isZipCtmPack(file.toString()))
             {
-                CTMPack ctmPack = new CTMPack(file.getName(), false);
+                CTMPack ctmPack = new CTMPack(file.getName(), false, CTM_PACKS.getIcons_index());
                 CTM_PACKS.add(ctmPack);
 
                 if (hasZipPackControls(file.getName()))
                 {
-                    ctmPack.createCtmSelector();
+                    ctmPack.createCtmSelector(false);
                 }
 
                 try (ZipFile zipFile = new ZipFile(file))
@@ -154,14 +140,14 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.getName()))
             {
-                CTMPack ctmPack = new CTMPack(file.getName(), true);
+                CTMPack ctmPack = new CTMPack(file.getName(), true, CTM_PACKS.getIcons_index());
                 CTM_PACKS.add(ctmPack);
 
                 boolean hasControls = hasFolderPackControls(file.toPath());
 
                 if (hasControls)
                 {
-                    ctmPack.createCtmSelector();
+                    ctmPack.createCtmSelector(true);
                 }
 
                 for (Path path : listFilesInFolderPack(file))
@@ -205,12 +191,6 @@ public class FilesHandling
                     }
                 }
             }
-        }
-
-        // If the packs changed, we create a new iconsPack
-        if (initial || (previousAvailableCTMPacks != null && packsChanged(previousAvailableCTMPacks, CTM_PACKS.getAvailableCTMPacks())))
-        {
-            CTM_PACKS.createIconsPack(initial);
         }
     }
 

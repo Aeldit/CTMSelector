@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  -  Made by Aeldit
+ * Copyright (c) 2023-2024  -  Made by Aeldit
  *
  *              GNU LESSER GENERAL PUBLIC LICENSE
  *                  Version 3, 29 June 2007
@@ -35,7 +35,7 @@ public class CTMSClientCore implements ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load(true);
+        TEXTURES_HANDLING.load();
 
         // Loads the icons pack when the client starts
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {

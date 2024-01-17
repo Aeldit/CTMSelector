@@ -22,8 +22,6 @@ import fr.aeldit.ctms.textures.FilesHandling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.FileSystems;
-
 public class Utils
 {
     public static final String CTMS_MODID = "ctms";
@@ -32,7 +30,5 @@ public class Utils
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;
 
-    public static final String PATH_SEP = FileSystems.getDefault().getSeparator();
-
-    //public static final ArrayList<CTMSelector> CTM_SELECTOR_ARRAY_LIST = new ArrayList<>(0);
+    public static int ICON_INDEX = 0;
 }

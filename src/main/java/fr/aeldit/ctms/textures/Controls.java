@@ -106,7 +106,7 @@ public class Controls
 
         if (texturePath == null)
         {
-            if (propertiesFilesPaths.isEmpty())// Case where no files where specified (this is also an error)
+            if (propertiesFilesPaths.isEmpty()) // Case where no files where specified (this is also an error)
             {
                 this.identifier = new Identifier("textures/misc/unknown_pack.png");
             }

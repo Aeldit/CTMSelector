@@ -24,10 +24,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -65,16 +62,25 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final List<Controls> packControls = new ArrayList<>();
-    private final Path ctmSelectorJsonFilePath;
+    private final String ctmSelectorJsonFilePath;
     private final String packName;
+    private final boolean isFolder;
 
     // Map<Controls, Map<Properties file, blocksNames>>
     private final Map<String, Map<String, ArrayList<String>>> blocksInControlsMap = new HashMap<>();
 
-    public CTMSelector(String packName)
+    public CTMSelector(String packName, boolean isFolder)
     {
-        this.ctmSelectorJsonFilePath = Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json");
+        if (isFolder)
+        {
+            this.ctmSelectorJsonFilePath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json";
+        }
+        else
+        {
+            this.ctmSelectorJsonFilePath = "/ctm_selector.json";
+        }
         this.packName = packName;
+        this.isFolder = isFolder;
 
         readFile();
     }
@@ -170,31 +176,59 @@ public class CTMSelector
 
     public void readFile()
     {
-        if (Files.exists(ctmSelectorJsonFilePath))
+        ArrayList<Controls.SerializableControls> serializableControls = new ArrayList<>();
+        String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;
+
+        if (isFolder)
         {
-            ArrayList<Controls.SerializableControls> serializableControls = new ArrayList<>();
-            try
+            Path ctmSelectorPath = Path.of(packPathString + "/ctm_selector.json");
+
+            if (Files.exists(ctmSelectorPath))
             {
-                Gson gson = new Gson();
-                Reader reader = Files.newBufferedReader(ctmSelectorJsonFilePath);
-                serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
-                reader.close();
+                try
+                {
+                    Gson gson = new Gson();
+                    Reader reader = Files.newBufferedReader(ctmSelectorPath);
+                    serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        else
+        {
+            try (ZipFile zipFile = new ZipFile(packPathString))
+            {
+                for (FileHeader fileHeader : zipFile.getFileHeaders())
+                {
+                    if (fileHeader.toString().endsWith(".json"))
+                    {
+                        Gson gson = new Gson();
+                        Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
+                        serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
+                        reader.close();
+                        break;
+                    }
+                }
             }
             catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
+        }
 
-            // Adds the controls properly initialized to the packControls array
-            for (Controls.SerializableControls cr : serializableControls)
-            {
-                packControls.add(new Controls(
-                                cr.type(), cr.groupName(), cr.buttonTooltip(),
-                                cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(), cr.priority(),
-                                Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
-                        )
-                );
-            }
+        // Adds the controls properly initialized to the packControls array
+        for (Controls.SerializableControls cr : serializableControls)
+        {
+            packControls.add(new Controls(
+                            cr.type(), cr.groupName(), cr.buttonTooltip(),
+                            cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(), cr.priority(),
+                            Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
+                    )
+            );
         }
     }
 
@@ -256,16 +290,15 @@ public class CTMSelector
             serializableControlsToWrite.add(cr.getRecord());
         }
 
-        if (ctmSelectorJsonFilePath.endsWith(".zip"))
-        {
-            // implement
-        }
-        else
+        String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;
+        Path ctmSelectorPath = Path.of(packPathString + "/ctm_selector.json");
+
+        if (isFolder)
         {
             try
             {
                 Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
-                Writer writer = Files.newBufferedWriter(ctmSelectorJsonFilePath);
+                Writer writer = Files.newBufferedWriter(ctmSelectorPath);
                 gsonWriter.toJson(serializableControlsToWrite, writer);
                 writer.close();
             }
@@ -273,6 +306,10 @@ public class CTMSelector
             {
                 throw new RuntimeException(e);
             }
+        }
+        else
+        {
+            // TODO -> Implement
         }
     }
 }

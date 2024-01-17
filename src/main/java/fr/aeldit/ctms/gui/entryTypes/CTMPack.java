@@ -18,10 +18,17 @@
 package fr.aeldit.ctms.gui.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
+import net.fabricmc.loader.api.FabricLoader;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.FileHeader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +49,6 @@ import java.util.List;
  *         displayed next to the pack name in the
  *         {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
  *         <p>
- *         {@link #iconId} holds the ID associated with this pack (used to get
- *         the texture to display)
- *         <p>
  *         The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
  *         of each block with CTM properties found in the pack
  *         <p>
@@ -59,17 +63,54 @@ public class CTMPack
     private final String name;
     private final boolean isFolder;
     private CTMSelector ctmSelector;
-    private Identifier identifier;
-    private int iconId;
+    private final Identifier identifier;
 
     private final List<CTMBlock> ctmBlocks = new ArrayList<>();
     private final List<CTMBlock> unsavedOptions = new ArrayList<>();
 
-    public CTMPack(String name, boolean isFolder)
+    public CTMPack(@NotNull String name, boolean isFolder, int id)
     {
         this.name = name;
         this.isFolder = isFolder;
         this.ctmSelector = null;
+
+        this.identifier = new Identifier("ctms", String.valueOf(id));
+        String packPath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + name;
+
+        if (isFolder)
+        {
+            /*if (Files.exists(Path.of(packPath + "/pack.png")))
+            {
+                try (InputStream stream = new FileInputStream(packPath + "/pack.png"))
+                {
+                    MinecraftClient.getInstance().getTextureManager().registerTexture(identifier, new NativeImageBackedTexture(NativeImage.read(stream)));
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }*/
+        }
+        else
+        {
+            try (ZipFile zipFile = new ZipFile(packPath))
+            {
+                for (FileHeader fileHeader : zipFile.getFileHeaders())
+                {
+                    if (fileHeader.toString().equals("pack.png"))
+                    {
+                        MinecraftClient.getInstance().getTextureManager().registerTexture(identifier,
+                                new NativeImageBackedTexture(NativeImage.read(zipFile.getInputStream(fileHeader)))
+                        );
+                        break;
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public String getName()
@@ -92,29 +133,14 @@ public class CTMPack
         return ctmSelector;
     }
 
-    public void createCtmSelector()
+    public void createCtmSelector(boolean isFolder)
     {
-        this.ctmSelector = new CTMSelector(this.name);
+        this.ctmSelector = new CTMSelector(this.name, isFolder);
     }
 
     public Identifier getIdentifier()
     {
         return identifier;
-    }
-
-    public void setIdentifier(Identifier identifier)
-    {
-        this.identifier = identifier;
-    }
-
-    public int getIconId()
-    {
-        return iconId;
-    }
-
-    public void setIconId(int iconId)
-    {
-        this.iconId = iconId;
     }
 
     //=========================================================================
