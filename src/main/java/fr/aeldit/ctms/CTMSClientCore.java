@@ -19,10 +19,8 @@ package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.gui.CTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -36,15 +34,17 @@ public class CTMSClientCore implements ClientModInitializer
     public void onInitializeClient()
     {
         TEXTURES_HANDLING.load();
+        /*for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
+        {
+            ctmPack.setIdentifier(CTM_PACKS.getIcons_index());
+        }*/
 
-        // Loads the icons pack when the client starts
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            if (MinecraftClient.getInstance().getResourcePackManager().getNames().contains("file/__CTMS_Icons__"))
+        /*ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
             {
-                MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
-                MinecraftClient.getInstance().reloadResourcesConcurrently();
+                ctmPack.setIdentifier(CTM_PACKS.getIcons_index());
             }
-        });
+        });*/
 
         KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "cyanlib.keybindings.openScreen.config",

@@ -206,7 +206,7 @@ public class CTMSScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
+            //context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);

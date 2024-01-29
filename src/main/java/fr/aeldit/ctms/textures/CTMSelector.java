@@ -309,7 +309,7 @@ public class CTMSelector
         }
         else
         {
-            // TODO -> Implement
+            // TODO -> Implement with Zip
         }
     }
 }

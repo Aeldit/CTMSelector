@@ -17,20 +17,19 @@
 
 package fr.aeldit.ctms.gui.entryTypes;
 
+import com.google.common.hash.Hashing;
 import fr.aeldit.ctms.textures.CTMSelector;
-import net.fabricmc.loader.api.FabricLoader;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
 /**
  * Represents a a CTM pack
@@ -63,54 +62,18 @@ public class CTMPack
     private final String name;
     private final boolean isFolder;
     private CTMSelector ctmSelector;
-    private final Identifier identifier;
+    private Identifier identifier;
 
     private final List<CTMBlock> ctmBlocks = new ArrayList<>();
     private final List<CTMBlock> unsavedOptions = new ArrayList<>();
 
-    public CTMPack(@NotNull String name, boolean isFolder, int id)
+    public CTMPack(@NotNull String name, boolean isFolder)
     {
         this.name = name;
         this.isFolder = isFolder;
-        this.ctmSelector = null;
 
-        this.identifier = new Identifier("ctms", String.valueOf(id));
-        String packPath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + name;
-
-        if (isFolder)
-        {
-            /*if (Files.exists(Path.of(packPath + "/pack.png")))
-            {
-                try (InputStream stream = new FileInputStream(packPath + "/pack.png"))
-                {
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(identifier, new NativeImageBackedTexture(NativeImage.read(stream)));
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }*/
-        }
-        else
-        {
-            try (ZipFile zipFile = new ZipFile(packPath))
-            {
-                for (FileHeader fileHeader : zipFile.getFileHeaders())
-                {
-                    if (fileHeader.toString().equals("pack.png"))
-                    {
-                        MinecraftClient.getInstance().getTextureManager().registerTexture(identifier,
-                                new NativeImageBackedTexture(NativeImage.read(zipFile.getInputStream(fileHeader)))
-                        );
-                        break;
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
+        //String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
+        //this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon");
     }
 
     public String getName()
@@ -141,6 +104,51 @@ public class CTMPack
     public Identifier getIdentifier()
     {
         return identifier;
+    }
+
+    public void setIdentifier(int icon_index)
+    {
+        String packPath = RESOURCE_PACKS_DIR + "/" + name;
+        Identifier id = new Identifier("ctms", String.valueOf(icon_index));
+
+        if (isFolder)
+        {
+            if (Files.exists(Path.of(packPath + "/pack.png")))
+            {
+                String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
+                id = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon");
+
+                /*try (InputStream stream = new FileInputStream(packPath + "/pack.png"))
+                {
+                    MinecraftClient.getInstance().getTextureManager().registerTexture(id, new NativeImageBackedTexture(NativeImage.read(stream)));
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }*/
+            }
+        }
+        else
+        {
+            /*try (ZipFile zipFile = new ZipFile(packPath))
+            {
+                for (FileHeader fileHeader : zipFile.getFileHeaders())
+                {
+                    if (fileHeader.toString().equals("pack.png"))
+                    {
+                        MinecraftClient.getInstance().getTextureManager().registerTexture(id,
+                                new NativeImageBackedTexture(NativeImage.read(zipFile.getInputStream(fileHeader)))
+                        );
+                        break;
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }*/
+        }
+        this.identifier = id;
     }
 
     //=========================================================================

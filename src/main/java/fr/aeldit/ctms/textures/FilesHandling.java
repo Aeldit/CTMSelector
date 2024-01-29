@@ -19,7 +19,6 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
-import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
@@ -37,76 +36,27 @@ import java.util.*;
 import static fr.aeldit.ctms.textures.CTMSelector.hasFolderPackControls;
 import static fr.aeldit.ctms.textures.CTMSelector.hasZipPackControls;
 import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
+import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
 public class FilesHandling
 {
-    private final Path resourcePacksDir = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
     private final String ctmPath = "assets/minecraft/optifine/ctm/";
     private final List<Path> folderPaths = new ArrayList<>();
-
-    public boolean packsChanged(@NotNull List<CTMPack> previousAvailableCTMPacks, @NotNull List<CTMPack> availableCTMPacks)
-    {
-        if (previousAvailableCTMPacks.size() != availableCTMPacks.size())
-        {
-            return true;
-        }
-
-        boolean changed = false;
-        int ctr = 0;
-        int size = previousAvailableCTMPacks.size();
-
-        for (CTMPack ctmPack : previousAvailableCTMPacks)
-        {
-            for (CTMPack ctmPack1 : availableCTMPacks)
-            {
-                if (ctmPack.getName().equals(ctmPack1.getName()))
-                {
-                    ctr++;
-                    break;
-                }
-            }
-        }
-
-        if (ctr != size)
-        {
-            changed = true;
-        }
-
-        ctr = 0;
-
-        for (CTMPack ctmPack : availableCTMPacks)
-        {
-            for (CTMPack ctmPack1 : previousAvailableCTMPacks)
-            {
-                if (ctmPack.getName().equals(ctmPack1.getName()))
-                {
-                    ctr++;
-                    break;
-                }
-            }
-        }
-
-        if (ctr != size)
-        {
-            changed = true;
-        }
-        return changed;
-    }
 
     public void load() // TODO -> categories with file tree
     {
         CTM_PACKS = new CTMPacks();
 
-        if (!Files.exists(resourcePacksDir))
+        if (!Files.exists(RESOURCE_PACKS_DIR))
         {
             return;
         }
 
-        for (File file : resourcePacksDir.toFile().listFiles())
+        for (File file : RESOURCE_PACKS_DIR.toFile().listFiles())
         {
             if (file.isFile() && file.getName().endsWith(".zip") && isZipCtmPack(file.toString()))
             {
-                CTMPack ctmPack = new CTMPack(file.getName(), false, CTM_PACKS.getIcons_index());
+                CTMPack ctmPack = new CTMPack(file.getName(), false);
                 CTM_PACKS.add(ctmPack);
 
                 if (hasZipPackControls(file.getName()))
@@ -140,7 +90,7 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.getName()))
             {
-                CTMPack ctmPack = new CTMPack(file.getName(), true, CTM_PACKS.getIcons_index());
+                CTMPack ctmPack = new CTMPack(file.getName(), true);
                 CTM_PACKS.add(ctmPack);
 
                 boolean hasControls = hasFolderPackControls(file.toPath());
@@ -410,7 +360,7 @@ public class FilesHandling
 
     private boolean isFolderCtmPack(String packName)
     {
-        return Files.exists(Path.of(resourcePacksDir + "/" + packName + "/" + ctmPath));
+        return Files.exists(Path.of(RESOURCE_PACKS_DIR + "/" + packName + "/" + ctmPath));
     }
 
     /**
@@ -441,7 +391,7 @@ public class FilesHandling
     {
         if (ctmPack.isFolder())
         {
-            for (Path path : listFilesInFolderPack(new File(resourcePacksDir + "\\" + ctmPack.getName())))
+            for (Path path : listFilesInFolderPack(new File(RESOURCE_PACKS_DIR + "\\" + ctmPack.getName())))
             {
                 List<String> enabledBlocks = new ArrayList<>();
                 List<String> enabledTiles = new ArrayList<>();
@@ -496,7 +446,7 @@ public class FilesHandling
             MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
             MinecraftClient.getInstance().reloadResources();
 
-            String packPath = resourcePacksDir + "\\" + ctmPack.getName();
+            String packPath = RESOURCE_PACKS_DIR + "\\" + ctmPack.getName();
 
             if (isZipCtmPack(packPath))
             {
