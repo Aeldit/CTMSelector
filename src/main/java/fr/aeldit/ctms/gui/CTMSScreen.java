@@ -19,6 +19,7 @@ package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.CTMPacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -31,6 +32,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.apache.commons.compress.utils.Lists;
@@ -157,7 +159,15 @@ public class CTMSScreen extends Screen
         public @NotNull Entry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-            var text = new TextWidget(180, 24, ctmPack.getNameAsText(), client.textRenderer);
+            var text = new TextWidget(180, 24,
+                    CTMPacks.isPackEnabled(ctmPack.getName()) // If the pack is not enabled, it is in italic and gray
+                            ? ctmPack.getNameAsText()
+                            : Text.of(Formatting.GRAY
+                            + Text.of(Formatting.ITALIC
+                            + ctmPack.getName()).getString()
+                    )
+                    , client.textRenderer
+            );
             var followButton = ButtonWidget.builder(
                             Text.translatable("ctms.screen.open"),
                             button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))

@@ -46,6 +46,11 @@ public class CTMPacks
         return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledNames());
     }
 
+    public static boolean isPackEnabled(String packName)
+    {
+        return getEnabledPacks().contains("file/" + packName);
+    }
+
     public void add(@NotNull CTMPack ctmPack)
     {
         if (!availableCTMPacks.contains(ctmPack))
