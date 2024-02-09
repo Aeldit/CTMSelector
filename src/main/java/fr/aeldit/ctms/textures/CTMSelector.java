@@ -287,7 +287,7 @@ public class CTMSelector
 
         for (Controls cr : packControls)
         {
-            serializableControlsToWrite.add(cr.getRecord());
+            serializableControlsToWrite.add(cr.getAsRecord());
         }
 
         String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;

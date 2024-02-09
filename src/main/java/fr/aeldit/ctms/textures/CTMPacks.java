@@ -34,12 +34,6 @@ import java.util.List;
 public class CTMPacks
 {
     private final List<CTMPack> availableCTMPacks = new ArrayList<>();
-    private int icons_index = 0;
-
-    public int getIcons_index()
-    {
-        return icons_index++;
-    }
 
     public static @NotNull ArrayList<String> getEnabledPacks()
     {

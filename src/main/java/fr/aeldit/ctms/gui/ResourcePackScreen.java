@@ -179,13 +179,18 @@ public class ResourcePackScreen extends Screen
         public @NotNull Entry build(@NotNull CTMBlock block, CTMPack ctmPack)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, block.getPrettyName(), client.textRenderer);
+            var text = new TextWidget(160, 20 + 2, block.isEnabled()
+                    ? block.getPrettyName()
+                    : Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString()),
+                    client.textRenderer
+            );
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
                     .initially(block.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
                             (button, value) -> ctmPack.toggle(block)
                     );
+            toggleButton.setTooltip(block.isEnabled() ? Tooltip.of(Text.empty()) : Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled")));
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);

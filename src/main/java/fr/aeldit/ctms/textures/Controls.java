@@ -163,7 +163,7 @@ public class Controls
 
     public void toggle()
     {
-        isEnabled = !isEnabled;
+        this.isEnabled = !this.isEnabled;
     }
 
     public PRIORITY_LEVELS getPriority()
@@ -171,7 +171,7 @@ public class Controls
         return priority;
     }
 
-    public SerializableControls getRecord()
+    public SerializableControls getAsRecord()
     {
         return new SerializableControls(type, groupName, propertiesFilesStrings,
                 isEnabled, buttonTooltip.getString(), texturePath, priority
