@@ -157,6 +157,10 @@ public class CTMPack
     public void addBlock(CTMBlock ctmBlock)
     {
         ctmBlocks.add(ctmBlock);
+        if (ctmBlock.getControlsGroup() != null)
+        {
+            ctmBlock.getControlsGroup().addContainedBLock(ctmBlock);
+        }
     }
 
     public void addAllBlocks(@NotNull List<CTMBlock> ctmBlockList)

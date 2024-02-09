@@ -111,12 +111,10 @@ public class CTMSelector
 
     /**
      * @param blockName The name of the block
-     * @return An arraylist containing all the controls that contain the block | an empty ArrayList otherwise
+     * @return The controls group that contains the block | null otherwise
      */
-    public ArrayList<Controls> getControlsWithBlock(String blockName)
+    public Controls getControlsGroupWithBlock(String blockName)
     {
-        ArrayList<Controls> controlsArrayList = new ArrayList<>();
-
         for (Controls controls : packControls)
         {
             Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName(), null);
@@ -129,11 +127,11 @@ public class CTMSelector
             {
                 if (currentControls.get(path1.toString()).contains(blockName))
                 {
-                    controlsArrayList.add(controls);
+                    return controls;
                 }
             }
         }
-        return controlsArrayList;
+        return null;
     }
 
     private @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
@@ -225,7 +223,7 @@ public class CTMSelector
         {
             packControls.add(new Controls(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
-                            cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(), cr.priority(),
+                            cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(),
                             Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
                     )
             );
@@ -287,6 +285,7 @@ public class CTMSelector
 
         for (Controls cr : packControls)
         {
+            cr.getContainedBLocksList().forEach(ctmBlock -> ctmBlock.setEnabled(cr.isEnabled()));
             serializableControlsToWrite.add(cr.getAsRecord());
         }
 

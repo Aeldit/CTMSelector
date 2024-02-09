@@ -18,6 +18,7 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.annotations.SerializedName;
+import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class Controls
@@ -40,26 +42,8 @@ public class Controls
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
             @SerializedName("enabled") boolean isEnabled,
             @SerializedName("button_tooltip") @Nullable String buttonTooltip,
-            @SerializedName("screen_texture") @Nullable String screenTexture,
-            @SerializedName("priority") @Nullable PRIORITY_LEVELS priority
+            @SerializedName("screen_texture") @Nullable String screenTexture
     ) {}
-
-    /**
-     * Priorities work this way :
-     * <ul>
-     *     <li>If a group is disabled, the blocks in it are disabled</li>
-     *     <li>If a group contains a block that is disabled but the group is
-     *     enabled, the block is disabled</li>
-     * </ul>
-     *
-     * @implNote We could use a boolean here, but if we later want to add
-     *         more priority levels, this enum will be useful
-     */
-    public enum PRIORITY_LEVELS
-    {
-        LOW,
-        HIGH
-    }
 
     private final String type;
     private final String groupName;
@@ -67,16 +51,17 @@ public class Controls
     private boolean isEnabled;
     private final Text buttonTooltip;
     private final String texturePath;
-    private final PRIORITY_LEVELS priority;
 
     // The following fields are not in the file, and are used only in the code
     private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
 
+    private final List<CTMBlock> containedBLocksList = new ArrayList<>();
+
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesPaths, @Nullable String texturePath,
-            boolean isEnabled, @Nullable PRIORITY_LEVELS priority, Path packPath
+            boolean isEnabled, Path packPath
     )
     {
         this.type = type;
@@ -85,7 +70,6 @@ public class Controls
         this.propertiesFilesStrings = propertiesFilesPaths;
         this.texturePath = texturePath;
         this.isEnabled = isEnabled;
-        this.priority = priority == null ? PRIORITY_LEVELS.LOW : priority;
 
         for (String s : propertiesFilesPaths)
         {
@@ -166,15 +150,10 @@ public class Controls
         this.isEnabled = !this.isEnabled;
     }
 
-    public PRIORITY_LEVELS getPriority()
-    {
-        return priority;
-    }
-
     public SerializableControls getAsRecord()
     {
         return new SerializableControls(type, groupName, propertiesFilesStrings,
-                isEnabled, buttonTooltip.getString(), texturePath, priority
+                isEnabled, buttonTooltip.getString(), texturePath
         );
     }
 
@@ -251,5 +230,15 @@ public class Controls
                 this.propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
             }
         }
+    }
+
+    public void addContainedBLock(CTMBlock ctmBlock)
+    {
+        containedBLocksList.add(ctmBlock);
+    }
+
+    public List<CTMBlock> getContainedBLocksList()
+    {
+        return containedBLocksList;
     }
 }

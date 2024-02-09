@@ -22,14 +22,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-
 /**
  * Represents a a block found in a {@link java.util.Properties Properties} file
  * that has the CTM method
  *
- * @apiNote The {@link #containingGroups} ArrayList contains every
- *         {@link Controls} that contains this block
+ * @apiNote The {@link #controlsGroup} contains the
+ *         {@link Controls} object that contains this block
  *         <p>
  *         {@link #blockName} is in the form {@code "block_name"}
  *         <p>
@@ -46,7 +44,7 @@ public class CTMBlock
     private final String blockName;
     private final Text prettyName;
     private final Identifier identifier;
-    private final ArrayList<Controls> containingGroups = new ArrayList<>();
+    private Controls controlsGroup;
     private boolean enabled;
 
     public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
@@ -89,50 +87,35 @@ public class CTMBlock
         return identifier;
     }
 
-    public void addContainingGroup(Controls containingGroup)
+    public Controls getControlsGroup()
     {
-        containingGroups.add(containingGroup);
+        return controlsGroup;
     }
 
-    public void addAllContainingGroups(@NotNull ArrayList<Controls> containingGroups)
+    public void setControlsGroup(Controls controlsGroup)
     {
-        containingGroups.forEach(this::addContainingGroup);
+        this.controlsGroup = controlsGroup;
     }
 
-    /**
-     * If one of the {@link Controls} in {@link #containingGroups} has a
-     * priority level of
-     * {@link Controls.PRIORITY_LEVELS#HIGH PRIORITY_LEVELS.HIGH} and is
-     * disabled, we return {@code false}
-     * <p>
-     * Otherwise, we take the first {@link Controls} in the
-     * {@link #containingGroups} (if it's not empty) and return
-     * {@code false} if it is disabled
-     * <p>
-     * If none of the previous 2 conditions are met, we simply return
-     * the value of the {@link #enabled} field
-     */
     public boolean isEnabled()
     {
-        for (Controls controls : containingGroups)
+        if (controlsGroup != null)
         {
-            if (controls.getPriority() == Controls.PRIORITY_LEVELS.HIGH)
-            {
-                if (!controls.isEnabled())
-                {
-                    return false;
-                }
-            }
-        }
-
-        if (!containingGroups.isEmpty())
-        {
-            if (!containingGroups.get(0).isEnabled())
+            if (!controlsGroup.isEnabled())
             {
                 return false;
             }
         }
         return enabled;
+    }
+
+    public boolean isDisabledFromGroup()
+    {
+        if (controlsGroup != null)
+        {
+            return !controlsGroup.isEnabled();
+        }
+        return false;
     }
 
     public void setEnabled(boolean value)

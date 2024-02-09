@@ -133,10 +133,10 @@ public class FilesHandling
 
                     for (CTMBlock ctmBlock : ctmPack.getCtmBlocks())
                     {
-                        ArrayList<Controls> controlsWithBlock = ctmPack.getCtmSelector().getControlsWithBlock(ctmBlock.getBlockName());
-                        if (!controlsWithBlock.isEmpty())
+                        Controls controlsGroupWithBlock = ctmPack.getCtmSelector().getControlsGroupWithBlock(ctmBlock.getBlockName());
+                        if (controlsGroupWithBlock != null)
                         {
-                            ctmBlock.addAllContainingGroups(controlsWithBlock);
+                            ctmBlock.setControlsGroup(controlsGroupWithBlock);
                         }
                     }
                 }
