@@ -11,7 +11,7 @@ or
 or
 [![optifine](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/optifine_vector.svg)](https://optifine.net/home)
 
-![ctm-pack](https://raw.githubusercontent.com/Aeldit/Aeldit/b683fac4b97744f1a64dfde6f39624379e661095/images/requires-ctm-cozy.svg)
+![ctm-pack](https://raw.githubusercontent.com/Aeldit/Aeldit/92e6993018fe7fe68ffd2d1b0406af4411d02415/ctm_selector/requires_ctm.svg)
 
 <details>
 <summary>🎴 Show available versions</summary>
