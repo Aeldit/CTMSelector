@@ -1,4 +1,4 @@
-![banner](https://github.com/Aeldit/CTMSelector/blob/1.20.2/images/banner_small.png?raw=true)
+![banner](https://github.com/Aeldit/Aeldit/blob/main/banners/ctms.png?raw=true)
 <!-- modrinth_exclude.start -->
 > ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge (this overrides the
 > LICENSE)
