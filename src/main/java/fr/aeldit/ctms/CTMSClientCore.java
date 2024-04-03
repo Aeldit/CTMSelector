@@ -1,20 +1,3 @@
-/*
- * Copyright (c) 2023  -  Made by Aeldit
- *
- *              GNU LESSER GENERAL PUBLIC LICENSE
- *                  Version 3, 29 June 2007
- *
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- *
- *
- * This version of the GNU Lesser General Public License incorporates
- * the terms and conditions of version 3 of the GNU General Public
- * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
- */
-
 package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.gui.CTMSScreen;
@@ -27,8 +10,8 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
-import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.Utils.CTMS_LOGGER;
+import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
