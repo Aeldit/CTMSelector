@@ -52,7 +52,7 @@ public class FilesHandling
             return;
         }
 
-        for (File file : RESOURCE_PACKS_DIR.toFile().listFiles())
+        for (File file : Objects.requireNonNull(RESOURCE_PACKS_DIR.toFile().listFiles()))
         {
             if (file.isFile() && file.getName().endsWith(".zip") && isZipCtmPack(file.toString()))
             {
@@ -366,14 +366,15 @@ public class FilesHandling
     /**
      * Lists the files in the given folder
      * <p>
-     * {@code folderPaths.clearAvailableCTMPacks()} must be called after the iteration over the result of this functions, to prevent any weird behavior
+     * {@code folderPaths.clearAvailableCTMPacks()} must be called after the iteration over the result of this function,
+     * to prevent any weird behavior
      *
      * @param packFolder The folder whose files will be listed and returned
      * @return Returns the files present in the folder {@code packFolder}
      */
     private List<Path> listFilesInFolderPack(@NotNull File packFolder)
     {
-        for (File file : packFolder.listFiles())
+        for (File file : Objects.requireNonNull(packFolder.listFiles()))
         {
             if (file.isFile() && file.getName().endsWith(".properties"))
             {
@@ -480,7 +481,7 @@ public class FilesHandling
                                     {
                                         removeEmptyKeys(properties);
 
-                                        // We take the properties in a byte array
+                                        // We take the properties in a byte array,
                                         // so we can write it in the zip later
                                         byte[] tmp = properties.toString()
                                                 .replace("{", "")

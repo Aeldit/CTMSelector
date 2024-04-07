@@ -34,6 +34,7 @@ public class CTMSClientCore implements ClientModInitializer
     public void onInitializeClient()
     {
         TEXTURES_HANDLING.load();
+
         /*for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
         {
             ctmPack.setIdentifier(CTM_PACKS.getIcons_index());

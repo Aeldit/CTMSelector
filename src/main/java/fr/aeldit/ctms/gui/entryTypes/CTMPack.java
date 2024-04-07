@@ -35,27 +35,27 @@ import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
  * Represents a a CTM pack
  *
  * @apiNote {@link #name} holds the name of the associated resource pack
- *         <ul>
- *              <li>if it is a zip file : {@code "MyPackName.zip"}</li>
- *              <li>if it is a folder : {@code "MyPackName"}</li>
- *         </ul>
- *         <p>
- *         {@link #isFolder} holds whether the pack is a folder or a zip file
- *         <p>
- *         {@link #ctmSelector} holds the associated {@link CTMSelector} object
- *         <p>
- *         {@link #identifier} holds the identifier (the texture) that is
- *         displayed next to the pack name in the
- *         {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
- *         <p>
- *         The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
- *         of each block with CTM properties found in the pack
- *         <p>
- *         The {@link #unsavedOptions} ArrayList contains a {@link CTMBlock}
- *         object of each changed options
- *         <p>
- *         The second part contains methods to handle the activation /
- *         deactivation of each {@code CTMBlock} in this pack
+ * <ul>
+ *      <li>if it is a zip file : {@code "MyPackName.zip"}</li>
+ *      <li>if it is a folder : {@code "MyPackName"}</li>
+ * </ul>
+ * <p>
+ * {@link #isFolder} holds whether the pack is a folder or a zip file
+ * <p>
+ * {@link #ctmSelector} holds the associated {@link CTMSelector} object
+ * <p>
+ * {@link #identifier} holds the identifier (the texture) that is
+ * displayed next to the pack name in the
+ * {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
+ * <p>
+ * The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
+ * of each block with CTM properties found in the pack
+ * <p>
+ * The {@link #unsavedOptions} ArrayList contains a {@link CTMBlock}
+ * object of each changed options
+ * <p>
+ * The second part contains methods to handle the activation /
+ * deactivation of each {@code CTMBlock} in this pack
  */
 public class CTMPack
 {
@@ -73,7 +73,8 @@ public class CTMPack
         this.isFolder = isFolder;
 
         //String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
-        //this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon");
+        //this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
+        // ("file/" + name) + "/icon");
     }
 
     public String getName()
@@ -96,6 +97,11 @@ public class CTMPack
         return ctmSelector;
     }
 
+    public boolean hasCtmSelector()
+    {
+        return ctmSelector != null;
+    }
+
     public void createCtmSelector(boolean isFolder)
     {
         this.ctmSelector = new CTMSelector(this.name, isFolder);
@@ -116,11 +122,14 @@ public class CTMPack
             if (Files.exists(Path.of(packPath + "/pack.png")))
             {
                 String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
-                id = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon");
+                id = new Identifier("minecraft",
+                        "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon"
+                );
 
                 /*try (InputStream stream = new FileInputStream(packPath + "/pack.png"))
                 {
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(id, new NativeImageBackedTexture(NativeImage.read(stream)));
+                    MinecraftClient.getInstance().getTextureManager().registerTexture(id, new
+                    NativeImageBackedTexture(NativeImage.read(stream)));
                 }
                 catch (IOException e)
                 {

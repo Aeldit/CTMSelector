@@ -51,7 +51,8 @@ public class ControlsScreen extends Screen
 
     public ControlsScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
-        super(Text.of(Formatting.GOLD + ctmPack.getName() + Formatting.RESET + Text.translatable("ctms.screen.controls.title").getString()));
+        super(Text.of(Formatting.GOLD + ctmPack.getName() + Formatting.RESET + Text.translatable("ctms.screen" +
+                ".controls.title").getString()));
         this.parent = parent;
         this.ctmPack = ctmPack;
     }
@@ -84,7 +85,7 @@ public class ControlsScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        List<Controls> toSort = new ArrayList<>(ctmPack.getCtmSelector().getPackControls());
+        List<Controls> toSort = new ArrayList<>(ctmSelector.getPackControls());
         toSort.sort(Comparator.comparing(Controls::getGroupName));
 
         for (Controls controls : toSort)
@@ -140,7 +141,10 @@ public class ControlsScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final CTMSelector ctmSelector;
 
-        public ControlsListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMSelector ctmSelector)
+        public ControlsListWidget(
+                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                CTMSelector ctmSelector
+        )
         {
             super(client, width, height, top, bottom, itemHeight);
             this.ctmSelector = ctmSelector;
@@ -155,7 +159,10 @@ public class ControlsScreen extends Screen
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(CTMSelector ctmSelector, @NotNull Controls controls) // TODO -> change the color and tooltip if blocks in the category have a different state, as well as the action on click
+        public @NotNull Entry build(
+                CTMSelector ctmSelector, @NotNull Controls controls
+        ) // TODO -> change the color and tooltip if blocks in the category have a different state, as well as the
+        // action on click
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, controls.getGroupNameAsText(), client.textRenderer);

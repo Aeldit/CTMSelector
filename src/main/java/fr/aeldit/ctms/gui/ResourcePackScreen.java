@@ -53,8 +53,9 @@ public class ResourcePackScreen extends Screen
     public ResourcePackScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
         super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
-                ? Text.of(ctmPack.getName().replace(".zip", ""))
-                : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
+              ? Text.of(ctmPack.getName().replace(".zip", ""))
+              : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen" +
+                      ".packDisabledTitle").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -109,14 +110,17 @@ public class ResourcePackScreen extends Screen
                             .build()
             );
 
-            addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
-                                    client.setScreen(new ControlsScreen(this, ctmPack))
-                            )
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
-                            .dimensions(width - 110, 6, 100, 20)
-                            .build()
-            );
+            if (ctmPack.hasCtmSelector())
+            {
+                addDrawableChild(
+                        ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
+                                        client.setScreen(new ControlsScreen(this, ctmPack))
+                                )
+                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
+                                .dimensions(width - 110, 6, 100, 20)
+                                .build()
+                );
+            }
 
             addDrawableChild(
                     ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
@@ -161,7 +165,9 @@ public class ResourcePackScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final CTMPack ctmPack;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMPack ctmPack)
+        public ListWidget(
+                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMPack ctmPack
+        )
         {
             super(client, width, height, top, bottom, itemHeight);
             this.ctmPack = ctmPack;
@@ -180,8 +186,9 @@ public class ResourcePackScreen extends Screen
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, block.isDisabledFromGroup()
-                    ? Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString())
-                    : block.getPrettyName(),
+                                                   ?
+                                                   Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString())
+                                                   : block.getPrettyName(),
                     client.textRenderer
             );
             var toggleButton = CyclingButtonWidget.onOffBuilder()
@@ -191,8 +198,8 @@ public class ResourcePackScreen extends Screen
                             (button, value) -> ctmPack.toggle(block)
                     );
             toggleButton.setTooltip(block.isDisabledFromGroup()
-                    ? Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled"))
-                    : Tooltip.of(Text.empty())
+                                    ? Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled"))
+                                    : Tooltip.of(Text.empty())
             );
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
