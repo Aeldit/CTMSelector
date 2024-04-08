@@ -1,20 +1,3 @@
-/*
- * Copyright (c) 2023-2024  -  Made by Aeldit
- *
- *              GNU LESSER GENERAL PUBLIC LICENSE
- *                  Version 3, 29 June 2007
- *
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- *
- *
- * This version of the GNU Lesser General Public License incorporates
- * the terms and conditions of version 3 of the GNU General Public
- * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
- */
-
 package fr.aeldit.ctms.gui.entryTypes;
 
 import fr.aeldit.ctms.textures.Controls;
@@ -27,17 +10,17 @@ import org.jetbrains.annotations.NotNull;
  * that has the CTM method
  *
  * @apiNote The {@link #controlsGroup} contains the
- *         {@link Controls} object that contains this block
- *         <p>
- *         {@link #blockName} is in the form {@code "block_name"}
- *         <p>
- *         {@link #prettyName} is in the form {@code "Block Name"}
- *         <p>
- *         A block being enabled or disabled depends only on the state of
- *         the field {@link #enabled} if the block is not contained
- *         by any {@link Controls}. If the block is contained by at least 1
- *         {@link Controls},
- *         it depends on whether this group is activated or not
+ * {@link Controls} object that contains this block
+ * <p>
+ * {@link #blockName} is in the form {@code "block_name"}
+ * <p>
+ * {@link #prettyName} is in the form {@code "Block Name"}
+ * <p>
+ * A block being enabled or disabled depends only on the state of
+ * the field {@link #enabled} if the block is not contained
+ * by any {@link Controls}. If the block is contained by at least 1
+ * {@link Controls},
+ * it depends on whether this group is activated or not
  */
 public class CTMBlock
 {
