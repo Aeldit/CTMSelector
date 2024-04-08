@@ -26,9 +26,6 @@ import java.util.ArrayList;
  * The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
  * of each block with CTM properties found in the pack
  * <p>
- * The {@link #unsavedOptions} ArrayList contains a {@link CTMBlock}
- * object of each changed options
- * <p>
  * The second part contains methods to handle the activation /
  * deactivation of each {@code CTMBlock} in this pack
  */
@@ -40,7 +37,6 @@ public class CTMPack
     //private Identifier identifier;
 
     private final ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
-    private final ArrayList<CTMBlock> unsavedOptions = new ArrayList<>();
 
     public CTMPack(@NotNull String name, boolean isFolder)
     {
