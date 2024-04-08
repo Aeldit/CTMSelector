@@ -17,22 +17,14 @@
 
 package fr.aeldit.ctms.gui.entryTypes;
 
-import com.google.common.hash.Hashing;
 import fr.aeldit.ctms.textures.CTMSelector;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
-
-import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
 /**
- * Represents a a CTM pack
+ * Represents a CTM pack
  *
  * @apiNote {@link #name} holds the name of the associated resource pack
  * <ul>
@@ -44,7 +36,7 @@ import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
  * <p>
  * {@link #ctmSelector} holds the associated {@link CTMSelector} object
  * <p>
- * {@link #identifier} holds the identifier (the texture) that is
+ * identifier holds the identifier (the texture) that is
  * displayed next to the pack name in the
  * {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
  * <p>
@@ -62,19 +54,19 @@ public class CTMPack
     private final String name;
     private final boolean isFolder;
     private CTMSelector ctmSelector;
-    private Identifier identifier;
+    //private Identifier identifier;
 
-    private final List<CTMBlock> ctmBlocks = new ArrayList<>();
-    private final List<CTMBlock> unsavedOptions = new ArrayList<>();
+    private final ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
+    private final ArrayList<CTMBlock> unsavedOptions = new ArrayList<>();
 
     public CTMPack(@NotNull String name, boolean isFolder)
     {
         this.name = name;
         this.isFolder = isFolder;
 
-        //String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
-        //this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
-        // ("file/" + name) + "/icon");
+        /*String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
+        this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
+        ("file/" + name) + "/icon");*/
     }
 
     public String getName()
@@ -107,7 +99,7 @@ public class CTMPack
         this.ctmSelector = new CTMSelector(this.name, isFolder);
     }
 
-    public Identifier getIdentifier()
+    /*public Identifier getIdentifier()
     {
         return identifier;
     }
@@ -134,7 +126,7 @@ public class CTMPack
                 catch (IOException e)
                 {
                     throw new RuntimeException(e);
-                }*/
+                }
             }
         }
         else
@@ -155,10 +147,10 @@ public class CTMPack
             catch (IOException e)
             {
                 throw new RuntimeException(e);
-            }*/
+            }
         }
         this.identifier = id;
-    }
+    }*/
 
     //=========================================================================
     // CTMBlocks
@@ -166,18 +158,19 @@ public class CTMPack
     public void addBlock(CTMBlock ctmBlock)
     {
         ctmBlocks.add(ctmBlock);
+
         if (ctmBlock.getControlsGroup() != null)
         {
             ctmBlock.getControlsGroup().addContainedBLock(ctmBlock);
         }
     }
 
-    public void addAllBlocks(@NotNull List<CTMBlock> ctmBlockList)
+    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList)
     {
         ctmBlockList.forEach(this::addBlock);
     }
 
-    public List<CTMBlock> getCtmBlocks()
+    public ArrayList<CTMBlock> getCtmBlocks()
     {
         return ctmBlocks;
     }
@@ -188,15 +181,6 @@ public class CTMPack
         {
             ctmBlocks.get(ctmBlocks.indexOf(block)).toggle();
         }
-
-        if (unsavedOptions.contains(block))
-        {
-            unsavedOptions.remove(block);
-        }
-        else
-        {
-            unsavedOptions.add(block);
-        }
     }
 
     public void resetOptions()
@@ -204,26 +188,7 @@ public class CTMPack
         ctmBlocks.forEach(ctmBlock -> ctmBlock.setEnabled(true));
     }
 
-    public void restoreUnsavedOptions()
-    {
-        for (CTMBlock block : unsavedOptions)
-        {
-            ctmBlocks.get(ctmBlocks.indexOf(block)).setEnabled(!ctmBlocks.contains(block));
-        }
-        unsavedOptions.clear();
-    }
-
-    public void clearUnsavedOptions()
-    {
-        unsavedOptions.clear();
-    }
-
-    public boolean optionsChanged()
-    {
-        return !unsavedOptions.isEmpty();
-    }
-
-    public boolean getOptionValue(String blockName)
+    public boolean isBlockEnabled(String blockName)
     {
         for (CTMBlock block : ctmBlocks)
         {

@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 public class Controls
@@ -43,7 +43,9 @@ public class Controls
             @SerializedName("enabled") boolean isEnabled,
             @SerializedName("button_tooltip") @Nullable String buttonTooltip,
             @SerializedName("screen_texture") @Nullable String screenTexture
-    ) {}
+    )
+    {
+    }
 
     private final String type;
     private final String groupName;
@@ -56,7 +58,7 @@ public class Controls
     private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
 
-    private final List<CTMBlock> containedBLocksList = new ArrayList<>();
+    private final ArrayList<CTMBlock> containedBLocksList = new ArrayList<>();
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
@@ -96,7 +98,8 @@ public class Controls
             }
             else
             {
-                String path = getBlocksForImage(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(":", "/")));
+                String path = getBlocksForImage(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(
+                        ":", "/")));
                 if (path == null)
                 {
                     this.identifier = new Identifier("textures/misc/unknown_pack.png");
@@ -173,8 +176,8 @@ public class Controls
     /**
      * @param path The path to the properties file
      * @return A string containing the field {@code "matchBlocks"} or the field {@code "matchTiles"}
-     *         (ex: can be {@code "copper_block"} or {@code "copper_block exposed_copper weathered_copper oxidized_copper"},
-     *         where each block is separated by a space)
+     * (ex: can be {@code "copper_block"} or {@code "copper_block exposed_copper weathered_copper oxidized_copper"},
+     * where each block is separated by a space)
      */
     private @Nullable String getBlocksForImage(Path path)
     {
@@ -219,7 +222,7 @@ public class Controls
      */
     private void addPropertiesFilesRec(@NotNull File dir)
     {
-        for (File file : dir.listFiles())
+        for (File file : Objects.requireNonNull(dir.listFiles()))
         {
             if (file.isDirectory())
             {
@@ -237,7 +240,7 @@ public class Controls
         containedBLocksList.add(ctmBlock);
     }
 
-    public List<CTMBlock> getContainedBLocksList()
+    public ArrayList<CTMBlock> getContainedBLocksList()
     {
         return containedBLocksList;
     }

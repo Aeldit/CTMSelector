@@ -84,7 +84,7 @@ public class CTMSScreen extends Screen
         ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
         addDrawableChild(list);
 
-        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
+        ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
         // Sorts the blocks alphabetically
         toSort.sort(Comparator.comparing(CTMPack::getName));
 
@@ -112,7 +112,8 @@ public class CTMSScreen extends Screen
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
-                });
+                }
+        );
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
         addDrawableChild(reloadButton);
     }
@@ -127,8 +128,9 @@ public class CTMSScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final Screen parent;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
-                          Screen parent
+        public ListWidget(
+                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                Screen parent
         )
         {
             super(client, width, height, top, bottom, itemHeight);
@@ -161,8 +163,8 @@ public class CTMSScreen extends Screen
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
             var text = new TextWidget(180, 24,
                     CTMPacks.isPackEnabled(ctmPack.getName()) // If the pack is not enabled, it is in italic and gray
-                            ? ctmPack.getNameAsText()
-                            : Text.of(Formatting.GRAY
+                    ? ctmPack.getNameAsText()
+                    : Text.of(Formatting.GRAY
                             + Text.of(Formatting.ITALIC
                             + ctmPack.getName()).getString()
                     )

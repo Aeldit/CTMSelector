@@ -61,19 +61,21 @@ public class CTMSelector
     //=========================================================================
     // Non-static part
     //=========================================================================
-    private final List<Controls> packControls = new ArrayList<>();
+    private final ArrayList<Controls> packControls = new ArrayList<>();
     private final String ctmSelectorJsonFilePath;
     private final String packName;
     private final boolean isFolder;
 
     // Map<Controls, Map<Properties file, blocksNames>>
-    private final Map<String, Map<String, ArrayList<String>>> blocksInControlsMap = new HashMap<>();
+    private final HashMap<String, HashMap<String, ArrayList<String>>> blocksInControlsMap = new HashMap<>();
 
     public CTMSelector(String packName, boolean isFolder)
     {
         if (isFolder)
         {
-            this.ctmSelectorJsonFilePath = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName + "/ctm_selector.json";
+            this.ctmSelectorJsonFilePath =
+                    FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
+                            "/ctm_selector.json";
         }
         else
         {
@@ -86,7 +88,8 @@ public class CTMSelector
     }
 
     /**
-     * Adds to the {@code blocksInControlsMap} all the blocks names contained by each Properties file found in each {@code Controls}
+     * Adds to the {@code blocksInControlsMap} all the blocks names contained by each Properties file found in each
+     * {@code Controls}
      */
     public void initBlocksInControlsMap()
     {
@@ -104,7 +107,7 @@ public class CTMSelector
         }
     }
 
-    public List<Controls> getPackControls()
+    public ArrayList<Controls> getPackControls()
     {
         return packControls;
     }
@@ -117,7 +120,8 @@ public class CTMSelector
     {
         for (Controls controls : packControls)
         {
-            Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName(), null);
+            Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName()
+                    , null);
             if (currentControls == null)
             {
                 continue;
@@ -187,7 +191,9 @@ public class CTMSelector
                 {
                     Gson gson = new Gson();
                     Reader reader = Files.newBufferedReader(ctmSelectorPath);
-                    serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
+                    serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
+                            Controls.SerializableControls[].class
+                    )));
                     reader.close();
                 }
                 catch (IOException e)
@@ -206,7 +212,9 @@ public class CTMSelector
                     {
                         Gson gson = new Gson();
                         Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
-                        serializableControls.addAll(Arrays.asList(gson.fromJson(reader, Controls.SerializableControls[].class)));
+                        serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
+                                Controls.SerializableControls[].class
+                        )));
                         reader.close();
                         break;
                     }
@@ -233,7 +241,7 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    private final List<Controls> unsavedOptions = new ArrayList<>();
+    private final ArrayList<Controls> unsavedOptions = new ArrayList<>();
 
     public void toggle(Controls controls)
     {
