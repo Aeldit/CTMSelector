@@ -60,7 +60,7 @@ public class FilesHandling
 
                                 if (!properties.isEmpty())
                                 {
-                                    loadOptions(properties, ctmPack, fileHeader.toString(), file, "/");
+                                    loadOptions(properties, ctmPack, fileHeader.toString(), file);
                                 }
                             }
                         }
@@ -102,7 +102,7 @@ public class FilesHandling
 
                             if (!properties.isEmpty())
                             {
-                                loadOptions(properties, ctmPack, path.toString(), file, "\\\\");
+                                loadOptions(properties, ctmPack, path.toString(), file);
                             }
                         }
                     }
@@ -130,11 +130,11 @@ public class FilesHandling
 
     private void loadOptions(
             Properties properties, CTMPack ctmPack, @NotNull String path,
-            @NotNull File zipFileOrFolder, String pathSep
+            @NotNull File zipFileOrFolder
     )
     {
-        String namespace = path.split(pathSep)[Arrays.stream(path
-                .split(pathSep)).toList().indexOf(zipFileOrFolder.getName()) + 2];
+        String namespace =
+                path.split("/")[Arrays.stream(path.split("/")).toList().indexOf(zipFileOrFolder.getName()) + 2];
 
         if (namespace.equals("minecraft")
                 && (properties.containsKey("matchBlocks")
@@ -144,9 +144,9 @@ public class FilesHandling
         )
         {
             // Acquires the path used for the Identifier
-            int index = Arrays.stream(path.split(pathSep)).toList().indexOf(zipFileOrFolder.getName()) + 2;
+            int index = Arrays.stream(path.split("/")).toList().indexOf(zipFileOrFolder.getName()) + 2;
             StringBuilder tmpPath = new StringBuilder();
-            String[] splitPath = path.split(pathSep);
+            String[] splitPath = path.split("/");
 
             for (int i = 0; i < splitPath.length - 1; i++)
             {
@@ -490,7 +490,9 @@ public class FilesHandling
         {
             boolean changed = false;
 
-            for (Path path : listFilesInFolderPack(new File(RESOURCE_PACKS_DIR + "\\" + ctmPack.getName())))
+            // We use Path.of() to be sure that the path is correct, independently of the OS of the user
+            for (Path path :
+                    listFilesInFolderPack(new File(Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString())))
             {
                 ArrayList<String> enabledBlocks = new ArrayList<>();
                 ArrayList<String> enabledTiles = new ArrayList<>();
@@ -514,11 +516,11 @@ public class FilesHandling
                     fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
                     // Toggles the options in the file
-                    if (path.toString().replace("\\", "").contains(ctmPath))
+                    if (path.toString().replace("\\", "/").contains(ctmPath))
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            changed = updateList(ctmPack, enabledBlocks, true, properties, "matchBlocks",
+                            boolean localChanged = updateList(ctmPack, enabledBlocks, true, properties, "matchBlocks",
                                     "ctmDisabled"
                             )
                                     || updateList(ctmPack, enabledTiles, true, properties, "matchTiles",
@@ -531,7 +533,9 @@ public class FilesHandling
                                     "matchTiles"
                             );
 
-                            if (changed)
+                            changed |= localChanged;
+
+                            if (localChanged)
                             {
                                 try (FileOutputStream fos = new FileOutputStream(path.toFile()))
                                 {
