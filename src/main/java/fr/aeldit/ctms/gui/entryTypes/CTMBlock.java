@@ -8,8 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents a a block found in a {@link java.util.Properties Properties} file
  * that has the CTM method
- *
- * @apiNote The {@link #controlsGroup} contains the
+ * <p>
  * {@link Controls} object that contains this block
  * <p>
  * {@link #blockName} is in the form {@code "block_name"}
@@ -27,7 +26,6 @@ public class CTMBlock
     private final String blockName;
     private final Text prettyName;
     private final Identifier identifier;
-    private Controls controlsGroup;
     private boolean enabled;
 
     public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
@@ -70,35 +68,9 @@ public class CTMBlock
         return identifier;
     }
 
-    public Controls getControlsGroup()
-    {
-        return controlsGroup;
-    }
-
-    public void setControlsGroup(Controls controlsGroup)
-    {
-        this.controlsGroup = controlsGroup;
-    }
-
     public boolean isEnabled()
     {
-        if (controlsGroup != null)
-        {
-            if (!controlsGroup.isEnabled())
-            {
-                return false;
-            }
-        }
         return enabled;
-    }
-
-    public boolean isDisabledFromGroup()
-    {
-        if (controlsGroup != null)
-        {
-            return !controlsGroup.isEnabled();
-        }
-        return false;
     }
 
     public void setEnabled(boolean value)
