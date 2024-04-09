@@ -426,7 +426,7 @@ public class FilesHandling
                                             || updateList(ctmPack, disabledBlocks, false, properties, "ctmDisabled",
                                             "matchBlocks"
                                     )
-                                            || updateList(ctmPack, disabledBlocks, false, properties,
+                                            || updateList(ctmPack, disabledTiles, false, properties,
                                             "ctmTilesDisabled", "matchTiles"
                                     );
 
@@ -488,6 +488,8 @@ public class FilesHandling
         }
         else
         {
+            boolean changed = false;
+
             for (Path path : listFilesInFolderPack(new File(RESOURCE_PACKS_DIR + "\\" + ctmPack.getName())))
             {
                 ArrayList<String> enabledBlocks = new ArrayList<>();
@@ -516,7 +518,7 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            boolean changed = updateList(ctmPack, enabledBlocks, true, properties, "matchBlocks",
+                            changed = updateList(ctmPack, enabledBlocks, true, properties, "matchBlocks",
                                     "ctmDisabled"
                             )
                                     || updateList(ctmPack, enabledTiles, true, properties, "matchTiles",
@@ -546,7 +548,10 @@ public class FilesHandling
                 }
             }
             folderPaths.clear();
-            MinecraftClient.getInstance().reloadResources();
+            if (changed)
+            {
+                MinecraftClient.getInstance().reloadResources();
+            }
         }
         load();
     }
@@ -637,7 +642,7 @@ public class FilesHandling
     private boolean updateList(
             CTMPack ctmPack, @NotNull ArrayList<String> blocks, boolean negateOption, @NotNull Properties properties,
             String toRemove, String toAdd
-    ) // TODO -> Fix cut sandstones not being enabled when reset
+    )
     {
         boolean changed = false;
 
