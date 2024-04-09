@@ -116,7 +116,7 @@ public class ResourcePackScreen extends Screen
         else
         {
             addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.done"), button -> close())
+                    ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                             .dimensions(width / 2 - 75, height - 28, 150, 20)
                             .build()
             );
@@ -150,10 +150,10 @@ public class ResourcePackScreen extends Screen
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMBlock block, CTMPack ctmPack)
+        public @NotNull Entry build(@NotNull CTMBlock block, @NotNull CTMPack ctmPack)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, block.isDisabledFromGroup()
+            var text = new TextWidget(160, 20 + 2, ctmPack.isBlockDisabledFromGroup(block)
                                                    ?
                                                    Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString())
                                                    : block.getPrettyName(),
@@ -165,7 +165,7 @@ public class ResourcePackScreen extends Screen
                     .build(0, 0, 30, 20, Text.empty(),
                             (button, value) -> ctmPack.toggle(block)
                     );
-            toggleButton.setTooltip(block.isDisabledFromGroup()
+            toggleButton.setTooltip(ctmPack.isBlockDisabledFromGroup(block)
                                     ? Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled"))
                                     : Tooltip.of(Text.empty())
             );

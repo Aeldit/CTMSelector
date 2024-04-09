@@ -2,10 +2,12 @@ package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -45,7 +47,7 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final ArrayList<Controls> packControls = new ArrayList<>();
-    private final String ctmSelectorJsonFilePath;
+    private final Path ctmSelectorJsonFilePath;
     private final String packName;
     private final boolean isFolder;
 
@@ -57,12 +59,12 @@ public class CTMSelector
         if (isFolder)
         {
             this.ctmSelectorJsonFilePath =
-                    FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
-                            "/ctm_selector.json";
+                    Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
+                            "/ctm_selector.json");
         }
         else
         {
-            this.ctmSelectorJsonFilePath = "/ctm_selector.json";
+            this.ctmSelectorJsonFilePath = Path.of("ctm_selector.json");
         }
         this.packName = packName;
         this.isFolder = isFolder;
@@ -85,7 +87,7 @@ public class CTMSelector
             {
                 blocksInControlsMap
                         .get(controls.getGroupName())
-                        .put(path1.toString(), getCTMBlocksNamesInProperties(path1));
+                        .put(path1.toString(), getCTMBlocksNamesInPropertiesString(path1));
             }
         }
     }
@@ -96,10 +98,10 @@ public class CTMSelector
     }
 
     /**
-     * @param blockName The name of the block
+     * @param ctmBlock The {@link CTMBlock} object
      * @return The controls group that contains the block | null otherwise
      */
-    public Controls getControlsGroupWithBlock(String blockName)
+    public @Nullable Controls getControlsGroupWithBlock(CTMBlock ctmBlock)
     {
         for (Controls controls : packControls)
         {
@@ -112,7 +114,7 @@ public class CTMSelector
 
             for (Path path1 : controls.getPropertiesFilesPaths())
             {
-                if (currentControls.get(path1.toString()).contains(blockName))
+                if (currentControls.get(path1.toString()).contains(ctmBlock.getBlockName()))
                 {
                     return controls;
                 }
@@ -121,7 +123,7 @@ public class CTMSelector
         return null;
     }
 
-    private @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
+    public @NotNull ArrayList<String> getCTMBlocksNamesInPropertiesString(Path pathArg)
     {
         Properties properties = new Properties();
         try
@@ -132,6 +134,46 @@ public class CTMSelector
         {
             throw new RuntimeException(e);
         }
+
+        if (properties.isEmpty())
+        {
+            return new ArrayList<>();
+        }
+
+        ArrayList<String> ctmBlocks = new ArrayList<>();
+
+        if (properties.containsKey("matchBlocks"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
+        }
+        else if (properties.containsKey("matchTiles"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
+        }
+
+        if (properties.containsKey("ctmDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
+        }
+        else if (properties.containsKey("ctmTilesDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
+        }
+        return ctmBlocks;
+    }
+
+    public static @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
+    {
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(new FileInputStream(String.valueOf(pathArg)));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
         if (properties.isEmpty())
         {
             return new ArrayList<>();
@@ -214,7 +256,7 @@ public class CTMSelector
         {
             packControls.add(new Controls(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
-                            cr.propertiesFilesPaths(), cr.screenTexture(), cr.isEnabled(),
+                            cr.propertiesFilesPaths(), cr.icon(), cr.isEnabled(),
                             Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
                     )
             );
@@ -224,47 +266,17 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    private final ArrayList<Controls> unsavedOptions = new ArrayList<>();
-
     public void toggle(Controls controls)
     {
         if (packControls.contains(controls))
         {
             controls.toggle();
         }
-
-        if (unsavedOptions.contains(controls))
-        {
-            unsavedOptions.remove(controls);
-        }
-        else
-        {
-            unsavedOptions.add(controls);
-        }
     }
 
     public void resetOptions()
     {
         packControls.forEach(controls -> controls.setEnabled(true));
-    }
-
-    public void restoreUnsavedOptions()
-    {
-        for (Controls controls : unsavedOptions)
-        {
-            packControls.get(packControls.indexOf(controls)).toggle();
-        }
-        unsavedOptions.clear();
-    }
-
-    public void clearUnsavedOptions()
-    {
-        unsavedOptions.clear();
-    }
-
-    public boolean optionsChanged()
-    {
-        return !unsavedOptions.isEmpty();
     }
 
     /**
@@ -276,12 +288,13 @@ public class CTMSelector
 
         for (Controls cr : packControls)
         {
-            cr.getContainedBLocksList().forEach(ctmBlock -> ctmBlock.setEnabled(cr.isEnabled()));
+            cr.getContainedBlocksList().forEach(ctmBlock -> ctmBlock.setEnabled(cr.isEnabled()));
             serializableControlsToWrite.add(cr.getAsRecord());
         }
 
-        String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;
-        Path ctmSelectorPath = Path.of(packPathString + "/ctm_selector.json");
+        Path ctmSelectorPath =
+                Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
+                        "/ctm_selector.json");
 
         if (isFolder)
         {

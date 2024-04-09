@@ -80,7 +80,6 @@ public class ControlsScreen extends Screen
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             ctmSelector.resetOptions();
                             ctmSelector.updateControlsStates();
-                            ctmSelector.clearUnsavedOptions();
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
@@ -90,26 +89,12 @@ public class ControlsScreen extends Screen
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                            ctmSelector.restoreUnsavedOptions();
+                ButtonWidget.builder(ScreenTexts.DONE, button -> {
+                            ctmSelector.updateControlsStates();
+                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
-                        .dimensions(width / 2 - 154, height - 28, 150, 20)
-                        .build()
-        );
-        addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                            if (ctmSelector.optionsChanged())
-                            {
-                                ctmSelector.updateControlsStates();
-                                ctmSelector.clearUnsavedOptions();
-                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            }
-                            close();
-                        })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
-                        .dimensions(width / 2 + 4, height - 28, 150, 20)
+                        .dimensions(width / 2 - 100, height - 28, 200, 20)
                         .build()
         );
     }

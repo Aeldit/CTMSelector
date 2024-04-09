@@ -1,8 +1,10 @@
 package fr.aeldit.ctms.gui.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
+import fr.aeldit.ctms.textures.Controls;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
@@ -33,15 +35,17 @@ public class CTMPack
 {
     private final String name;
     private final boolean isFolder;
-    private CTMSelector ctmSelector;
+    private final CTMSelector ctmSelector;
     //private Identifier identifier;
-
     private final ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
+    private final ArrayList<Controls> controls = new ArrayList<>();
 
-    public CTMPack(@NotNull String name, boolean isFolder)
+    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector)
     {
         this.name = name;
         this.isFolder = isFolder;
+
+        this.ctmSelector = hasSelector ? new CTMSelector(this.name, isFolder) : null;
 
         /*String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
         this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
@@ -63,6 +67,9 @@ public class CTMPack
         return isFolder;
     }
 
+    //=========================================================================
+    // Selectors
+    //=========================================================================
     public CTMSelector getCtmSelector()
     {
         return ctmSelector;
@@ -73,9 +80,28 @@ public class CTMPack
         return ctmSelector != null;
     }
 
-    public void createCtmSelector(boolean isFolder)
+    //=========================================================================
+    // Controls
+    //=========================================================================
+    public ArrayList<Controls> getControls()
     {
-        this.ctmSelector = new CTMSelector(this.name, isFolder);
+        return controls;
+    }
+
+    public boolean isBlockControlled(CTMBlock ctmBlock)
+    {
+        return ctmSelector.getControlsGroupWithBlock(ctmBlock) != null;
+    }
+
+    public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
+    {
+        Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
+
+        if (controls != null)
+        {
+            return controls.isEnabled();
+        }
+        return false;
     }
 
     /*public Identifier getIdentifier()
@@ -134,24 +160,26 @@ public class CTMPack
     //=========================================================================
     // CTMBlocks
     //=========================================================================
-    public void addBlock(CTMBlock ctmBlock)
-    {
-        ctmBlocks.add(ctmBlock);
-
-        if (ctmBlock.getControlsGroup() != null)
-        {
-            ctmBlock.getControlsGroup().addContainedBLock(ctmBlock);
-        }
-    }
-
     public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList)
     {
-        ctmBlockList.forEach(this::addBlock);
+        ctmBlocks.addAll(ctmBlockList);
     }
 
     public ArrayList<CTMBlock> getCtmBlocks()
     {
         return ctmBlocks;
+    }
+
+    public @Nullable CTMBlock getCtmBlockByName(String name)
+    {
+        for (CTMBlock ctmBlock : ctmBlocks)
+        {
+            if (ctmBlock.getBlockName().equals(name))
+            {
+                return ctmBlock;
+            }
+        }
+        return null;
     }
 
     public void toggle(CTMBlock block)

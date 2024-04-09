@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Properties;
 
 public class Controls
@@ -23,9 +22,9 @@ public class Controls
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
+            @SerializedName("icon") @NotNull String icon,
             @SerializedName("enabled") boolean isEnabled,
-            @SerializedName("button_tooltip") @Nullable String buttonTooltip,
-            @SerializedName("screen_texture") @Nullable String screenTexture
+            @SerializedName("button_tooltip") @Nullable String buttonTooltip
     )
     {
     }
@@ -35,28 +34,28 @@ public class Controls
     private final ArrayList<String> propertiesFilesStrings;
     private boolean isEnabled;
     private final Text buttonTooltip;
-    private final String texturePath;
+    private final String icon;
 
     // The following fields are not in the file, and are used only in the code
     private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
     private final Identifier identifier;
-
-    private final ArrayList<CTMBlock> containedBLocksList = new ArrayList<>();
+    private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> propertiesFilesPaths, @Nullable String texturePath,
+            @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String icon,
             boolean isEnabled, Path packPath
     )
     {
         this.type = type;
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.propertiesFilesStrings = propertiesFilesPaths;
-        this.texturePath = texturePath;
+        this.propertiesFilesStrings = propertiesFilesStrings;
+        this.icon = icon;
         this.isEnabled = isEnabled;
 
-        for (String s : propertiesFilesPaths)
+        // Obtains the path to each block
+        for (String s : propertiesFilesStrings)
         {
             Path assetsInPackPath = Path.of(packPath + "/assets/" + s.replace(":", "/"));
 
@@ -73,36 +72,14 @@ public class Controls
             }
         }
 
-        if (texturePath == null)
-        {
-            if (propertiesFilesPaths.isEmpty()) // Case where no files where specified (this is also an error)
-            {
-                this.identifier = new Identifier("textures/misc/unknown_pack.png");
-            }
-            else
-            {
-                String path = getBlocksForImage(Path.of(packPath + "/assets/" + propertiesFilesPaths.get(0).replace(
-                        ":", "/")));
-                if (path == null)
-                {
-                    this.identifier = new Identifier("textures/misc/unknown_pack.png");
-                }
-                else
-                {
-                    String pathFromFiles = propertiesFilesPaths.get(0);
-                    String namespace = pathFromFiles.split(":")[0];
-                    String newPath = "textures/block/" + (path.contains(" ") ? path.split(" ")[0] : path) + ".png";
-                    this.identifier = new Identifier(namespace, newPath);
-                }
-            }
-        }
-        else if (!texturePath.contains(":")) // Case where the namespace is not specified
+        // Case where the namespace is not specified
+        if (!icon.contains(":"))
         {
             this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
         else
         {
-            this.identifier = new Identifier(texturePath.split(":")[0], texturePath.split(":")[1]);
+            this.identifier = new Identifier(icon.split(":")[0], icon.split(":")[1]);
         }
     }
 
@@ -138,9 +115,8 @@ public class Controls
 
     public SerializableControls getAsRecord()
     {
-        return new SerializableControls(type, groupName, propertiesFilesStrings,
-                isEnabled, buttonTooltip.getString(), texturePath
-        );
+        return new SerializableControls(type, groupName, propertiesFilesStrings, icon, isEnabled,
+                buttonTooltip.getString());
     }
 
     /**
@@ -172,7 +148,7 @@ public class Controls
         Properties properties = new Properties();
         try
         {
-            properties.load(new FileInputStream(String.valueOf(path)));
+            properties.load(new FileInputStream(path.toFile()));
         }
         catch (IOException e)
         {
@@ -205,7 +181,13 @@ public class Controls
      */
     private void addPropertiesFilesRec(@NotNull File dir)
     {
-        for (File file : Objects.requireNonNull(dir.listFiles()))
+        File[] files = dir.listFiles();
+        if (files == null)
+        {
+            return;
+        }
+
+        for (File file : files)
         {
             if (file.isDirectory())
             {
@@ -218,13 +200,13 @@ public class Controls
         }
     }
 
-    public void addContainedBLock(CTMBlock ctmBlock)
+    public void addContainedBlock(CTMBlock ctmBlock)
     {
-        containedBLocksList.add(ctmBlock);
+        containedBlocks.add(ctmBlock);
     }
 
-    public ArrayList<CTMBlock> getContainedBLocksList()
+    public ArrayList<CTMBlock> getContainedBlocksList()
     {
-        return containedBLocksList;
+        return containedBlocks;
     }
 }
