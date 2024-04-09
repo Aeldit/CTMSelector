@@ -385,14 +385,10 @@ public class FilesHandling
         return folderPaths;
     }
 
-    public void updateUsedTextures(@NotNull CTMPack ctmPack) // TODO -> Don't reload the resources when nothing changed
+    public void updateUsedTextures(@NotNull CTMPack ctmPack)
     {
         if (!ctmPack.isFolder())
-        {// We disable the pack and reload the resources because the reloading makes the zip file accessible for
-            // writing
-            MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
-            MinecraftClient.getInstance().reloadResources();
-
+        {
             String packPath = Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString();
 
             if (isZipCtmPack(packPath))
@@ -459,6 +455,11 @@ public class FilesHandling
 
                 if (!headersBytes.isEmpty())
                 {
+                    // We disable the pack and reload the resources because the reloading makes the zip file
+                    // accessible for writing, due to no longer being loaded by Minecraft
+                    MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
+                    MinecraftClient.getInstance().reloadResources();
+
                     // Mounts the zip file and adds files to it using the FileSystem
                     // The bytes written in the files are the ones we obtain
                     // from the properties files
@@ -479,10 +480,11 @@ public class FilesHandling
                     {
                         throw new RuntimeException(e);
                     }
+
+                    MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
+                    MinecraftClient.getInstance().reloadResources();
                 }
             }
-            MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
-            MinecraftClient.getInstance().reloadResources();
         }
         else
         {
