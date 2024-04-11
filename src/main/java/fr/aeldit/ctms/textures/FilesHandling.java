@@ -16,8 +16,7 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 
-import static fr.aeldit.ctms.textures.CTMSelector.hasFolderPackControls;
-import static fr.aeldit.ctms.textures.CTMSelector.hasZipPackControls;
+import static fr.aeldit.ctms.textures.CTMSelector.*;
 import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
 import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
@@ -100,6 +99,26 @@ public class FilesHandling
                     }
                 }
                 folderPaths.clear();
+
+                // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
+                // controls
+                if (hasControls)
+                {
+                    for (Controls controls : ctmPack.getCtmSelector().getControls())
+                    {
+                        for (Path path : controls.getPropertiesFilesPaths())
+                        {
+                            for (String blockName : getCTMBlocksNamesInProperties(path))
+                            {
+                                CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                if (ctmBlock != null)
+                                {
+                                    controls.addContainedBlock(ctmBlock);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
