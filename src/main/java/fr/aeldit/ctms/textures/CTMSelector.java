@@ -49,22 +49,11 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final ArrayList<Controls> packControls = new ArrayList<>();
-    private final Path ctmSelectorJsonFilePath;
     private final String packName;
     private final boolean isFolder;
 
     public CTMSelector(String packName, boolean isFolder)
     {
-        if (isFolder)
-        {
-            this.ctmSelectorJsonFilePath =
-                    Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
-                            "/ctm_selector.json");
-        }
-        else
-        {
-            this.ctmSelectorJsonFilePath = Path.of("ctm_selector.json");
-        }
         this.packName = packName;
         this.isFolder = isFolder;
 
@@ -166,7 +155,7 @@ public class CTMSelector
             {
                 for (FileHeader fileHeader : zipFile.getFileHeaders())
                 {
-                    if (fileHeader.toString().endsWith(".json"))
+                    if (fileHeader.toString().endsWith("ctm_selector.json"))
                     {
                         Gson gson = new Gson();
                         Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
