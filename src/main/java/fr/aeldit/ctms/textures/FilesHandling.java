@@ -101,7 +101,7 @@ public class FilesHandling
                 folderPaths.clear();
 
                 // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
-                // controls
+                // Controls object
                 if (hasControls)
                 {
                     for (Controls controls : ctmPack.getCtmSelector().getControls())

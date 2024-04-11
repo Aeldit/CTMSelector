@@ -82,20 +82,10 @@ public class CTMPack
     //=========================================================================
     // Controls
     //=========================================================================
-    public boolean isBlockControlled(CTMBlock ctmBlock)
-    {
-        return ctmSelector.getControlsGroupWithBlock(ctmBlock) != null;
-    }
-
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
         Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
-
-        if (controls != null)
-        {
-            return controls.isEnabled();
-        }
-        return false;
+        return controls != null && !controls.isEnabled();
     }
 
     /*public Identifier getIdentifier()

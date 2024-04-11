@@ -8,12 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Properties;
 
 public class Controls
 {
@@ -131,48 +128,6 @@ public class Controls
     public Identifier getIdentifier()
     {
         return identifier;
-    }
-
-    /**
-     * @param path The path to the properties file
-     * @return A string containing the field {@code "matchBlocks"} or the field {@code "matchTiles"}
-     * (ex: can be {@code "copper_block"} or {@code "copper_block exposed_copper weathered_copper oxidized_copper"},
-     * where each block is separated by a space)
-     */
-    private @Nullable String getBlocksForImage(Path path)
-    {
-        if (!Files.exists(path))
-        {
-            return null;
-        }
-
-        Properties properties = new Properties();
-        try
-        {
-            properties.load(new FileInputStream(path.toFile()));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        if (properties.containsKey("matchBlocks"))
-        {
-            return properties.getProperty("matchBlocks");
-        }
-        else if (properties.containsKey("matchTiles"))
-        {
-            return properties.getProperty("matchTiles");
-        }
-        else if (properties.containsKey("ctmDisabled"))
-        {
-            return properties.getProperty("ctmDisabled");
-        }
-        else if (properties.containsKey("ctmTilesDisabled"))
-        {
-            return properties.getProperty("ctmTilesDisabled");
-        }
-        return null;
     }
 
     /**
