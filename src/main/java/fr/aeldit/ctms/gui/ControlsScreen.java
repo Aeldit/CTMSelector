@@ -68,7 +68,7 @@ public class ControlsScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        ArrayList<Controls> toSort = new ArrayList<>(ctmSelector.getPackControls());
+        ArrayList<Controls> toSort = new ArrayList<>(ctmSelector.getControls());
         toSort.sort(Comparator.comparing(Controls::getGroupName));
 
         for (Controls controls : toSort)

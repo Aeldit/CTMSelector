@@ -12,7 +12,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
 
 public class CTMSelector
 {
@@ -51,9 +53,6 @@ public class CTMSelector
     private final String packName;
     private final boolean isFolder;
 
-    // Map<Controls, Map<Properties file, blocksNames>>
-    private final HashMap<String, HashMap<String, ArrayList<String>>> blocksInControlsMap = new HashMap<>();
-
     public CTMSelector(String packName, boolean isFolder)
     {
         if (isFolder)
@@ -72,27 +71,7 @@ public class CTMSelector
         readFile();
     }
 
-    /**
-     * Adds to the {@code blocksInControlsMap} all the blocks names contained by each Properties file found in each
-     * {@code Controls}
-     */
-    public void initBlocksInControlsMap()
-    {
-        for (Controls controls : packControls)
-        {
-            blocksInControlsMap.putIfAbsent(controls.getGroupName(), new HashMap<>());
-
-            // Iterates over the properties files contained by the current controls object
-            for (Path path1 : controls.getPropertiesFilesPaths())
-            {
-                blocksInControlsMap
-                        .get(controls.getGroupName())
-                        .put(path1.toString(), getCTMBlocksNamesInPropertiesString(path1));
-            }
-        }
-    }
-
-    public ArrayList<Controls> getPackControls()
+    public ArrayList<Controls> getControls()
     {
         return packControls;
     }
@@ -105,61 +84,15 @@ public class CTMSelector
     {
         for (Controls controls : packControls)
         {
-            Map<String, ArrayList<String>> currentControls = blocksInControlsMap.getOrDefault(controls.getGroupName()
-                    , null);
-            if (currentControls == null)
+            for (CTMBlock block : controls.getContainedBlocksList())
             {
-                continue;
-            }
-
-            for (Path path1 : controls.getPropertiesFilesPaths())
-            {
-                if (currentControls.get(path1.toString()).contains(ctmBlock.getBlockName()))
+                if (block == ctmBlock)
                 {
                     return controls;
                 }
             }
         }
         return null;
-    }
-
-    public @NotNull ArrayList<String> getCTMBlocksNamesInPropertiesString(Path pathArg)
-    {
-        Properties properties = new Properties();
-        try
-        {
-            properties.load(new FileInputStream(String.valueOf(pathArg)));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        if (properties.isEmpty())
-        {
-            return new ArrayList<>();
-        }
-
-        ArrayList<String> ctmBlocks = new ArrayList<>();
-
-        if (properties.containsKey("matchBlocks"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
-        }
-        else if (properties.containsKey("matchTiles"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
-        }
-
-        if (properties.containsKey("ctmDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
-        }
-        else if (properties.containsKey("ctmTilesDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
-        }
-        return ctmBlocks;
     }
 
     public static @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)

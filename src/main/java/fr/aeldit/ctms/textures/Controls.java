@@ -103,9 +103,9 @@ public class Controls
         return isEnabled;
     }
 
-    public void setEnabled(boolean isEnabled)
+    public void setEnabled(boolean value)
     {
-        this.isEnabled = isEnabled;
+        this.isEnabled = value;
     }
 
     public void toggle()
@@ -116,7 +116,8 @@ public class Controls
     public SerializableControls getAsRecord()
     {
         return new SerializableControls(type, groupName, propertiesFilesStrings, icon, isEnabled,
-                buttonTooltip.getString());
+                buttonTooltip.getString()
+        );
     }
 
     /**

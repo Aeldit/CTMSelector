@@ -38,7 +38,6 @@ public class CTMPack
     private final CTMSelector ctmSelector;
     //private Identifier identifier;
     private final ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
-    private final ArrayList<Controls> controls = new ArrayList<>();
 
     public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector)
     {
@@ -83,11 +82,6 @@ public class CTMPack
     //=========================================================================
     // Controls
     //=========================================================================
-    public ArrayList<Controls> getControls()
-    {
-        return controls;
-    }
-
     public boolean isBlockControlled(CTMBlock ctmBlock)
     {
         return ctmSelector.getControlsGroupWithBlock(ctmBlock) != null;

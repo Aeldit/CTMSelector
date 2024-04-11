@@ -16,7 +16,8 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 
-import static fr.aeldit.ctms.textures.CTMSelector.*;
+import static fr.aeldit.ctms.textures.CTMSelector.hasFolderPackControls;
+import static fr.aeldit.ctms.textures.CTMSelector.hasZipPackControls;
 import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
 import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
@@ -66,21 +67,6 @@ public class FilesHandling
                 {
                     throw new RuntimeException(e);
                 }
-
-                // If the pack has a controls file, we initialize them for this pack
-                if (hasControls)
-                {
-                    ctmPack.getCtmSelector().initBlocksInControlsMap();
-
-                    /*for (CTMBlock ctmBlock : ctmPack.getCtmBlocks())
-                    {
-                        Controls controlsGroupWithBlock = ctmPack.getCtmSelector().getControlsGroupWithBlock(ctmBlock);
-                        if (controlsGroupWithBlock != null)
-                        {
-                            ctmBlock.setControlsGroup(controlsGroupWithBlock);
-                        }
-                    }*/
-                }
             }
             else if (file.isDirectory() && isFolderCtmPack(file.getName()))
             {
@@ -114,37 +100,6 @@ public class FilesHandling
                     }
                 }
                 folderPaths.clear();
-
-                // If the pack has a controls file, we initialize them for this pack
-                // and fill the ArrayList of CTMBlock with the blocks
-                if (hasControls)
-                {
-                    ctmPack.getCtmSelector().initBlocksInControlsMap();
-
-                    for (Controls controls : ctmPack.getControls())
-                    {
-                        for (Path path : controls.getPropertiesFilesPaths())
-                        {
-                            for (String blockName : getCTMBlocksNamesInProperties(path))
-                            {
-                                CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
-                                if (ctmBlock != null)
-                                {
-                                    controls.addContainedBlock(ctmBlock);
-                                }
-                            }
-                        }
-                    }
-
-                    /*for (CTMBlock ctmBlock : ctmPack.getCtmBlocks())
-                    {
-                        Controls controlsGroupWithBlock = ctmPack.getCtmSelector().getControlsGroupWithBlock(ctmBlock);
-                        if (controlsGroupWithBlock != null)
-                        {
-                            ctmBlock.setControlsGroup(controlsGroupWithBlock);
-                        }
-                    }*/
-                }
             }
         }
     }
