@@ -129,8 +129,7 @@ public class ControlsScreen extends Screen
         @Contract("_, _ -> new")
         public @NotNull Entry build(
                 CTMSelector ctmSelector, @NotNull Controls controls
-        ) // TODO -> change the color and tooltip if blocks in the category have a different state, as well as the
-        // action on click
+        )
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, controls.getGroupNameAsText(), client.textRenderer);

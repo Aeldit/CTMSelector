@@ -645,17 +645,17 @@ public class FilesHandling
     {
         boolean changed = false;
 
-        for (String optionName : blocks)
+        for (String blockName : blocks)
         {
-            // Before condition simplification : negateOption ? !ctmPack.isBlockEnabled(optionName) : ctmPack
-            // .isBlockEnabled(optionName)
-            if (negateOption != ctmPack.isBlockEnabled(optionName))
+            // Before condition simplification : negateOption ? !ctmPack.isBlockEnabled(blockName) : ctmPack
+            // .isBlockEnabled(blockName)
+            if (negateOption != ctmPack.isBlockEnabled(blockName))
             {
                 if (properties.containsKey(toRemove))
                 {
                     ArrayList<String> fileBlocks =
                             new ArrayList<>(List.of(properties.getProperty(toRemove).split(" ")));
-                    fileBlocks.remove(optionName);
+                    fileBlocks.remove(blockName);
                     properties.put(toRemove, fileBlocks.toString()
                             .replace("[", "")
                             .replace("]", "")
@@ -664,11 +664,11 @@ public class FilesHandling
 
                     if (properties.containsKey(toAdd))
                     {
-                        properties.put(toAdd, properties.getProperty(toAdd) + " " + optionName);
+                        properties.put(toAdd, properties.getProperty(toAdd) + " " + blockName);
                     }
                     else
                     {
-                        properties.put(toAdd, optionName);
+                        properties.put(toAdd, blockName);
                     }
 
                     changed = true;

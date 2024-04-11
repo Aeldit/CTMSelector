@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Represents a CTM pack
@@ -84,6 +85,23 @@ public class CTMPack
     //=========================================================================
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
+        Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
+        return controls != null && !controls.isEnabled();
+    }
+
+    public boolean isBlockDisabledFromGroup(String ctmBlockName)
+    {
+        CTMBlock ctmBlock = null;
+        // Obtain the CTMBlock via its name
+        for (CTMBlock block : ctmBlocks)
+        {
+            if (Objects.equals(block.getBlockName(), ctmBlockName))
+            {
+                ctmBlock = block;
+                break;
+            }
+        }
+
         Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
         return controls != null && !controls.isEnabled();
     }
@@ -170,13 +188,22 @@ public class CTMPack
     {
         if (ctmBlocks.contains(block))
         {
-            ctmBlocks.get(ctmBlocks.indexOf(block)).toggle();
+            if (!isBlockDisabledFromGroup(block))
+            {
+                ctmBlocks.get(ctmBlocks.indexOf(block)).toggle();
+            }
         }
     }
 
     public void resetOptions()
     {
-        ctmBlocks.forEach(ctmBlock -> ctmBlock.setEnabled(true));
+        for (CTMBlock ctmBlock : ctmBlocks)
+        {
+            if (!isBlockDisabledFromGroup(ctmBlock))
+            {
+                ctmBlock.setEnabled(true);
+            }
+        }
     }
 
     public boolean isBlockEnabled(String blockName)
