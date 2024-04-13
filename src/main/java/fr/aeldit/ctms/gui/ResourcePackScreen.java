@@ -159,20 +159,30 @@ public class ResourcePackScreen extends Screen
                                                    : block.getPrettyName(),
                     client.textRenderer
             );
-            var toggleButton = CyclingButtonWidget.onOffBuilder()
-                    .omitKeyText()
-                    .initially(block.isEnabled())
-                    .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmPack.toggle(block)
-                    );
-            toggleButton.setTooltip(ctmPack.isBlockDisabledFromGroup(block)
-                                    ? Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled"))
-                                    : Tooltip.of(Text.empty())
-            );
+
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
-            layout.add(toggleButton);
+
+            if (ctmPack.isBlockDisabledFromGroup(block))
+            {
+                var toggleButton = ButtonWidget.builder(ScreenTexts.OFF, button -> {})
+                        .dimensions(0, 0, 30, 20)
+                        .build();
+                toggleButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled")));
+                layout.add(toggleButton);
+            }
+            else
+            {
+                var toggleButton = CyclingButtonWidget.onOffBuilder()
+                        .omitKeyText()
+                        .initially(block.isEnabled())
+                        .build(0, 0, 30, 20, Text.empty(),
+                                (button, value) -> ctmPack.toggle(block)
+                        );
+                toggleButton.setTooltip(Tooltip.of(Text.empty()));
+                layout.add(toggleButton);
+            }
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
             return new Entry(block, layout);

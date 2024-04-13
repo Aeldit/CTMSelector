@@ -19,7 +19,7 @@ public class Controls
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
-            @SerializedName("icon") @NotNull String icon,
+            @SerializedName("icon_path") @NotNull String iconPath,
             @SerializedName("enabled") boolean isEnabled,
             @SerializedName("button_tooltip") @Nullable String buttonTooltip
     )
@@ -31,7 +31,7 @@ public class Controls
     private final ArrayList<String> propertiesFilesStrings;
     private boolean isEnabled;
     private final Text buttonTooltip;
-    private final String icon;
+    private final String iconPath;
 
     // The following fields are not in the file, and are used only in the code
     private final ArrayList<Path> propertiesFilesPaths = new ArrayList<>();
@@ -40,7 +40,7 @@ public class Controls
 
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String icon,
+            @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
             boolean isEnabled, Path packPath
     )
     {
@@ -48,7 +48,7 @@ public class Controls
         this.groupName = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
         this.propertiesFilesStrings = propertiesFilesStrings;
-        this.icon = icon;
+        this.iconPath = iconPath;
         this.isEnabled = isEnabled;
 
         // Obtains the path to each block
@@ -70,13 +70,13 @@ public class Controls
         }
 
         // Case where the namespace is not specified
-        if (!icon.contains(":"))
+        if (!iconPath.contains(":"))
         {
             this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
         else
         {
-            this.identifier = new Identifier(icon.split(":")[0], icon.split(":")[1]);
+            this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
         }
     }
 
@@ -112,7 +112,7 @@ public class Controls
 
     public SerializableControls getAsRecord()
     {
-        return new SerializableControls(type, groupName, propertiesFilesStrings, icon, isEnabled,
+        return new SerializableControls(type, groupName, propertiesFilesStrings, iconPath, isEnabled,
                 buttonTooltip.getString()
         );
     }

@@ -178,7 +178,7 @@ public class CTMSelector
         {
             packControls.add(new Controls(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
-                            cr.propertiesFilesPaths(), cr.icon(), cr.isEnabled(),
+                            cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
                             Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
                     )
             );

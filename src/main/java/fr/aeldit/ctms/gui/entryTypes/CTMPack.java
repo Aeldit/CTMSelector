@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Represents a CTM pack
@@ -49,7 +48,7 @@ public class CTMPack
 
         /*String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
         this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
-        ("file/" + name) + "/icon");*/
+        ("file/" + name) + "/iconPath");*/
     }
 
     public String getName()
@@ -89,23 +88,6 @@ public class CTMPack
         return controls != null && !controls.isEnabled();
     }
 
-    public boolean isBlockDisabledFromGroup(String ctmBlockName)
-    {
-        CTMBlock ctmBlock = null;
-        // Obtain the CTMBlock via its name
-        for (CTMBlock block : ctmBlocks)
-        {
-            if (Objects.equals(block.getBlockName(), ctmBlockName))
-            {
-                ctmBlock = block;
-                break;
-            }
-        }
-
-        Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
-        return controls != null && !controls.isEnabled();
-    }
-
     /*public Identifier getIdentifier()
     {
         return identifier;
@@ -122,7 +104,7 @@ public class CTMPack
             {
                 String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
                 id = new Identifier("minecraft",
-                        "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/icon"
+                        "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/iconPath"
                 );
 
                 /*try (InputStream stream = new FileInputStream(packPath + "/pack.png"))

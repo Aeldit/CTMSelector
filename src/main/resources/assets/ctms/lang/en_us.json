@@ -18,9 +18,7 @@
   "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
   "ctms.screen.config.save&quit": "Save & Quit",
   "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times if the pack is a zip file, because we need to edit the zip file, which we can't do if Minecraft is using it",
-  "ctms.screen.block.parentControlIsDisabled": "§cThis block is contained by a Controls group that is disabled.\n\nAny value change will not be kept upon saving.\n\nTo change its value, enable the group(s) that contains it",
+  "ctms.screen.block.parentControlIsDisabled": "§cThis block is contained by a Controls group that is disabled.\n\nTo change its value, enable the group(s) that contains it",
   "-----------------------------------------------CONTROLS_SCREEN----------------------------------------------": "",
-  "ctms.screen.controls.title": "'s Controls",
-  "---------------------------------------------------TOASTS---------------------------------------------------": "",
-  "ctms.toast.packNotEnabled": "This resource pack is not enabled"
+  "ctms.screen.controls.title": "'s Controls"
 }
