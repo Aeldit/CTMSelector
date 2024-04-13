@@ -3,6 +3,7 @@ package fr.aeldit.ctms.textures;
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
@@ -12,13 +13,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.textures.CTMSelector.*;
-import static fr.aeldit.ctms.util.Utils.CTM_PACKS;
-import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
+import static fr.aeldit.ctms.util.Utils.*;
 
 public class FilesHandling
 {
@@ -34,17 +34,29 @@ public class FilesHandling
             return;
         }
 
-        for (File file : Objects.requireNonNull(RESOURCE_PACKS_DIR.toFile().listFiles()))
+        File[] files = RESOURCE_PACKS_DIR.toFile().listFiles();
+        if (files == null)
         {
-            if (file.isFile() && file.getName().endsWith(".zip") && isZipCtmPack(file.toString()))
+            return;
+        }
+
+        for (File file : files)
+        {
+            if (file.isFile() && file.getName().endsWith(".zip"))
             {
-                boolean hasControls = hasZipPackControls(file.getName());
-
-                CTMPack ctmPack = new CTMPack(file.getName(), false, hasControls);
-                CTM_PACKS.add(ctmPack);
-
                 try (ZipFile zipFile = new ZipFile(file))
                 {
+                    if (zipNotACTMPack(zipFile))
+                    {
+                        zipFile.close();
+                        continue;
+                    }
+
+                    boolean hasControls = hasZipPackControls(zipFile);
+
+                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasControls);
+                    CTM_PACKS.add(ctmPack);
+
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
                     {
                         if (fileHeader.toString().contains(ctmPath))
@@ -57,6 +69,27 @@ public class FilesHandling
                                 if (!properties.isEmpty())
                                 {
                                     loadOptions(properties, ctmPack, fileHeader.toString(), file);
+                                }
+                            }
+                        }
+                    }
+
+                    // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList
+                    // in the
+                    // Controls object
+                    if (hasControls)
+                    {
+                        for (Controls controls : ctmPack.getCtmSelector().getControls())
+                        {
+                            for (Path path : controls.getPropertiesFilesPaths())
+                            {
+                                for (String blockName : getCTMBlocksNamesInProperties(path))
+                                {
+                                    CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                    if (ctmBlock != null)
+                                    {
+                                        controls.addContainedBlock(ctmBlock);
+                                    }
                                 }
                             }
                         }
@@ -325,23 +358,16 @@ public class FilesHandling
         return ctmBlocks;
     }
 
-    private boolean isZipCtmPack(String packPath)
+    private boolean zipNotACTMPack(@NotNull ZipFile zipFile) throws ZipException
     {
-        try (ZipFile tmpZipFile = new ZipFile(packPath))
+        for (FileHeader fileHeader : zipFile.getFileHeaders())
         {
-            for (FileHeader fileHeader : tmpZipFile.getFileHeaders())
+            if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(ctmPath))
             {
-                if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(ctmPath))
-                {
-                    return true;
-                }
+                return false;
             }
         }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return false;
+        return true;
     }
 
     private boolean isFolderCtmPack(String packName)
@@ -386,79 +412,82 @@ public class FilesHandling
         {
             String packPath = Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString();
 
-            if (isZipCtmPack(packPath))
+            HashMap<String, byte[]> headersBytes = new HashMap<>();
+
+            try (ZipFile zipFile = new ZipFile(packPath))
             {
-                HashMap<String, byte[]> headersBytes = new HashMap<>();
-
-                try (ZipFile zipFile = new ZipFile(packPath))
+                if (zipNotACTMPack(zipFile))
                 {
-                    for (FileHeader fileHeader : zipFile.getFileHeaders())
+                    zipFile.close();
+                    return;
+                }
+
+                for (FileHeader fileHeader : zipFile.getFileHeaders())
+                {
+                    if (fileHeader.toString().endsWith(".properties"))
                     {
-                        if (fileHeader.toString().endsWith(".properties"))
+                        ArrayList<String> enabledBlocks = new ArrayList<>();
+                        ArrayList<String> enabledTiles = new ArrayList<>();
+                        ArrayList<String> disabledBlocks = new ArrayList<>();
+                        ArrayList<String> disabledTiles = new ArrayList<>();
+
+                        Properties properties = new Properties();
+                        properties.load(zipFile.getInputStream(fileHeader));
+
+                        if (!properties.isEmpty())
                         {
-                            ArrayList<String> enabledBlocks = new ArrayList<>();
-                            ArrayList<String> enabledTiles = new ArrayList<>();
-                            ArrayList<String> disabledBlocks = new ArrayList<>();
-                            ArrayList<String> disabledTiles = new ArrayList<>();
+                            // Loads the enabled and disabled options from the file
+                            fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                            Properties properties = new Properties();
-                            properties.load(zipFile.getInputStream(fileHeader));
-
-                            if (!properties.isEmpty())
+                            // Toggles the options in the file
+                            if (fileHeader.toString().contains(ctmPath))
                             {
-                                // Loads the enabled and disabled options from the file
-                                fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
+                                boolean changed = updateList(ctmPack, enabledBlocks, true, properties,
+                                        "matchBlocks", "ctmDisabled"
+                                )
+                                        || updateList(ctmPack, enabledTiles, true, properties, "matchTiles",
+                                        "ctmTilesDisabled"
+                                )
+                                        || updateList(ctmPack, disabledBlocks, false, properties, "ctmDisabled",
+                                        "matchBlocks"
+                                )
+                                        || updateList(ctmPack, disabledTiles, false, properties,
+                                        "ctmTilesDisabled", "matchTiles"
+                                );
 
-                                // Toggles the options in the file
-                                if (fileHeader.toString().contains(ctmPath))
+                                if (changed)
                                 {
-                                    boolean changed = updateList(ctmPack, enabledBlocks, true, properties,
-                                            "matchBlocks", "ctmDisabled"
-                                    )
-                                            || updateList(ctmPack, enabledTiles, true, properties, "matchTiles",
-                                            "ctmTilesDisabled"
-                                    )
-                                            || updateList(ctmPack, disabledBlocks, false, properties, "ctmDisabled",
-                                            "matchBlocks"
-                                    )
-                                            || updateList(ctmPack, disabledTiles, false, properties,
-                                            "ctmTilesDisabled", "matchTiles"
-                                    );
+                                    removeEmptyKeys(properties);
 
-                                    if (changed)
-                                    {
-                                        removeEmptyKeys(properties);
-
-                                        // We take the properties in a byte array,
-                                        // so we can write it in the zip later
-                                        byte[] tmp = properties.toString()
-                                                .replace("{", "")
-                                                .replace("}", "")
-                                                .replace(", ", "\n")
-                                                .getBytes();
-                                        headersBytes.put(fileHeader.toString(), tmp);
-                                    }
+                                    // We take the properties in a byte array,
+                                    // so we can write it in the zip later
+                                    byte[] tmp = properties.toString()
+                                            .replace("{", "")
+                                            .replace("}", "")
+                                            .replace(", ", "\n")
+                                            .getBytes();
+                                    headersBytes.put(fileHeader.toString(), tmp);
                                 }
                             }
                         }
                     }
                 }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
 
-                if (!headersBytes.isEmpty())
-                {
-                    // We disable the pack and reload the resources because the reloading makes the zip file
-                    // accessible for writing, due to no longer being loaded by Minecraft
-                    MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
-                    MinecraftClient.getInstance().reloadResources();
+            if (!headersBytes.isEmpty())
+            {
+                // We disable the pack and reload the resources because the reloading makes the zip file
+                // accessible for writing, due to no longer being loaded by Minecraft
+                MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
+                MinecraftClient.getInstance().reloadResources();
 
-                    // Mounts the zip file and adds files to it using the FileSystem
-                    // The bytes written in the files are the ones we obtain
-                    // from the properties files
-                    HashMap<String, String> env = new HashMap<>();
+                writeBytesToZip(packPath, headersBytes);
+
+                    /*HashMap<String, String> env = new HashMap<>();
                     env.put("create", "true");
                     Path path = Paths.get(packPath);
                     URI uri = URI.create("jar:" + path.toUri());
@@ -474,11 +503,10 @@ public class FilesHandling
                     catch (IOException e)
                     {
                         throw new RuntimeException(e);
-                    }
+                    }*/
 
-                    MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
-                    MinecraftClient.getInstance().reloadResources();
-                }
+                MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
+                MinecraftClient.getInstance().reloadResources();
             }
         }
         else
