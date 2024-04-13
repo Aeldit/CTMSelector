@@ -84,6 +84,11 @@ public class CTMPack
     //=========================================================================
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
+        if (ctmSelector == null)
+        {
+            return false;
+        }
+
         Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
         return controls != null && !controls.isEnabled();
     }
@@ -190,11 +195,20 @@ public class CTMPack
 
     public boolean isBlockEnabled(String blockName)
     {
-        for (CTMBlock block : ctmBlocks)
+        CTMBlock ctmBlock = getCtmBlockByName(blockName);
+        if (ctmBlock == null)
         {
-            if (block.getBlockName().equals(blockName))
+            return true;
+        }
+
+        if (!isBlockDisabledFromGroup(ctmBlock))
+        {
+            for (CTMBlock block : ctmBlocks)
             {
-                return block.isEnabled();
+                if (block.getBlockName().equals(blockName))
+                {
+                    return block.isEnabled();
+                }
             }
         }
         return false;

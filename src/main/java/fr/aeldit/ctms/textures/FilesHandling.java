@@ -426,10 +426,10 @@ public class FilesHandling
                 {
                     if (fileHeader.toString().endsWith(".properties"))
                     {
-                        ArrayList<String> enabledBlocks = new ArrayList<>();
-                        ArrayList<String> enabledTiles = new ArrayList<>();
-                        ArrayList<String> disabledBlocks = new ArrayList<>();
-                        ArrayList<String> disabledTiles = new ArrayList<>();
+                        ArrayList<String> enabledBlocks = new ArrayList<>(1);
+                        ArrayList<String> enabledTiles = new ArrayList<>(1);
+                        ArrayList<String> disabledBlocks = new ArrayList<>(1);
+                        ArrayList<String> disabledTiles = new ArrayList<>(1);
 
                         Properties properties = new Properties();
                         properties.load(zipFile.getInputStream(fileHeader));
@@ -482,6 +482,7 @@ public class FilesHandling
             {
                 // We disable the pack and reload the resources because the reloading makes the zip file
                 // accessible for writing, due to no longer being loaded by Minecraft
+                System.out.println(ctmPack.getName());
                 MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
                 MinecraftClient.getInstance().reloadResources();
 
