@@ -103,24 +103,19 @@ public class ResourcePackScreen extends Screen
                                 .build()
                 );
             }
+        }
 
-            addDrawableChild(
-                    ButtonWidget.builder(ScreenTexts.DONE, button -> {
+        addDrawableChild(
+                ButtonWidget.builder(ScreenTexts.DONE, button -> {
+                            if (enabled)
+                            {
                                 TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                                close();
-                            })
-                            .dimensions(width / 2 - 100, height - 28, 200, 20)
-                            .build()
-            );
-        }
-        else
-        {
-            addDrawableChild(
-                    ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                            .dimensions(width / 2 - 100, height - 28, 200, 20)
-                            .build()
-            );
-        }
+                            }
+                            close();
+                        })
+                        .dimensions(width / 2 - 100, height - 28, 200, 20)
+                        .build()
+        );
     }
 
     /**

@@ -547,6 +547,7 @@ public class FilesHandling
                 }
             }
             folderPaths.clear();
+
             if (changed)
             {
                 MinecraftClient.getInstance().reloadResources();
