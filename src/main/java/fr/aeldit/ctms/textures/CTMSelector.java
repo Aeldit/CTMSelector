@@ -3,8 +3,10 @@ package fr.aeldit.ctms.textures;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
+import fr.aeldit.ctms.util.Utils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 
 public class CTMSelector
@@ -26,23 +29,60 @@ public class CTMSelector
         return Files.exists(Path.of(packPath + "/ctm_selector.json"));
     }
 
-    public static boolean hasZipPackControls(String packPath)
+    public static boolean hasZipPackControls(@NotNull ZipFile zipFile) throws ZipException
     {
-        try (ZipFile tmpZipFile = new ZipFile(packPath))
+        for (FileHeader fileHeader : zipFile.getFileHeaders())
         {
-            for (FileHeader fileHeader : tmpZipFile.getFileHeaders())
+            if (fileHeader.toString().equals("ctm_selector.json"))
             {
-                if (fileHeader.toString().equals("ctm_selector.json"))
-                {
-                    return true;
-                }
+                return true;
             }
         }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
         return false;
+    }
+
+    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Controls.SerializableControls> controls)
+    {
+        ArrayList<String> s = new ArrayList<>();
+        for (Controls.SerializableControls sc : controls)
+        {
+            StringBuilder sbFiles = new StringBuilder();
+            sbFiles.append("[\n");
+            for (int i = 0; i < sc.propertiesFilesPaths().size(); ++i)
+            {
+                sbFiles.append(String.format("\t\t\t\"%s\"", sc.propertiesFilesPaths().get(i)));
+                if (i != sc.propertiesFilesPaths().size() - 1)
+                {
+                    sbFiles.append(",\n");
+                }
+            }
+            sbFiles.append("\n\t\t]");
+
+            s.add(String.format("""
+                            \t{
+                            \t\t"type": "%s",
+                            \t\t"group_name": "%s",
+                            \t\t"properties_files": %s,
+                            \t\t"icon_path": "%s",
+                            \t\t"enabled": %b,
+                            \t\t"button_tooltip": "%s"
+                            \t}""", sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
+                    sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
+            ));
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+        for (int i = 0; i < s.size(); ++i)
+        {
+            sb.append(s.get(i));
+            if (i != s.size() - 1)
+            {
+                sb.append(",\n");
+            }
+        }
+        sb.append("\n]");
+        return sb.toString().getBytes();
     }
 
     //=========================================================================
@@ -234,7 +274,10 @@ public class CTMSelector
         }
         else
         {
-            // TODO -> Implement with Zip
+            HashMap<String, byte[]> h = new HashMap<>(1);
+            byte[] b = toByteArray(serializableControlsToWrite);
+            h.put("ctm_selector.json", b);
+            Utils.writeBytesToZip(Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName).toString(), h);
         }
     }
 }
