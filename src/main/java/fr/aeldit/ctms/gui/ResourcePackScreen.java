@@ -88,7 +88,7 @@ public class ResourcePackScreen extends Screen
                                 close();
                             })
                             .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                            .dimensions(10, 6, 75, 20)
+                            .dimensions(10, 6, 100, 20)
                             .build()
             );
 
@@ -117,7 +117,7 @@ public class ResourcePackScreen extends Screen
         {
             addDrawableChild(
                     ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                            .dimensions(width / 2 - 75, height - 28, 150, 20)
+                            .dimensions(width / 2 - 100, height - 28, 200, 20)
                             .build()
             );
         }
