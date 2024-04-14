@@ -414,10 +414,11 @@ public class FilesHandling
 
             HashMap<String, byte[]> headersBytes = new HashMap<>();
 
-            try (ZipFile zipFile = new ZipFile(packPath))
+            try (ZipFile zipFile = new ZipFile(packPath)) // TODO -> Find why the headersBytes hashMap is empty
             {
                 if (zipNotACTMPack(zipFile))
                 {
+                    System.out.println("bbb");
                     zipFile.close();
                     return;
                 }
@@ -426,6 +427,8 @@ public class FilesHandling
                 {
                     if (fileHeader.toString().endsWith(".properties"))
                     {
+                        // We initialize then ArrayLists with a size of 1 because it is most likely that there will
+                        // be only 1 block in each file. Multiple blocks per file is less common
                         ArrayList<String> enabledBlocks = new ArrayList<>(1);
                         ArrayList<String> enabledTiles = new ArrayList<>(1);
                         ArrayList<String> disabledBlocks = new ArrayList<>(1);
@@ -478,33 +481,15 @@ public class FilesHandling
                 throw new RuntimeException(e);
             }
 
+            System.out.println(headersBytes);
             if (!headersBytes.isEmpty())
             {
                 // We disable the pack and reload the resources because the reloading makes the zip file
                 // accessible for writing, due to no longer being loaded by Minecraft
-                System.out.println(ctmPack.getName());
                 MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
                 MinecraftClient.getInstance().reloadResources();
 
                 writeBytesToZip(packPath, headersBytes);
-
-                    /*HashMap<String, String> env = new HashMap<>();
-                    env.put("create", "true");
-                    Path path = Paths.get(packPath);
-                    URI uri = URI.create("jar:" + path.toUri());
-
-                    try (FileSystem fs = FileSystems.newFileSystem(uri, env))
-                    {
-                        for (Map.Entry<String, byte[]> entry : headersBytes.entrySet())
-                        {
-                            Path nf = fs.getPath(entry.getKey());
-                            Files.write(nf, entry.getValue(), StandardOpenOption.CREATE);
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
-                    }*/
 
                 MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
                 MinecraftClient.getInstance().reloadResources();
@@ -518,10 +503,10 @@ public class FilesHandling
             for (Path path :
                     listFilesInFolderPack(new File(Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString())))
             {
-                ArrayList<String> enabledBlocks = new ArrayList<>();
-                ArrayList<String> enabledTiles = new ArrayList<>();
-                ArrayList<String> disabledBlocks = new ArrayList<>();
-                ArrayList<String> disabledTiles = new ArrayList<>();
+                ArrayList<String> enabledBlocks = new ArrayList<>(1);
+                ArrayList<String> enabledTiles = new ArrayList<>(1);
+                ArrayList<String> disabledBlocks = new ArrayList<>(1);
+                ArrayList<String> disabledTiles = new ArrayList<>(1);
 
                 Properties properties = new Properties();
 
