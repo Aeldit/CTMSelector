@@ -1,6 +1,6 @@
 package fr.aeldit.ctms.textures;
 
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

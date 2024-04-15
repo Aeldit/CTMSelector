@@ -2,7 +2,7 @@ package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
+import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.util.Utils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
@@ -138,10 +138,10 @@ public class CTMSelector
 
         if (properties.isEmpty())
         {
-            return new ArrayList<>();
+            return new ArrayList<>(0);
         }
 
-        ArrayList<String> ctmBlocks = new ArrayList<>();
+        ArrayList<String> ctmBlocks = new ArrayList<>(1);
 
         if (properties.containsKey("matchBlocks"))
         {
@@ -179,10 +179,10 @@ public class CTMSelector
 
         if (properties.isEmpty())
         {
-            return new ArrayList<>();
+            return new ArrayList<>(0);
         }
 
-        ArrayList<String> ctmBlocks = new ArrayList<>();
+        ArrayList<String> ctmBlocks = new ArrayList<>(1);
 
         if (properties.containsKey("matchBlocks"))
         {
@@ -288,7 +288,7 @@ public class CTMSelector
      */
     public void updateControlsStates()
     {
-        ArrayList<Control.SerializableControls> serializableControlsToWrite = new ArrayList<>();
+        ArrayList<Control.SerializableControls> serializableControlsToWrite = new ArrayList<>(packControls.size());
 
         for (Control cr : packControls)
         {

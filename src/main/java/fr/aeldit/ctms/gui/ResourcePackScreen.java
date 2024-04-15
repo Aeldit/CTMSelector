@@ -1,8 +1,8 @@
 package fr.aeldit.ctms.gui;
 
-import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

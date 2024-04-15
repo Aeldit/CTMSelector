@@ -1,4 +1,4 @@
-package fr.aeldit.ctms.gui.entryTypes;
+package fr.aeldit.ctms.textures.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Control;
@@ -64,6 +64,28 @@ public class CTMPack
     public boolean isFolder()
     {
         return isFolder;
+    }
+
+    public ArrayList<CTMBlock> getCtmBlocks()
+    {
+        return ctmBlocks;
+    }
+
+    public @Nullable CTMBlock getCtmBlockByName(String name)
+    {
+        for (CTMBlock ctmBlock : ctmBlocks)
+        {
+            if (ctmBlock.getBlockName().equals(name))
+            {
+                return ctmBlock;
+            }
+        }
+        return null;
+    }
+
+    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList)
+    {
+        ctmBlocks.addAll(ctmBlockList);
     }
 
     //=========================================================================
@@ -149,28 +171,6 @@ public class CTMPack
     //=========================================================================
     // CTMBlocks
     //=========================================================================
-    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList)
-    {
-        ctmBlocks.addAll(ctmBlockList);
-    }
-
-    public ArrayList<CTMBlock> getCtmBlocks()
-    {
-        return ctmBlocks;
-    }
-
-    public @Nullable CTMBlock getCtmBlockByName(String name)
-    {
-        for (CTMBlock ctmBlock : ctmBlocks)
-        {
-            if (ctmBlock.getBlockName().equals(name))
-            {
-                return ctmBlock;
-            }
-        }
-        return null;
-    }
-
     public void toggle(CTMBlock block)
     {
         if (ctmBlocks.contains(block))

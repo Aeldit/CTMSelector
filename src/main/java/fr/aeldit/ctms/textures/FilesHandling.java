@@ -1,7 +1,7 @@
 package fr.aeldit.ctms.textures;
 
-import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
@@ -23,7 +23,6 @@ import static fr.aeldit.ctms.util.Utils.*;
 public class FilesHandling
 {
     private final String ctmPath = "assets/minecraft/optifine/ctm/";
-    private final ArrayList<Path> folderPaths = new ArrayList<>();
 
     public void load() // TODO -> categories with file tree
     {
@@ -106,7 +105,7 @@ public class FilesHandling
                 CTMPack ctmPack = new CTMPack(file.getName(), true, hasControls);
                 CTM_PACKS.add(ctmPack);
 
-                for (Path path : listFilesInFolderPack(file))
+                for (Path path : getFilesInFolderPack(file))
                 {
                     if (path.toString().replace("\\", "/").contains(ctmPath) && path.toFile().isFile())
                     {
@@ -129,7 +128,6 @@ public class FilesHandling
                         }
                     }
                 }
-                folderPaths.clear();
 
                 // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
                 // Control object
@@ -382,26 +380,32 @@ public class FilesHandling
      * @param packFolder The folder whose files will be listed and returned
      * @return Returns the files present in the folder {@code packFolder}
      */
-    private ArrayList<Path> listFilesInFolderPack(@NotNull File packFolder)
+    private @NotNull ArrayList<Path> getFilesInFolderPack(@NotNull File packFolder)
+    {
+        ArrayList<Path> paths = new ArrayList<>();
+        listFilesInFolderPack(packFolder, paths);
+        return paths;
+    }
+
+    private void listFilesInFolderPack(@NotNull File packFolder, ArrayList<Path> paths)
     {
         File[] files = packFolder.listFiles();
         if (files == null)
         {
-            return folderPaths;
+            return;
         }
 
         for (File file : files)
         {
             if (file.isFile() && file.getName().endsWith(".properties"))
             {
-                folderPaths.add(file.toPath());
+                paths.add(file.toPath());
             }
             else if (file.isDirectory())
             {
-                listFilesInFolderPack(file);
+                listFilesInFolderPack(file, paths);
             }
         }
-        return folderPaths;
     }
 
     public void updateUsedTextures(@NotNull CTMPack ctmPack)
@@ -488,7 +492,7 @@ public class FilesHandling
 
             // We use Path.of() to be sure that the path is correct, independently of the OS of the user
             for (Path path :
-                    listFilesInFolderPack(new File(Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString())))
+                    getFilesInFolderPack(new File(Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString())))
             {
                 ArrayList<String> enabledBlocks = new ArrayList<>(1);
                 ArrayList<String> enabledTiles = new ArrayList<>(1);
@@ -538,7 +542,6 @@ public class FilesHandling
                     }
                 }
             }
-            folderPaths.clear();
 
             if (changed)
             {

@@ -1,7 +1,7 @@
 package fr.aeldit.ctms.textures;
 
 import com.google.gson.annotations.SerializedName;
-import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
+import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.text.Text;
@@ -209,7 +209,7 @@ public class Control
      */
     public ArrayList<Path> getPropertiesFilesPaths()
     {
-        return propertiesFilesPaths == null ? new ArrayList<>() : propertiesFilesPaths;
+        return propertiesFilesPaths == null ? new ArrayList<>(0) : propertiesFilesPaths;
     }
 
     /**
@@ -217,7 +217,7 @@ public class Control
      */
     public ArrayList<FileHeader> getPropertiesFilesFileHeaders()
     {
-        return propertiesFilesFileHeaders == null ? new ArrayList<>() : propertiesFilesFileHeaders;
+        return propertiesFilesFileHeaders == null ? new ArrayList<>(0) : propertiesFilesFileHeaders;
     }
 
     //=================================

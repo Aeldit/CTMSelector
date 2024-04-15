@@ -1,8 +1,8 @@
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;

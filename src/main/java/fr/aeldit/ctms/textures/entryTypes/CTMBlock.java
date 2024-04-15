@@ -1,4 +1,4 @@
-package fr.aeldit.ctms.gui.entryTypes;
+package fr.aeldit.ctms.textures.entryTypes;
 
 import fr.aeldit.ctms.textures.Control;
 import net.minecraft.text.Text;
