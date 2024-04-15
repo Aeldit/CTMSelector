@@ -641,7 +641,6 @@ public class FilesHandling
         // ENABLED BLOCKS
         for (String optionName : enabledBlocks)
         {
-            System.out.printf("%s : %b%n", optionName, ctmPack.isBlockEnabled(optionName));
             if (!ctmPack.isBlockEnabled(optionName))
             {
                 if (properties.containsKey("matchBlocks"))
