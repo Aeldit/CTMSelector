@@ -32,7 +32,7 @@ or
 ### Description
 
 This mod allows you to choose which blocks with connected textures will be enabled in your pack. For example, if you
-have a connected textures pack but you don't want the log textures to be connected, then you can simply disable only
+have a connected textures pack, but you don't want the log textures to be connected, then you can simply disable only
 these textures, while keeping the other textures connected
 
 🏛️ In order to work, this mod needs 3 things (for links, you can click the badges above) :

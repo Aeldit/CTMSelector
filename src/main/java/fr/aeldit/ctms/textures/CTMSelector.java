@@ -124,12 +124,53 @@ public class CTMSelector
         return null;
     }
 
-    public static @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path pathArg)
+    public static @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path path)
     {
         Properties properties = new Properties();
         try
         {
-            properties.load(new FileInputStream(String.valueOf(pathArg)));
+            properties.load(new FileInputStream(String.valueOf(path)));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (properties.isEmpty())
+        {
+            return new ArrayList<>();
+        }
+
+        ArrayList<String> ctmBlocks = new ArrayList<>();
+
+        if (properties.containsKey("matchBlocks"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
+        }
+        else if (properties.containsKey("matchTiles"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
+        }
+
+        if (properties.containsKey("ctmDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
+        }
+        else if (properties.containsKey("ctmTilesDisabled"))
+        {
+            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
+        }
+        return ctmBlocks;
+    }
+
+    public static @NotNull ArrayList<String> getCTMBlocksNamesInZipProperties(
+            FileHeader fileHeader, @NotNull ZipFile zipFile
+    )
+    {
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(zipFile.getInputStream(fileHeader));
         }
         catch (IOException e)
         {
@@ -219,7 +260,8 @@ public class CTMSelector
             packControls.add(new Controls(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName)
+                            Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName),
+                            isFolder, isFolder ? null : packPathString
                     )
             );
         }
