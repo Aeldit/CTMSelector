@@ -29,6 +29,9 @@ public class Controls
     {
     }
 
+    //=================================
+    // Record fields
+    //=================================
     private final String type;
     private final String groupName;
     private final ArrayList<String> propertiesFilesStrings;
@@ -36,7 +39,9 @@ public class Controls
     private boolean isEnabled;
     private final Text buttonTooltip;
 
-    // The following fields are not in the file, and are used only in the code
+    //=================================
+    // Non-record fields
+    //=================================
     private final ArrayList<Path> propertiesFilesPaths; // When the pack is a folder
     private final ArrayList<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
     private final Identifier identifier;
@@ -123,6 +128,9 @@ public class Controls
         }
     }
 
+    //=================================
+    // Record
+    //=================================
     public String getGroupName()
     {
         return groupName;
@@ -138,11 +146,6 @@ public class Controls
         return isEnabled;
     }
 
-    public Text getButtonTooltip()
-    {
-        return buttonTooltip;
-    }
-
     public void setEnabled(boolean value)
     {
         this.isEnabled = value;
@@ -153,11 +156,34 @@ public class Controls
         this.isEnabled = !this.isEnabled;
     }
 
+    public Text getButtonTooltip()
+    {
+        return buttonTooltip;
+    }
+
     public SerializableControls getAsRecord()
     {
         return new SerializableControls(type, groupName, propertiesFilesStrings, iconPath, isEnabled,
                 buttonTooltip.getString()
         );
+    }
+
+    //=================================
+    // Non-record
+    //=================================
+    public Identifier getIdentifier()
+    {
+        return identifier;
+    }
+
+    public ArrayList<CTMBlock> getContainedBlocksList()
+    {
+        return containedBlocks;
+    }
+
+    public void addContainedBlock(CTMBlock ctmBlock)
+    {
+        containedBlocks.add(ctmBlock);
     }
 
     /**
@@ -173,10 +199,9 @@ public class Controls
         return propertiesFilesFileHeaders == null ? new ArrayList<>() : propertiesFilesFileHeaders;
     }
 
-    public Identifier getIdentifier()
-    {
-        return identifier;
-    }
+    //=================================
+    // Other
+    //=================================
 
     /**
      * Searches the directory recursively to find every properties files inside it
@@ -228,15 +253,5 @@ public class Controls
             }
         }
         return null;
-    }
-
-    public void addContainedBlock(CTMBlock ctmBlock)
-    {
-        containedBlocks.add(ctmBlock);
-    }
-
-    public ArrayList<CTMBlock> getContainedBlocksList()
-    {
-        return containedBlocks;
     }
 }
