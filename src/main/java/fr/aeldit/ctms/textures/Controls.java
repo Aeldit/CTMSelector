@@ -47,6 +47,9 @@ public class Controls
     private final Identifier identifier;
     private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
 
+    //==================================================================
+    // Methods
+    //==================================================================
     public Controls(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
