@@ -32,7 +32,7 @@ public class Utils
         // Mounts the zip file and adds files to it using the FileSystem
         // The bytes written in the files are the ones we obtain
         // from the properties files
-        HashMap<String, String> env = new HashMap<>();
+        HashMap<String, String> env = new HashMap<>(1);
         env.put("create", "true");
         Path path = Paths.get(packPath);
         URI uri = URI.create("jar:" + path.toUri());

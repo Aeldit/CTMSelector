@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.util.Utils;
-import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
@@ -18,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
+
+import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
 
 public class CTMSelector
 {
@@ -207,7 +208,7 @@ public class CTMSelector
     public void readFile()
     {
         ArrayList<Control.SerializableControls> serializableControls = new ArrayList<>();
-        String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;
+        String packPathString = RESOURCE_PACKS_DIR + "/" + packName;
 
         if (isFolder)
         {
@@ -260,7 +261,7 @@ public class CTMSelector
             packControls.add(new Control(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName),
+                            Path.of(RESOURCE_PACKS_DIR + "/" + packName),
                             isFolder, isFolder ? null : packPathString
                     )
             );
@@ -296,9 +297,7 @@ public class CTMSelector
             serializableControlsToWrite.add(cr.getAsRecord());
         }
 
-        Path ctmSelectorPath =
-                Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName +
-                        "/ctm_selector.json");
+        Path ctmSelectorPath = Path.of(RESOURCE_PACKS_DIR + "/" + packName + "/ctm_selector.json");
 
         if (isFolder)
         {
@@ -319,7 +318,7 @@ public class CTMSelector
             HashMap<String, byte[]> h = new HashMap<>(1);
             byte[] b = toByteArray(serializableControlsToWrite);
             h.put("ctm_selector.json", b);
-            Utils.writeBytesToZip(Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName).toString(), h);
+            Utils.writeBytesToZip(Path.of(RESOURCE_PACKS_DIR + "/" + packName).toString(), h);
         }
     }
 }
