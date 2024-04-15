@@ -16,8 +16,28 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Controls
+/**
+ * Contains a list of blocks that can be toggled together using only one click
+ */
+public class Control
 {
+    /**
+     * Holds the data of 1 control that needs to be written to the {@code "ctm_selector.json"} file (which contains a
+     * list of control
+     *
+     * @param type                 The type of texture property that will be toggled. For now, this can only be set
+     *                             to {@code "ctm"}
+     * @param groupName            The name of the group that will be display on the screen
+     * @param propertiesFilesPaths The path to each directory or properties files that will be included in the group.
+     *                             These paths start from the namespace and go to the properties file. If the path
+     *                             points to a directory, all properties files found inside it recursively will be
+     *                             included (ex: {@code "minecraft:optifine/ctm/connect/logs"}
+     * @param iconPath             The path to the icon that will be displayed on the screen for this group. Must be
+     *                             formed in the same way as the {@link Control#propertiesFilesStrings}, but must be
+     *                             a path to a single {@code .png} file
+     * @param isEnabled            If the block is enabled, this part is changed by the user of the mod (optional)
+     * @param buttonTooltip        The tooltip to display on the button of the Control group (optional)
+     */
     public record SerializableControls(
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
@@ -50,7 +70,7 @@ public class Controls
     //==================================================================
     // Methods
     //==================================================================
-    public Controls(
+    public Control(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
             boolean isEnabled, Path packPath, boolean isInFolder, @Nullable String zipPackPath
@@ -139,11 +159,6 @@ public class Controls
         return groupName;
     }
 
-    public Text getGroupNameAsText()
-    {
-        return Text.of(groupName);
-    }
-
     public boolean isEnabled()
     {
         return isEnabled;
@@ -190,13 +205,16 @@ public class Controls
     }
 
     /**
-     * @return The path to each Properties file contained by the Controls
+     * @return The absolute path to each Properties file contained by the Control
      */
     public ArrayList<Path> getPropertiesFilesPaths()
     {
         return propertiesFilesPaths == null ? new ArrayList<>() : propertiesFilesPaths;
     }
 
+    /**
+     * @return The fileHeaders of each properties file found in the zip pack
+     */
     public ArrayList<FileHeader> getPropertiesFilesFileHeaders()
     {
         return propertiesFilesFileHeaders == null ? new ArrayList<>() : propertiesFilesFileHeaders;

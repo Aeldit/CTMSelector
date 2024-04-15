@@ -75,19 +75,19 @@ public class FilesHandling
                     }
 
                     // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList
-                    // in the Controls object
+                    // in the Control object
                     if (hasControls)
                     {
-                        for (Controls controls : ctmPack.getCtmSelector().getControls())
+                        for (Control control : ctmPack.getCtmSelector().getControls())
                         {
-                            for (FileHeader fileHeader : controls.getPropertiesFilesFileHeaders())
+                            for (FileHeader fileHeader : control.getPropertiesFilesFileHeaders())
                             {
                                 for (String blockName : getCTMBlocksNamesInZipProperties(fileHeader, zipFile))
                                 {
                                     CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
                                     if (ctmBlock != null)
                                     {
-                                        controls.addContainedBlock(ctmBlock);
+                                        control.addContainedBlock(ctmBlock);
                                     }
                                 }
                             }
@@ -132,19 +132,19 @@ public class FilesHandling
                 folderPaths.clear();
 
                 // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
-                // Controls object
+                // Control object
                 if (hasControls)
                 {
-                    for (Controls controls : ctmPack.getCtmSelector().getControls())
+                    for (Control control : ctmPack.getCtmSelector().getControls())
                     {
-                        for (Path path : controls.getPropertiesFilesPaths())
+                        for (Path path : control.getPropertiesFilesPaths())
                         {
                             for (String blockName : getCTMBlocksNamesInProperties(path))
                             {
                                 CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
                                 if (ctmBlock != null)
                                 {
-                                    controls.addContainedBlock(ctmBlock);
+                                    control.addContainedBlock(ctmBlock);
                                 }
                             }
                         }

@@ -2,7 +2,7 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.Controls;
+import fr.aeldit.ctms.textures.Control;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -35,7 +35,7 @@ public class ControlsScreen extends Screen
     public ControlsScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
         super(Text.of(Formatting.GOLD + ctmPack.getName() + Formatting.RESET + Text.translatable("ctms.screen" +
-                ".controls.title").getString()));
+                ".control.title").getString()));
         this.parent = parent;
         this.ctmPack = ctmPack;
     }
@@ -68,12 +68,12 @@ public class ControlsScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        ArrayList<Controls> toSort = new ArrayList<>(ctmSelector.getControls());
-        toSort.sort(Comparator.comparing(Controls::getGroupName));
+        ArrayList<Control> toSort = new ArrayList<>(ctmSelector.getControls());
+        toSort.sort(Comparator.comparing(Control::getGroupName));
 
-        for (Controls controls : toSort)
+        for (Control control : toSort)
         {
-            list.add(controls);
+            list.add(control);
         }
 
         addDrawableChild(
@@ -118,9 +118,9 @@ public class ControlsScreen extends Screen
             this.ctmSelector = ctmSelector;
         }
 
-        public void add(Controls controls)
+        public void add(Control control)
         {
-            addEntry(builder.build(ctmSelector, controls));
+            addEntry(builder.build(ctmSelector, control));
         }
     }
 
@@ -128,37 +128,37 @@ public class ControlsScreen extends Screen
     {
         @Contract("_, _ -> new")
         public @NotNull Entry build(
-                CTMSelector ctmSelector, @NotNull Controls controls
+                CTMSelector ctmSelector, @NotNull Control control
         )
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, controls.getGroupNameAsText(), client.textRenderer);
+            var text = new TextWidget(160, 20 + 2, Text.of(control.getGroupName()), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    .initially(controls.isEnabled())
+                    .initially(control.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmSelector.toggle(controls)
+                            (button, value) -> ctmSelector.toggle(control)
                     );
-            toggleButton.setTooltip(Tooltip.of(controls.getButtonTooltip()));
+            toggleButton.setTooltip(Tooltip.of(control.getButtonTooltip()));
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
             layout.add(toggleButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
-            return new Entry(controls, layout);
+            return new Entry(control, layout);
         }
     }
 
     static class Entry extends ElementListWidget.Entry<Entry>
     {
-        private final Controls controls;
+        private final Control control;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
 
-        Entry(Controls controls, LayoutWidget layout)
+        Entry(Control control, LayoutWidget layout)
         {
-            this.controls = controls;
+            this.control = control;
             this.layout = layout;
             this.layout.forEachChild(this.children::add);
         }
@@ -182,7 +182,7 @@ public class ControlsScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(controls.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(control.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);

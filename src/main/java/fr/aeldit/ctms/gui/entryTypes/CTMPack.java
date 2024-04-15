@@ -1,7 +1,7 @@
 package fr.aeldit.ctms.gui.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.Controls;
+import fr.aeldit.ctms.textures.Control;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +80,7 @@ public class CTMPack
     }
 
     //=========================================================================
-    // Controls
+    // Control
     //=========================================================================
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
@@ -89,8 +89,8 @@ public class CTMPack
             return false;
         }
 
-        Controls controls = ctmSelector.getControlsGroupWithBlock(ctmBlock);
-        return controls != null && !controls.isEnabled();
+        Control control = ctmSelector.getControlsGroupWithBlock(ctmBlock);
+        return control != null && !control.isEnabled();
     }
 
     /*public Identifier getIdentifier()

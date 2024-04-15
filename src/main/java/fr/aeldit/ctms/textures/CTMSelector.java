@@ -41,10 +41,10 @@ public class CTMSelector
         return false;
     }
 
-    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Controls.SerializableControls> controls)
+    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Control.SerializableControls> controls)
     {
         ArrayList<String> s = new ArrayList<>();
-        for (Controls.SerializableControls sc : controls)
+        for (Control.SerializableControls sc : controls)
         {
             StringBuilder sbFiles = new StringBuilder();
             sbFiles.append("[\n");
@@ -88,7 +88,7 @@ public class CTMSelector
     //=========================================================================
     // Non-static part
     //=========================================================================
-    private final ArrayList<Controls> packControls = new ArrayList<>();
+    private final ArrayList<Control> packControls = new ArrayList<>();
     private final String packName;
     private final boolean isFolder;
 
@@ -100,7 +100,7 @@ public class CTMSelector
         readFile();
     }
 
-    public ArrayList<Controls> getControls()
+    public ArrayList<Control> getControls()
     {
         return packControls;
     }
@@ -109,15 +109,15 @@ public class CTMSelector
      * @param ctmBlock The {@link CTMBlock} object
      * @return The controls group that contains the block | null otherwise
      */
-    public @Nullable Controls getControlsGroupWithBlock(CTMBlock ctmBlock)
+    public @Nullable Control getControlsGroupWithBlock(CTMBlock ctmBlock)
     {
-        for (Controls controls : packControls)
+        for (Control control : packControls)
         {
-            for (CTMBlock block : controls.getContainedBlocksList())
+            for (CTMBlock block : control.getContainedBlocksList())
             {
                 if (block == ctmBlock)
                 {
-                    return controls;
+                    return control;
                 }
             }
         }
@@ -206,7 +206,7 @@ public class CTMSelector
 
     public void readFile()
     {
-        ArrayList<Controls.SerializableControls> serializableControls = new ArrayList<>();
+        ArrayList<Control.SerializableControls> serializableControls = new ArrayList<>();
         String packPathString = FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName;
 
         if (isFolder)
@@ -220,7 +220,7 @@ public class CTMSelector
                     Gson gson = new Gson();
                     Reader reader = Files.newBufferedReader(ctmSelectorPath);
                     serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
-                            Controls.SerializableControls[].class
+                            Control.SerializableControls[].class
                     )));
                     reader.close();
                 }
@@ -241,7 +241,7 @@ public class CTMSelector
                         Gson gson = new Gson();
                         Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
                         serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
-                                Controls.SerializableControls[].class
+                                Control.SerializableControls[].class
                         )));
                         reader.close();
                         break;
@@ -255,9 +255,9 @@ public class CTMSelector
         }
 
         // Adds the controls properly initialized to the packControls array
-        for (Controls.SerializableControls cr : serializableControls)
+        for (Control.SerializableControls cr : serializableControls)
         {
-            packControls.add(new Controls(
+            packControls.add(new Control(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
                             Path.of(FabricLoader.getInstance().getGameDir().resolve("resourcepacks") + "/" + packName),
@@ -270,11 +270,11 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    public void toggle(Controls controls)
+    public void toggle(Control control)
     {
-        if (packControls.contains(controls))
+        if (packControls.contains(control))
         {
-            controls.toggle();
+            control.toggle();
         }
     }
 
@@ -288,9 +288,9 @@ public class CTMSelector
      */
     public void updateControlsStates()
     {
-        ArrayList<Controls.SerializableControls> serializableControlsToWrite = new ArrayList<>();
+        ArrayList<Control.SerializableControls> serializableControlsToWrite = new ArrayList<>();
 
-        for (Controls cr : packControls)
+        for (Control cr : packControls)
         {
             cr.getContainedBlocksList().forEach(ctmBlock -> ctmBlock.setEnabled(cr.isEnabled()));
             serializableControlsToWrite.add(cr.getAsRecord());

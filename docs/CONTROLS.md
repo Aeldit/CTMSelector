@@ -75,5 +75,5 @@ default value, and it can be omitted
 
 ### Button Tooltip (optional)
 
-The `button_tooltip` field contains the tooltip that will be rendered when hovering the ON/OFF button in the controls
+The `button_tooltip` field contains the tooltip that will be rendered when hovering the ON/OFF button in the control
 screen
