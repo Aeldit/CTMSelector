@@ -1,24 +1,8 @@
-/*
- * Copyright (c) 2023-2024  -  Made by Aeldit
- *
- *              GNU LESSER GENERAL PUBLIC LICENSE
- *                  Version 3, 29 June 2007
- *
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- *
- *
- * This version of the GNU Lesser General Public License incorporates
- * the terms and conditions of version 3 of the GNU General Public
- * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
- */
-
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -31,6 +15,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.apache.commons.compress.utils.Lists;
@@ -43,7 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.*;
+import static fr.aeldit.ctms.Utils.*;
 
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
@@ -82,13 +67,12 @@ public class CTMSScreen extends Screen
         ListWidget list = new ListWidget(client, width, height - 64, 28, 32, this);
         addDrawableChild(list);
 
-        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
+        ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
         // Sorts the blocks alphabetically
         toSort.sort(Comparator.comparing(CTMPack::getName));
 
         for (CTMPack ctmPack : toSort)
         {
-            System.out.println(ctmPack.getName());
             list.add(ctmPack);
         }
 
@@ -158,7 +142,15 @@ public class CTMSScreen extends Screen
         public @NotNull Entry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-            var text = new TextWidget(180, 24, ctmPack.getNameAsText(), client.textRenderer);
+            var text = new TextWidget(180, 24,
+                    CTMPacks.isPackEnabled(ctmPack.getName()) // If the pack is not enabled, it is in italic and gray
+                    ? ctmPack.getNameAsText()
+                    : Text.of(Formatting.GRAY
+                            + Text.of(Formatting.ITALIC
+                            + ctmPack.getName()).getString()
+                    )
+                    , client.textRenderer
+            );
             var followButton = ButtonWidget.builder(
                             Text.translatable("ctms.screen.open"),
                             button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
@@ -207,7 +199,7 @@ public class CTMSScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
+            //context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);

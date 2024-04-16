@@ -1,25 +1,8 @@
-/*
- * Copyright (c) 2023-2024  -  Made by Aeldit
- *
- *              GNU LESSER GENERAL PUBLIC LICENSE
- *                  Version 3, 29 June 2007
- *
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- *
- *
- * This version of the GNU Lesser General Public License incorporates
- * the terms and conditions of version 3 of the GNU General Public
- * License, supplemented by the additional permissions listed in the LICENSE.txt file
- * in the repo of this mod (https://github.com/Aeldit/CTMSelector)
- */
-
 package fr.aeldit.ctms.gui;
 
-import fr.aeldit.ctms.gui.entryTypes.CTMBlock;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
 import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -41,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class ResourcePackScreen extends Screen
@@ -53,8 +36,9 @@ public class ResourcePackScreen extends Screen
     public ResourcePackScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
         super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
-                ? Text.of(ctmPack.getName().replace(".zip", ""))
-                : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen.packDisabledTitle").getString())
+              ? Text.of(ctmPack.getName().replace(".zip", ""))
+              : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen" +
+                      ".packDisabledTitle").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -68,10 +52,10 @@ public class ResourcePackScreen extends Screen
     }
 
     @Override
-    public void render(DrawContext DrawContext, int mouseX, int mouseY, float delta)
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
-        super.render(DrawContext, mouseX, mouseY, delta);
-        DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
+        super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
     @Override
@@ -89,8 +73,8 @@ public class ResourcePackScreen extends Screen
             addDrawableChild(list);
 
             // Sorts the blocks alphabetically
-            List<CTMBlock> toSort = new ArrayList<>(ctmPack.getCtmBlocks());
-            toSort.sort(Comparator.comparing(block -> block.getName().getString()));
+            ArrayList<CTMBlock> toSort = new ArrayList<>(ctmPack.getCtmBlocks());
+            toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
 
             for (CTMBlock block : toSort)
             {
@@ -100,7 +84,6 @@ public class ResourcePackScreen extends Screen
             addDrawableChild(
                     ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                                 ctmPack.resetOptions();
-                                ctmPack.clearUnsavedOptions();
                                 TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                                 close();
                             })
@@ -109,37 +92,30 @@ public class ResourcePackScreen extends Screen
                             .build()
             );
 
-            addDrawableChild(
-                    ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
-                                ctmPack.restoreUnsavedOptions();
-                                close();
-                            })
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.cancel.tooltip")))
-                            .dimensions(width / 2 - 154, height - 28, 150, 20)
-                            .build()
-            );
-            addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.config.save&quit"), button -> {
-                                if (ctmPack.optionsChanged())
-                                {
-                                    ctmPack.clearUnsavedOptions();
-                                    TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                                }
-                                close();
-                            })
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.save&quit.tooltip")))
-                            .dimensions(width / 2 + 4, height - 28, 150, 20)
-                            .build()
-            );
+            if (ctmPack.hasCtmSelector())
+            {
+                addDrawableChild(
+                        ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
+                                        Objects.requireNonNull(client).setScreen(new ControlsScreen(this, ctmPack))
+                                )
+                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
+                                .dimensions(width - 110, 6, 100, 20)
+                                .build()
+                );
+            }
         }
-        else
-        {
-            addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.done"), button -> close())
-                            .dimensions(width / 2 - 75, height - 28, 150, 20)
-                            .build()
-            );
-        }
+
+        addDrawableChild(
+                ButtonWidget.builder(ScreenTexts.DONE, button -> {
+                            if (enabled)
+                            {
+                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+                            }
+                            close();
+                        })
+                        .dimensions(width / 2 - 100, height - 28, 200, 20)
+                        .build()
+        );
     }
 
     /**
@@ -167,20 +143,39 @@ public class ResourcePackScreen extends Screen
     private record EntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMBlock block, CTMPack ctmPack)
+        public @NotNull Entry build(@NotNull CTMBlock block, @NotNull CTMPack ctmPack)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, block.getName(), client.textRenderer);
-            var toggleButton = CyclingButtonWidget.onOffBuilder()
-                    .omitKeyText()
-                    .initially(block.isEnabled())
-                    .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmPack.toggle(block)
-                    );
+            var text = new TextWidget(160, 20 + 2, ctmPack.isBlockDisabledFromGroup(block)
+                                                   ?
+                                                   Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString())
+                                                   : block.getPrettyName(),
+                    client.textRenderer
+            );
+
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
-            layout.add(toggleButton);
+
+            if (ctmPack.isBlockDisabledFromGroup(block))
+            {
+                var toggleButton = ButtonWidget.builder(ScreenTexts.OFF, button -> {})
+                        .dimensions(0, 0, 30, 20)
+                        .build();
+                toggleButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled")));
+                layout.add(toggleButton);
+            }
+            else
+            {
+                var toggleButton = CyclingButtonWidget.onOffBuilder()
+                        .omitKeyText()
+                        .initially(block.isEnabled())
+                        .build(0, 0, 30, 20, Text.empty(),
+                                (button, value) -> ctmPack.toggle(block)
+                        );
+                toggleButton.setTooltip(Tooltip.of(Text.empty()));
+                layout.add(toggleButton);
+            }
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
             return new Entry(block, layout);

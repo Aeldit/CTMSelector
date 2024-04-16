@@ -1,7 +1,10 @@
-![banner](https://github.com/Aeldit/CTMSelector/blob/1.20.2/images/banner_small.png?raw=true)
+![banner](https://github.com/Aeldit/Aeldit/blob/main/banners/ctms.png?raw=true)
 <!-- modrinth_exclude.start -->
-> ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge (this overrides the
-> LICENSE)
+> ❌ I do NOT allow this mod to be ported on the Forge loader, nor to be uploaded on CurseForge **(this overrides the
+> LICENSE)**
+>
+> If you want something to be modified, you can either ask me to do it on discord or open an issue here on GitHub,
+> or you can make a pull request
 <!-- modrinth_exclude.end -->
 [![fabric-api](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
 or
@@ -11,7 +14,7 @@ or
 or
 [![optifine](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/optifine_vector.svg)](https://optifine.net/home)
 
-![ctm-pack](https://raw.githubusercontent.com/Aeldit/Aeldit/b683fac4b97744f1a64dfde6f39624379e661095/images/requires-ctm-cozy.svg)
+![ctm-pack](https://raw.githubusercontent.com/Aeldit/Aeldit/92e6993018fe7fe68ffd2d1b0406af4411d02415/ctm_selector/requires_ctm.svg)
 
 <details>
 <summary>🎴 Show available versions</summary>
@@ -27,7 +30,11 @@ or
 
 ***
 
-### This mod allows you to choose which blocks with connected textures will be enabled in your pack. For example, if you have a connected textures pack but you don't want the log textures to be connected, then you can simply disable only these textures, while keeping the other textures connected
+### Description
+
+This mod allows you to choose which blocks with connected textures will be enabled in your pack. For example, if you
+have a connected textures pack, but you don't want the log textures to be connected, then you can simply disable only
+these textures, while keeping the other textures connected
 
 🏛️ In order to work, this mod needs 3 things (for links, you can click the badges above) :
 
@@ -43,17 +50,21 @@ key or ModMenu, and you will have access to all the options
 
 ### 💲`Features`
 
-1. Choose which blocks will have connected textures among the possible ones (❗ the resources will reload 2 times when
-   enabling or disabling textures, this is normal)
+1. Choose which blocks will have connected textures among the possible ones *(❗ if your pack is a zip file, the
+   resources will reload 2 times when enabling or disabling textures, this is normal. It is because zip files can't be
+   modified while used by Minecraft, so we the mod unloads the pack, modifies it and reloads it)*
+2. Choose which group of block will connect (ex: all logs or all metals)
 
-2. Plans :
-    - Allow the user to download my resource packs directly from the mod
-
-> If you want a resource pack, you can check these (badges are clickable) :
+> If you want a CTM capable resource pack, you can check these (the badges are clickable) :
 >
 > [![ctm_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/e2fb5f7ffe92301f627540cebca28d9aa90c641d/images/ctm-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-of-fabric)
 > [![ctm_faithful_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-faithful-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-faithful)
 > [![ctm_create_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-create-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-create)
+
+### For pack developers
+
+If you want to make your resource pack compatible with this mod, read the documentation
+here : https://github.com/Aeldit/CTMSelector/blob/feature-controls/docs/CONTROLS.md
 
 ***
 
