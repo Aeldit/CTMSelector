@@ -61,7 +61,7 @@ modrinth {
     projectId = "ctm-selector"
     versionName = "[$project.minecraft_version] CTM Selector $project.mod_version"
     versionNumber = "$version"
-    versionType = "release"
+    versionType = "beta"
 
     uploadFile = remapJar
 
@@ -78,6 +78,6 @@ modrinth {
 
     syncBodyFrom = rootProject.file("README.md").text
 
-    debugMode = true
+    debugMode = false
 }
 tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
