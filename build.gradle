@@ -78,6 +78,6 @@ modrinth {
 
     syncBodyFrom = rootProject.file("README.md").text
 
-    debugMode = true
+    debugMode = false
 }
 tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
