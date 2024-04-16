@@ -64,7 +64,7 @@ key or ModMenu, and you will have access to all the options
 ### For pack developers
 
 If you want to make your resource pack compatible with this mod, read the documentation
-here : https://github.com/Aeldit/CTMSelector/blob/feature-controls/docs/CONTROLS.md
+here : https://github.com/Aeldit/CTMSelector/blob/1.20.4/docs/CONTROLS.md
 
 ***
 
