@@ -2,32 +2,34 @@ package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.gui.CTMSScreen;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
+import org.slf4j.LoggerFactory;
 
-import static fr.aeldit.ctms.Utils.CTMS_LOGGER;
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
+import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load(true);
+        TEXTURES_HANDLING.load();
 
-        // Loads the icons pack when the client starts
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            if (MinecraftClient.getInstance().getResourcePackManager().getNames().contains("file/__CTMS_Icons__"))
+        /*for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
+        {
+            ctmPack.setIdentifier(CTM_PACKS.getIcons_index());
+        }*/
+
+        /*ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
             {
-                MinecraftClient.getInstance().getResourcePackManager().enable("file/__CTMS_Icons__");
-                MinecraftClient.getInstance().reloadResourcesConcurrently();
+                ctmPack.setIdentifier(CTM_PACKS.getIcons_index());
             }
-        });
+        });*/
 
         KeyBinding packScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "cyanlib.keybindings.openScreen.config",
@@ -42,6 +44,6 @@ public class CTMSClientCore implements ClientModInitializer
             }
         });
 
-        CTMS_LOGGER.info("[CTMSelector] Successfully initialized");
+        LoggerFactory.getLogger(CTMS_MODID).info("[CTMSelector] Successfully initialized");
     }
 }

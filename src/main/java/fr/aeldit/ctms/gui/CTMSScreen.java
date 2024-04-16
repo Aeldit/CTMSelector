@@ -1,7 +1,8 @@
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
-import fr.aeldit.ctms.gui.entryTypes.CTMPack;
+import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.apache.commons.compress.utils.Lists;
@@ -65,7 +67,7 @@ public class CTMSScreen extends Screen
         ListWidget list = new ListWidget(client, width, height, 32, height - 32, 25, this);
         addDrawableChild(list);
 
-        List<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
+        ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
         // Sorts the blocks alphabetically
         toSort.sort(Comparator.comparing(CTMPack::getName));
 
@@ -93,16 +95,10 @@ public class CTMSScreen extends Screen
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
-                });
+                }
+        );
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
         addDrawableChild(reloadButton);
-
-        ButtonWidget controlsButton = new LegacyTexturedButtonWidget(width / 2 + 160, height - 28, 20, 20, 0, 0,
-                20, new Identifier(CTMS_MODID, "textures/gui/controls.png"), 20, 40,
-                (button) -> MinecraftClient.getInstance().setScreen(new ControlsScreen(this))
-        );
-        controlsButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.controls.tooltip")));
-        addDrawableChild(controlsButton);
     }
 
     /**
@@ -115,8 +111,9 @@ public class CTMSScreen extends Screen
         private final EntryBuilder builder = new EntryBuilder(client, width);
         private final Screen parent;
 
-        public ListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
-                          Screen parent
+        public ListWidget(
+                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                Screen parent
         )
         {
             super(client, width, height, top, bottom, itemHeight);
@@ -147,7 +144,15 @@ public class CTMSScreen extends Screen
         public @NotNull Entry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-            var text = new TextWidget(180, 24, ctmPack.getNameAsText(), client.textRenderer);
+            var text = new TextWidget(180, 24,
+                    CTMPacks.isPackEnabled(ctmPack.getName()) // If the pack is not enabled, it is in italic and gray
+                    ? ctmPack.getNameAsText()
+                    : Text.of(Formatting.GRAY
+                            + Text.of(Formatting.ITALIC
+                            + ctmPack.getName()).getString()
+                    )
+                    , client.textRenderer
+            );
             var followButton = ButtonWidget.builder(
                             Text.translatable("ctms.screen.open"),
                             button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
@@ -196,7 +201,7 @@ public class CTMSScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
+            //context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);

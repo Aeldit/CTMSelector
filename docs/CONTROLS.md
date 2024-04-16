@@ -1,12 +1,79 @@
-# How to use the Controls file
+# How create Controls for your pack
 
-First thing first, create a file named controls.json in the root folder of your resource pack
+## Introduction
 
-> Your resource pack folder should look like this
+First thing first, create a file named `ctm_selector.json` in the root folder of your resource pack.
 
-![pack_root](../images/pack_root_example.png)
+Its content is a list of `Controls`, which is composed as follows:
 
-## Controls file structure :
+```json
+[
+  {
+    "type": "ctm",
+    "group_name": "Logs",
+    "properties_files": [
+      "minecraft:optifine/ctm/connect/organics/"
+    ],
+    "icon_path": "minecraft:optifine/ctm/connect/organics/oak/0.png",
+    "enabled": true,
+    "button_tooltip": ""
+  },
+  {
+    "type": "ctm",
+    "group_name": "Polished Stones",
+    "properties_files": [
+      "minecraft:optifine/ctm/connect/stones/polished_stones/polished_andesite.properties",
+      "minecraft:optifine/ctm/connect/stones/polished_stones/polished_blackstone.properties",
+      "minecraft:optifine/ctm/connect/stones/polished_stones/polished_deepslate.properties",
+      "minecraft:optifine/ctm/connect/stones/polished_stones/polished_diorite.properties",
+      "minecraft:optifine/ctm/connect/stones/polished_stones/polished_granite.properties"
+    ],
+    "icon_path": "minecraft:optifine/ctm/connect/stones/polished_stones/0.png",
+    "enabled": true,
+    "button_tooltip": ""
+  }
+]
+```
 
-- Name
-    - Files to toggle
+## Fields
+
+### Type
+
+The `type` field contains the type of modification that will be enabled or disabled by the mod.
+
+As of now, it can only be `ctm`, but I plan to add more in the future.
+
+### Group Name
+
+The `group_name` field is the name that will be displayed in the Controls screen.
+
+For example with the above configuration, we would have:
+
+![group_name_ex](https://github.com/Aeldit/Aeldit/blob/main/ctm_selector/group_name_ex.png?raw=true)
+
+### Properties Fields
+
+The `properties_files` field is an array of string, and each of these string is the path to either a directory
+containing all the blocks you want to include in your group, or the path to each individual `.properties` file.
+
+Each of these must contain the namespace followed by a `:`, followed by the path to the block from the namespace
+
+Its paths must start at the identifier (here it is `minecraft`, but if you have modded
+textures it could be `create` for example, so `create:optifine/ctm/connect/...`).
+
+### Icon Path
+
+The `icon_path` field is very similar but there is one major difference: the identifier (here `minecraft`) MUST be
+followed by a `:` instead of a `/`. If you don't do this, the game will most likely crash.
+
+It must point to a `.png` file
+
+### Enabled (optional)
+
+The `enabled` defines whether the group will be disabled at first, but it can be modified by the user so this is just a
+default value, and it can be omitted
+
+### Button Tooltip (optional)
+
+The `button_tooltip` field contains the tooltip that will be rendered when hovering the ON/OFF button in the control
+screen
