@@ -4,9 +4,7 @@ plugins {
     id "com.modrinth.minotaur" version "2.+"
 }
 
-archivesBaseName = project.archives_base_name
 version = project.mod_version + "+" + project.minecraft_version
-group = project.maven_group
 
 repositories {
     maven { url = "https://api.modrinth.com/maven" }
@@ -50,41 +48,36 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
     it.options.release.set(17)
 }
 
-java {
-    // withSourcesJar()
-}
-
 jar {
-    from("LICENSE") {
-        rename { "${it}_${archivesBaseName}" }
-    }
+    from("LICENSE.txt")
 }
 
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
-    // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
-    projectId = "ctm-selector" // This can be the project ID or the slug. Either will work!
-    versionName = "[$project.minecraft_version] $archivesBaseName $project.mod_version"
+
+    projectId = "ctm-selector"
+    versionName = "[$project.minecraft_version] CTM Selector $project.mod_version"
     versionNumber = "$version"
-    // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType = "release" // The default is `release` -- can also be `beta` or `alpha`
-    uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.20.2"] // Must be an array, even with only one version
-    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-    dependencies { // A special DSL for creating dependencies
-        // scope.type
-        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
-        // The type can either be `project` or `version`
-        required.project "fabric-api" // Creates a new required dependency on Fabric API
+    versionType = "release"
+
+    uploadFile = remapJar
+
+    gameVersions = ["1.20.2"]
+    loaders = ["fabric"]
+
+    dependencies {
+        required.project "fabric-api"
         required.project "continuity"
-        optional.project "modmenu"
+        required.version "modmenu", project.modmenu_version
     }
+
     changelog = file("changelogs/latest.md").exists() ? file("changelogs/latest.md").getText() : "No changelog provided"
+
     syncBodyFrom = rootProject.file("README.md").text
-    debugMode = true // Stops version from being published
+
+    debugMode = true
 }
 tasks.modrinth.dependsOn(tasks.modrinthSyncBody)

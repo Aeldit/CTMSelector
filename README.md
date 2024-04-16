@@ -60,6 +60,11 @@ key or ModMenu, and you will have access to all the options
 > [![ctm_faithful_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-faithful-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-faithful)
 > [![ctm_create_badge](https://raw.githubusercontent.com/Aeldit/Aeldit/54529d9dbb33d35184f386269c889cef818e7e79/images/ctm-create-cozy-minimal.svg)](https://modrinth.com/resourcepack/ctm-create)
 
+### For pack developers
+
+If you want to make your resource pack compatible with this mod, read the documentation
+here : https://github.com/Aeldit/CTMSelector/blob/feature-controls/docs/CONTROLS.md
+
 ***
 
 > If you find any issue, please make sure to report it on GitHub so I can fix it (both badges can be clicked on to
