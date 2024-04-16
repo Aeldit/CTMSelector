@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class ControlsScreen extends Screen

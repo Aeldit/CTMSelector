@@ -2,8 +2,8 @@ package fr.aeldit.ctms.textures;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import fr.aeldit.ctms.Utils;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
-import fr.aeldit.ctms.util.Utils;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
-import static fr.aeldit.ctms.util.Utils.RESOURCE_PACKS_DIR;
+import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
 
 public class CTMSelector
 {

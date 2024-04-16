@@ -1,4 +1,4 @@
-package fr.aeldit.ctms.util;
+package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.textures.CTMPacks;
 import fr.aeldit.ctms.textures.FilesHandling;

@@ -17,8 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static fr.aeldit.ctms.Utils.*;
 import static fr.aeldit.ctms.textures.CTMSelector.*;
-import static fr.aeldit.ctms.util.Utils.*;
 
 public class FilesHandling
 {
