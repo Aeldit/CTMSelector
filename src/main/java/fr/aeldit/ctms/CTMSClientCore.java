@@ -7,8 +7,9 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
+import org.slf4j.LoggerFactory;
 
-import static fr.aeldit.ctms.util.Utils.CTMS_LOGGER;
+import static fr.aeldit.ctms.util.Utils.CTMS_MODID;
 import static fr.aeldit.ctms.util.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
@@ -43,6 +44,6 @@ public class CTMSClientCore implements ClientModInitializer
             }
         });
 
-        CTMS_LOGGER.info("[CTMSelector] Successfully initialized");
+        LoggerFactory.getLogger(CTMS_MODID).info("[CTMSelector] Successfully initialized");
     }
 }

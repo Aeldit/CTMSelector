@@ -4,8 +4,6 @@ import fr.aeldit.ctms.textures.CTMPacks;
 import fr.aeldit.ctms.textures.FilesHandling;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,7 +14,6 @@ import java.util.Map;
 public class Utils
 {
     public static final String CTMS_MODID = "ctms";
-    public static final Logger CTMS_LOGGER = LoggerFactory.getLogger(CTMS_MODID);
 
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;
