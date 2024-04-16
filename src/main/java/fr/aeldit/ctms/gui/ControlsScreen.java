@@ -64,7 +64,7 @@ public class ControlsScreen extends Screen
     {
         CTMSelector ctmSelector = ctmPack.getCtmSelector();
 
-        ControlsListWidget list = new ControlsListWidget(client, width, height, 32, height - 32, 25, ctmSelector);
+        ControlsListWidget list = new ControlsListWidget(client, width, height - 32, 32, 25, ctmSelector);
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
@@ -110,11 +110,11 @@ public class ControlsScreen extends Screen
         private final CTMSelector ctmSelector;
 
         public ControlsListWidget(
-                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                MinecraftClient client, int width, int height, int y, int itemHeight,
                 CTMSelector ctmSelector
         )
         {
-            super(client, width, height, top, bottom, itemHeight);
+            super(client, width, height, y, itemHeight);
             this.ctmSelector = ctmSelector;
         }
 
