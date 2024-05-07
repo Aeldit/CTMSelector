@@ -55,12 +55,6 @@ public class CTMSScreen extends Screen
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
-    {
-        super.renderBackgroundTexture(context);
-    }
-
-    @Override
     protected void init()
     {
         TEXTURES_HANDLING.load();
@@ -118,7 +112,6 @@ public class CTMSScreen extends Screen
             this.parent = parent;
         }
 
-        @Override
         protected int getScrollbarPositionX()
         {
             return this.width / 2 + 160;

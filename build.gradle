@@ -26,13 +26,10 @@ dependencies {
 
     // ModMenu
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-    modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     // Continuity
     modLocalRuntime "maven.modrinth:continuity:3.0.0-beta.4+1.20.2"
 
-    // Dynamic FPS
-    modLocalRuntime "maven.modrinth:dynamic-fps:MJxmQ042"
 
     // zip4j
     implementation "net.lingala.zip4j:zip4j:2.11.5"
@@ -48,11 +45,11 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(17)
+    it.options.release.set(21)
 }
 
 jar {
-    from("LICENSE.txt")
+    from("LICENSE")
 }
 
 modrinth {
@@ -65,11 +62,11 @@ modrinth {
 
     uploadFile = remapJar
 
-    gameVersions = ["1.20.4"]
+    gameVersions = ["$project.minecraft_version"]
     loaders = ["fabric"]
 
     dependencies {
-        required.project "fabric-api"
+        required.version "fabric-api", project.fabric_version
         required.project "continuity"
         required.version "modmenu", project.modmenu_version
     }

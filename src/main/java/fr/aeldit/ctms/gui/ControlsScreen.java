@@ -54,12 +54,6 @@ public class ControlsScreen extends Screen
     }
 
     @Override
-    public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float delta)
-    {
-        super.renderBackgroundTexture(drawContext);
-    }
-
-    @Override
     protected void init()
     {
         CTMSelector ctmSelector = ctmPack.getCtmSelector();

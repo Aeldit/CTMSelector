@@ -59,12 +59,6 @@ public class ResourcePackScreen extends Screen
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
-    {
-        super.renderBackgroundTexture(context);
-    }
-
-    @Override
     protected void init()
     {
         if (enabled)
