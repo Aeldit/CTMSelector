@@ -19,7 +19,7 @@ public class CTMPacks
 
     public static boolean isPackEnabled(String packName)
     {
-        return getEnabledPacks().contains("file/" + packName);
+        return getEnabledPacks().contains("file/%s".formatted(packName));
     }
 
     public void add(@NotNull CTMPack ctmPack)

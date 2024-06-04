@@ -79,14 +79,22 @@ public class FilesHandling
                     {
                         for (Control control : ctmPack.getCtmSelector().getControls())
                         {
-                            for (FileHeader fileHeader : control.getPropertiesFilesFileHeaders())
+                            ArrayList<FileHeader> fileHeaders = control.getPropertiesFilesFileHeaders();
+                            if (fileHeaders != null)
                             {
-                                for (String blockName : getCTMBlocksNamesInZipProperties(fileHeader, zipFile))
+                                for (FileHeader fileHeader : fileHeaders)
                                 {
-                                    CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
-                                    if (ctmBlock != null)
+                                    ArrayList<String> names = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
+                                    if (names != null)
                                     {
-                                        control.addContainedBlock(ctmBlock);
+                                        for (String blockName : names)
+                                        {
+                                            CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                            if (ctmBlock != null)
+                                            {
+                                                control.addContainedBlock(ctmBlock);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -135,14 +143,22 @@ public class FilesHandling
                 {
                     for (Control control : ctmPack.getCtmSelector().getControls())
                     {
-                        for (Path path : control.getPropertiesFilesPaths())
+                        ArrayList<Path> filesPaths = control.getPropertiesFilesPaths();
+                        if (filesPaths != null)
                         {
-                            for (String blockName : getCTMBlocksNamesInProperties(path))
+                            for (Path path : filesPaths)
                             {
-                                CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
-                                if (ctmBlock != null)
+                                ArrayList<String> names = getCTMBlocksNamesInProperties(path);
+                                if (names != null)
                                 {
-                                    control.addContainedBlock(ctmBlock);
+                                    for (String blockName : names)
+                                    {
+                                        CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                        if (ctmBlock != null)
+                                        {
+                                            control.addContainedBlock(ctmBlock);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -153,7 +169,7 @@ public class FilesHandling
     }
 
     private void loadOptions(
-            Properties properties, CTMPack ctmPack, @NotNull String path,
+            @NotNull Properties properties, @NotNull CTMPack ctmPack, @NotNull String path,
             @NotNull File zipFileOrFolder
     )
     {
@@ -294,7 +310,7 @@ public class FilesHandling
      * @return An arraylist of {@link CTMBlock} containing the blocks with their Identifier initialized
      */
     private @NotNull ArrayList<CTMBlock> getCTMBlocksInProperties(
-            Properties properties, String tmpPath, @NotNull String startTile
+            @NotNull Properties properties, @NotNull String tmpPath, @NotNull String startTile
     )
     {
         ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
@@ -315,7 +331,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchBlocks").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -325,7 +341,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchTiles").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -336,7 +352,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }
@@ -346,7 +362,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmTilesDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier(tmpPath + "%s.png".formatted(startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }
@@ -366,9 +382,9 @@ public class FilesHandling
         return true;
     }
 
-    private boolean isFolderCtmPack(String packName)
+    private boolean isFolderCtmPack(@NotNull String packName)
     {
-        return Files.exists(Path.of(RESOURCE_PACKS_DIR + "/" + packName + "/" + ctmPath));
+        return Files.exists(Path.of("%s/%s/%s".formatted(RESOURCE_PACKS_DIR, packName, ctmPath)));
     }
 
     /**
@@ -387,7 +403,7 @@ public class FilesHandling
         return paths;
     }
 
-    private void listFilesInFolderPack(@NotNull File packFolder, ArrayList<Path> paths)
+    private void listFilesInFolderPack(@NotNull File packFolder, @NotNull ArrayList<Path> paths)
     {
         File[] files = packFolder.listFiles();
         if (files == null)
@@ -412,7 +428,7 @@ public class FilesHandling
     {
         if (!ctmPack.isFolder())
         {
-            String packPath = Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString();
+            String packPath = Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, ctmPack.getName())).toString();
 
             HashMap<String, byte[]> headersBytes = new HashMap<>();
 
@@ -477,12 +493,12 @@ public class FilesHandling
             {
                 // We disable the pack and reload the resources because the reloading makes the zip file
                 // accessible for writing, due to no longer being loaded by Minecraft
-                MinecraftClient.getInstance().getResourcePackManager().disable("file/" + ctmPack.getName());
+                MinecraftClient.getInstance().getResourcePackManager().disable("file/%s".formatted(ctmPack.getName()));
                 MinecraftClient.getInstance().reloadResources();
 
                 writeBytesToZip(packPath, headersBytes);
 
-                MinecraftClient.getInstance().getResourcePackManager().enable("file/" + ctmPack.getName());
+                MinecraftClient.getInstance().getResourcePackManager().enable("file/%s".formatted(ctmPack.getName()));
                 MinecraftClient.getInstance().reloadResources();
             }
         }
@@ -492,7 +508,7 @@ public class FilesHandling
 
             // We use Path.of() to be sure that the path is correct, independently of the OS of the user
             for (Path path :
-                    getFilesInFolderPack(new File(Path.of(RESOURCE_PACKS_DIR + "/" + ctmPack.getName()).toString())))
+                    getFilesInFolderPack(new File(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, ctmPack.getName())).toString())))
             {
                 ArrayList<String> enabledBlocks = new ArrayList<>(1);
                 ArrayList<String> enabledTiles = new ArrayList<>(1);
@@ -562,8 +578,8 @@ public class FilesHandling
      */
     private void fillBlocksLists(
             @NotNull Properties properties,
-            ArrayList<String> enabledBlocks, ArrayList<String> enabledTiles,
-            ArrayList<String> disabledBlocks, ArrayList<String> disabledTiles
+            @NotNull ArrayList<String> enabledBlocks, @NotNull ArrayList<String> enabledTiles,
+            @NotNull ArrayList<String> disabledBlocks, @NotNull ArrayList<String> disabledTiles
     )
     {
         if (properties.containsKey("matchBlocks"))
@@ -631,7 +647,7 @@ public class FilesHandling
      * @return Whether a property was changed
      */
     private boolean updateProperties(
-            CTMPack ctmPack, Properties properties,
+            @NotNull CTMPack ctmPack, @NotNull Properties properties,
             @NotNull ArrayList<String> enabledBlocks, @NotNull ArrayList<String> enabledTiles,
             @NotNull ArrayList<String> disabledBlocks, @NotNull ArrayList<String> disabledTiles
     )
@@ -657,7 +673,9 @@ public class FilesHandling
 
                     if (properties.containsKey("ctmDisabled"))
                     {
-                        properties.put("ctmDisabled", properties.getProperty("ctmDisabled") + " " + optionName);
+                        properties.put("ctmDisabled", "%s %s".formatted(properties.getProperty("ctmDisabled"),
+                                optionName
+                        ));
                     }
                     else
                     {
@@ -687,7 +705,7 @@ public class FilesHandling
                     if (properties.containsKey("ctmTilesDisabled"))
                     {
                         properties.put("ctmTilesDisabled",
-                                properties.getProperty("ctmTilesDisabled") + " " + optionName
+                                "%s %s".formatted(properties.getProperty("ctmTilesDisabled"), optionName)
                         );
                     }
                     else
@@ -717,7 +735,9 @@ public class FilesHandling
 
                     if (properties.containsKey("matchBlocks"))
                     {
-                        properties.put("matchBlocks", properties.getProperty("matchBlocks") + " " + optionName);
+                        properties.put("matchBlocks", "%s %s".formatted(properties.getProperty("matchBlocks"),
+                                optionName
+                        ));
                     }
                     else
                     {
@@ -746,7 +766,9 @@ public class FilesHandling
 
                     if (properties.containsKey("matchTiles"))
                     {
-                        properties.put("matchTiles", properties.getProperty("matchTiles") + " " + optionName);
+                        properties.put("matchTiles", "%s %s".formatted(properties.getProperty("matchTiles"),
+                                optionName
+                        ));
                     }
                     else
                     {

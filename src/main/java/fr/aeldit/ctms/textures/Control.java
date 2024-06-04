@@ -52,10 +52,8 @@ public class Control
     //=================================
     // Record fields
     //=================================
-    private final String type;
-    private final String groupName;
+    private final String type, groupName, iconPath;
     private final ArrayList<String> propertiesFilesStrings;
-    private final String iconPath;
     private boolean isEnabled;
     private final Text buttonTooltip;
 
@@ -73,7 +71,7 @@ public class Control
     public Control(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
-            boolean isEnabled, Path packPath, boolean isInFolder, @Nullable String zipPackPath
+            boolean isEnabled, @NotNull Path packPath, boolean isInFolder, @Nullable String zipPackPath
     )
     {
         this.type = type;
@@ -91,7 +89,7 @@ public class Control
 
             for (String s : propertiesFilesStrings)
             {
-                Path assetsInPackPath = Path.of(packPath + "/assets/" + s.replace(":", "/"));
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, s.replace(":", "/")));
 
                 if (!s.endsWith(".properties"))
                 {
@@ -207,17 +205,17 @@ public class Control
     /**
      * @return The absolute path to each Properties file contained by the Control
      */
-    public ArrayList<Path> getPropertiesFilesPaths()
+    public @Nullable ArrayList<Path> getPropertiesFilesPaths()
     {
-        return propertiesFilesPaths == null ? new ArrayList<>(0) : propertiesFilesPaths;
+        return propertiesFilesPaths;
     }
 
     /**
      * @return The fileHeaders of each properties file found in the zip pack
      */
-    public ArrayList<FileHeader> getPropertiesFilesFileHeaders()
+    public @Nullable ArrayList<FileHeader> getPropertiesFilesFileHeaders()
     {
-        return propertiesFilesFileHeaders == null ? new ArrayList<>(0) : propertiesFilesFileHeaders;
+        return propertiesFilesFileHeaders;
     }
 
     //=================================
@@ -232,39 +230,40 @@ public class Control
     private void addPropertiesFilesRec(@NotNull File dir)
     {
         File[] files = dir.listFiles();
-        if (files == null)
+        if (files != null)
         {
-            return;
-        }
-
-        for (File file : files)
-        {
-            if (file.isDirectory())
+            for (File file : files)
             {
-                addPropertiesFilesRec(file);
-            }
-            if (file.isFile() && file.toString().endsWith(".properties"))
-            {
-                this.propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
-            }
-        }
-    }
-
-    private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, String folder)
-    {
-        for (FileHeader fileHeader : fileHeaders)
-        {
-            if (fileHeader.toString().startsWith(folder))
-            {
-                if (fileHeader.toString().endsWith(".properties"))
+                if (file.isDirectory())
                 {
-                    this.propertiesFilesFileHeaders.add(fileHeader);
+                    addPropertiesFilesRec(file);
+                }
+                if (file.isFile() && file.toString().endsWith(".properties"))
+                {
+                    propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
                 }
             }
         }
     }
 
-    private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, String name)
+    private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, @NotNull String folder)
+    {
+        if (propertiesFilesFileHeaders != null)
+        {
+            for (FileHeader fileHeader : fileHeaders)
+            {
+                if (fileHeader.toString().startsWith(folder))
+                {
+                    if (fileHeader.toString().endsWith(".properties"))
+                    {
+                        propertiesFilesFileHeaders.add(fileHeader);
+                    }
+                }
+            }
+        }
+    }
+
+    private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
     {
         for (FileHeader fileHeader : fileHeaders)
         {

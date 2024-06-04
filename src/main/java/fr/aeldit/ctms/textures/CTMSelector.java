@@ -25,9 +25,9 @@ public class CTMSelector
     //=========================================================================
     // Static part
     //=========================================================================
-    public static boolean hasFolderPackControls(Path packPath)
+    public static boolean hasFolderPackControls(@NotNull Path packPath)
     {
-        return Files.exists(Path.of(packPath + "/ctm_selector.json"));
+        return Files.exists(Path.of("%s/ctm_selector.json".formatted(packPath)));
     }
 
     public static boolean hasZipPackControls(@NotNull ZipFile zipFile) throws ZipException
@@ -44,7 +44,7 @@ public class CTMSelector
 
     public static byte @NotNull [] toByteArray(@NotNull ArrayList<Control.SerializableControls> controls)
     {
-        ArrayList<String> s = new ArrayList<>();
+        ArrayList<String> s = new ArrayList<>(controls.size());
         for (Control.SerializableControls sc : controls)
         {
             StringBuilder sbFiles = new StringBuilder();
@@ -93,7 +93,7 @@ public class CTMSelector
     private final String packName;
     private final boolean isFolder;
 
-    public CTMSelector(String packName, boolean isFolder)
+    public CTMSelector(@NotNull String packName, boolean isFolder)
     {
         this.packName = packName;
         this.isFolder = isFolder;
@@ -110,7 +110,7 @@ public class CTMSelector
      * @param ctmBlock The {@link CTMBlock} object
      * @return The controls group that contains the block | null otherwise
      */
-    public @Nullable Control getControlsGroupWithBlock(CTMBlock ctmBlock)
+    public @Nullable Control getControlsGroupWithBlock(@NotNull CTMBlock ctmBlock)
     {
         for (Control control : packControls)
         {
@@ -125,7 +125,7 @@ public class CTMSelector
         return null;
     }
 
-    public static @NotNull ArrayList<String> getCTMBlocksNamesInProperties(Path path)
+    public static @Nullable ArrayList<String> getCTMBlocksNamesInProperties(@NotNull Path path)
     {
         Properties properties = new Properties();
         try
@@ -139,7 +139,7 @@ public class CTMSelector
 
         if (properties.isEmpty())
         {
-            return new ArrayList<>(0);
+            return null;
         }
 
         ArrayList<String> ctmBlocks = new ArrayList<>(1);
@@ -164,8 +164,8 @@ public class CTMSelector
         return ctmBlocks;
     }
 
-    public static @NotNull ArrayList<String> getCTMBlocksNamesInZipProperties(
-            FileHeader fileHeader, @NotNull ZipFile zipFile
+    public static @Nullable ArrayList<String> getCTMBlocksNamesInZipProperties(
+            @NotNull FileHeader fileHeader, @NotNull ZipFile zipFile
     )
     {
         Properties properties = new Properties();
@@ -180,7 +180,7 @@ public class CTMSelector
 
         if (properties.isEmpty())
         {
-            return new ArrayList<>(0);
+            return null;
         }
 
         ArrayList<String> ctmBlocks = new ArrayList<>(1);
@@ -208,11 +208,11 @@ public class CTMSelector
     public void readFile()
     {
         ArrayList<Control.SerializableControls> serializableControls = new ArrayList<>();
-        String packPathString = RESOURCE_PACKS_DIR + "/" + packName;
+        String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
 
         if (isFolder)
         {
-            Path ctmSelectorPath = Path.of(packPathString + "/ctm_selector.json");
+            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPathString));
 
             if (Files.exists(ctmSelectorPath))
             {
@@ -261,7 +261,7 @@ public class CTMSelector
             packControls.add(new Control(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            Path.of(RESOURCE_PACKS_DIR + "/" + packName),
+                            Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
                             isFolder, isFolder ? null : packPathString
                     )
             );
@@ -271,7 +271,7 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    public void toggle(Control control)
+    public void toggle(@NotNull Control control)
     {
         if (packControls.contains(control))
         {
@@ -281,7 +281,10 @@ public class CTMSelector
 
     public void resetOptions()
     {
-        packControls.forEach(controls -> controls.setEnabled(true));
+        for (Control controls : packControls)
+        {
+            controls.setEnabled(true);
+        }
     }
 
     /**
@@ -293,11 +296,14 @@ public class CTMSelector
 
         for (Control cr : packControls)
         {
-            cr.getContainedBlocksList().forEach(ctmBlock -> ctmBlock.setEnabled(cr.isEnabled()));
+            for (CTMBlock ctmBlock : cr.getContainedBlocksList())
+            {
+                ctmBlock.setEnabled(cr.isEnabled());
+            }
             serializableControlsToWrite.add(cr.getAsRecord());
         }
 
-        Path ctmSelectorPath = Path.of(RESOURCE_PACKS_DIR + "/" + packName + "/ctm_selector.json");
+        Path ctmSelectorPath = Path.of("%s/%s/ctm_selector.json".formatted(RESOURCE_PACKS_DIR, packName));
 
         if (isFolder)
         {
@@ -318,7 +324,7 @@ public class CTMSelector
             HashMap<String, byte[]> h = new HashMap<>(1);
             byte[] b = toByteArray(serializableControlsToWrite);
             h.put("ctm_selector.json", b);
-            Utils.writeBytesToZip(Path.of(RESOURCE_PACKS_DIR + "/" + packName).toString(), h);
+            Utils.writeBytesToZip(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)).toString(), h);
         }
     }
 }

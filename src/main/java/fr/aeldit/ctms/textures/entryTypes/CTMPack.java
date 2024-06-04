@@ -91,7 +91,7 @@ public class CTMPack
     //=========================================================================
     // Selectors
     //=========================================================================
-    public CTMSelector getCtmSelector()
+    public @Nullable CTMSelector getCtmSelector()
     {
         return ctmSelector;
     }
@@ -104,13 +104,8 @@ public class CTMPack
     //=========================================================================
     // Control
     //=========================================================================
-    public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
+    public boolean isBlockDisabledFromGroup(@NotNull CTMBlock ctmBlock)
     {
-        if (ctmSelector == null)
-        {
-            return false;
-        }
-
         Control control = ctmSelector.getControlsGroupWithBlock(ctmBlock);
         return control != null && !control.isEnabled();
     }
@@ -173,6 +168,11 @@ public class CTMPack
     //=========================================================================
     public void toggle(CTMBlock block)
     {
+        if (ctmSelector == null)
+        {
+            return;
+        }
+
         if (ctmBlocks.contains(block))
         {
             if (!isBlockDisabledFromGroup(block))
@@ -198,7 +198,7 @@ public class CTMPack
         CTMBlock ctmBlock = getCtmBlockByName(blockName);
         if (ctmBlock == null)
         {
-            return true;
+            return false;
         }
 
         if (!isBlockDisabledFromGroup(ctmBlock))

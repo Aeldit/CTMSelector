@@ -57,6 +57,15 @@ public class ControlsScreen extends Screen
     protected void init()
     {
         CTMSelector ctmSelector = ctmPack.getCtmSelector();
+        if (ctmSelector == null)
+        {
+            if (client != null)
+            {
+                addDrawableChild(new TextWidget(Text.translatable("ctms.screen.control.noControls"),
+                        client.textRenderer));
+            }
+            return;
+        }
 
         ControlsListWidget list = new ControlsListWidget(client, width, height - 32, 32, 25, ctmSelector);
         addDrawableChild(list);
