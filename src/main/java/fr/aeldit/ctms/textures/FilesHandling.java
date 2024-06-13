@@ -331,7 +331,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchBlocks").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
+                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -341,7 +341,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchTiles").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
+                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -352,7 +352,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
+                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }
@@ -362,7 +362,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmTilesDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
+                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }

@@ -106,6 +106,11 @@ public class CTMPack
     //=========================================================================
     public boolean isBlockDisabledFromGroup(@NotNull CTMBlock ctmBlock)
     {
+        if (ctmSelector == null)
+        {
+            return false;
+        }
+
         Control control = ctmSelector.getControlsGroupWithBlock(ctmBlock);
         return control != null && !control.isEnabled();
     }

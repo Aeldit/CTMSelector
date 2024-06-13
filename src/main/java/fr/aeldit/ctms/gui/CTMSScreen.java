@@ -85,7 +85,7 @@ public class CTMSScreen extends Screen
         );
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
-                20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
+                20, Identifier.of(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
