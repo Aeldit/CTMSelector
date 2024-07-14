@@ -33,7 +33,7 @@ public class ResourcePackScreen extends Screen
         super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
               ? Text.of(ctmPack.getName().replace(".zip", ""))
               : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen" +
-                      ".packDisabledTitle").getString())
+                                                                                                              ".packDisabledTitle").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -43,6 +43,10 @@ public class ResourcePackScreen extends Screen
     @Override
     public void close()
     {
+        if (enabled)
+        {
+            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        }
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -61,9 +65,9 @@ public class ResourcePackScreen extends Screen
             BlocksListWidget list = new BlocksListWidget(
                     //? if <1.20.4 {
                     /*client, width, height, 32, height - 32, 25,
-                    *///?} else {
+                     *///?} else {
                     client, width, height - 64, 28, 24,
-                     //?}
+                    //?}
                     ctmPack
             );
             addDrawableChild(list);
@@ -80,7 +84,6 @@ public class ResourcePackScreen extends Screen
             addDrawableChild(
                     ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                                 ctmPack.resetOptions();
-                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                                 close();
                             })
                             .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -104,7 +107,8 @@ public class ResourcePackScreen extends Screen
             {
                 addDrawableChild(
                         ButtonWidget.builder(Text.translatable("ctms.screen.config.mods"), button ->
-                                        Objects.requireNonNull(client).setScreen(new NamespacesListScreen(this,
+                                        Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
+                                                this,
                                                 ctmPack
                                         ))
                                 )
@@ -116,13 +120,7 @@ public class ResourcePackScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            if (enabled)
-                            {
-                                TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            }
-                            close();
-                        })
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                         .dimensions(width / 2 - 100, height - 28, 200, 20)
                         .build()
         );

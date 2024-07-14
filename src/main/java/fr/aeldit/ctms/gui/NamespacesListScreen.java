@@ -33,7 +33,7 @@ public class NamespacesListScreen extends Screen
     public NamespacesListScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
         super(Text.of(Formatting.GOLD + ctmPack.getName().replace(".zip", "")
-                + Formatting.RESET + Text.translatable("ctms.screen.byMod.title").getString())
+                              + Formatting.RESET + Text.translatable("ctms.screen.byMod.title").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -42,6 +42,7 @@ public class NamespacesListScreen extends Screen
     @Override
     public void close()
     {
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -76,7 +77,6 @@ public class NamespacesListScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             ctmPack.resetOptions();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -85,10 +85,7 @@ public class NamespacesListScreen extends Screen
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                         .dimensions(width / 2 - 100, height - 28, 200, 20)
                         .build()
         );
