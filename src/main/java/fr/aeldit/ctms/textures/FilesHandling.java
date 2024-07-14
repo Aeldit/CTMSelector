@@ -77,22 +77,26 @@ public class FilesHandling
                     // in the Control object
                     if (hasControls)
                     {
-                        for (Control control : ctmPack.getCtmSelector().getControls())
+                        CTMSelector ctmSelector = ctmPack.getCtmSelector();
+                        if (ctmSelector != null)
                         {
-                            ArrayList<FileHeader> fileHeaders = control.getPropertiesFilesFileHeaders();
-                            if (fileHeaders != null)
+                            for (Control control : ctmSelector.getControls())
                             {
-                                for (FileHeader fileHeader : fileHeaders)
+                                ArrayList<FileHeader> fileHeaders = control.getPropertiesFilesFileHeaders();
+                                if (fileHeaders != null)
                                 {
-                                    ArrayList<String> names = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
-                                    if (names != null)
+                                    for (FileHeader fileHeader : fileHeaders)
                                     {
-                                        for (String blockName : names)
+                                        ArrayList<String> names = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
+                                        if (names != null)
                                         {
-                                            CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
-                                            if (ctmBlock != null)
+                                            for (String blockName : names)
                                             {
-                                                control.addContainedBlock(ctmBlock);
+                                                CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                                if (ctmBlock != null)
+                                                {
+                                                    control.addContainedBlock(ctmBlock);
+                                                }
                                             }
                                         }
                                     }
@@ -141,22 +145,26 @@ public class FilesHandling
                 // Control object
                 if (hasControls)
                 {
-                    for (Control control : ctmPack.getCtmSelector().getControls())
+                    CTMSelector ctmSelector = ctmPack.getCtmSelector();
+                    if (ctmSelector != null)
                     {
-                        ArrayList<Path> filesPaths = control.getPropertiesFilesPaths();
-                        if (filesPaths != null)
+                        for (Control control : ctmSelector.getControls())
                         {
-                            for (Path path : filesPaths)
+                            ArrayList<Path> filesPaths = control.getPropertiesFilesPaths();
+                            if (filesPaths != null)
                             {
-                                ArrayList<String> names = getCTMBlocksNamesInProperties(path);
-                                if (names != null)
+                                for (Path path : filesPaths)
                                 {
-                                    for (String blockName : names)
+                                    ArrayList<String> names = getCTMBlocksNamesInProperties(path);
+                                    if (names != null)
                                     {
-                                        CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
-                                        if (ctmBlock != null)
+                                        for (String blockName : names)
                                         {
-                                            control.addContainedBlock(ctmBlock);
+                                            CTMBlock ctmBlock = ctmPack.getCtmBlockByName(blockName);
+                                            if (ctmBlock != null)
+                                            {
+                                                control.addContainedBlock(ctmBlock);
+                                            }
                                         }
                                     }
                                 }
@@ -331,7 +339,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchBlocks").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -341,7 +349,7 @@ public class FilesHandling
             for (String block : properties.getProperty("matchTiles").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         true
                 ));
             }
@@ -352,7 +360,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }
@@ -362,7 +370,7 @@ public class FilesHandling
             for (String block : properties.getProperty("ctmTilesDisabled").split(" "))
             {
                 ctmBlocks.add(new CTMBlock(block,
-                        Identifier.of("%s%s.png".formatted(tmpPath, startTile)),
+                        new Identifier("%s%s.png".formatted(tmpPath, startTile)),
                         false
                 ));
             }

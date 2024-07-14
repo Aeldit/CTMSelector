@@ -141,11 +141,11 @@ public class Control
         // Case where the namespace is not specified
         if (!iconPath.contains(":"))
         {
-            this.identifier = Identifier.of("textures/misc/unknown_pack.png");
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
         else
         {
-            this.identifier = Identifier.of(iconPath.split(":")[0], iconPath.split(":")[1]);
+            this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
         }
     }
 

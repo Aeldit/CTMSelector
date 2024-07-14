@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a a block found in a {@link java.util.Properties Properties} file
+ * Represents a block found in a {@link java.util.Properties Properties} file
  * that has the CTM method
  * <p>
  * {@link Control} object that contains this block
@@ -35,7 +35,7 @@ public class CTMBlock
         this.enabled = enabled;
 
         // Changes the lowercase and underscore separated string by replacing each '_' by a space
-        // and by capitalizing the first letter of each word
+        // and by uppercasing the first letter of each word
         String[] tmp = blockName.split("_");
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;

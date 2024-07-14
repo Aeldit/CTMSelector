@@ -63,10 +63,7 @@ textures it could be `create` for example, so `create:optifine/ctm/connect/...`)
 
 ### Icon Path
 
-The `icon_path` field is very similar but there is one major difference: the identifier (here `minecraft`) MUST be
-followed by a `:` instead of a `/`. If you don't do this, the game will most likely crash.
-
-It must point to a `.png` file
+The path to the texture Identifier, it must point to a `.png` file
 
 ### Enabled (optional)
 
