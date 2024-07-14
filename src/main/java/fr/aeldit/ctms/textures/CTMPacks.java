@@ -16,10 +16,10 @@ public class CTMPacks
     {
         return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager()
                 //? if <1.20.6 {
-                .getEnabledNames()
-                //?} else {
-                /*.getEnabledIds()
-                 *///?}
+                /*.getEnabledNames()
+                *///?} else {
+                .getEnabledIds()
+                 //?}
         );
     }
 

@@ -57,10 +57,10 @@ public class NamespacesListScreen extends Screen
     {
         ModListWidget list = new ModListWidget(
                 //? if >=1.20.4 {
-                /*client, width, height - 64, 28, 32, this
-                 *///?} else {
-                client, width, height, 32, height - 32, 25, this
-                //?}
+                client, width, height - 64, 28, 32, this
+                //?} else {
+                /*client, width, height, 32, height - 32, 25, this
+                 *///?}
         );
         addDrawableChild(list);
 
@@ -106,13 +106,13 @@ public class NamespacesListScreen extends Screen
 
 
         //? if >=1.20.4 {
-        /*public ModListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
+        public ModListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
         {
             super(client, width, height, y, itemHeight);
             this.parent = parent;
         }
-        *///?} else {
-        public ModListWidget(
+        //?} else {
+        /*public ModListWidget(
                 MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
                 Screen parent
         )
@@ -120,14 +120,16 @@ public class NamespacesListScreen extends Screen
             super(client, width, height, top, bottom, itemHeight);
             this.parent = parent;
         }
-        //?}
+        *///?}
 
-        @Contract(pure = true)
+        //? if <1.20.6 {
+        /*@Contract(pure = true)
         @Override
         protected int getScrollbarPositionX()
         {
             return this.width / 2 + 160;
         }
+        *///?}
 
         @Contract(pure = true)
         @Override

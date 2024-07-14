@@ -56,12 +56,12 @@ public class CTMSScreen extends Screen
 
 
     //? if <1.20.6 {
-    @Override
+    /*@Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
     {
         super.renderBackgroundTexture(context);
     }
-    //?}
+    *///?}
 
     @Override
     protected void init()
@@ -69,10 +69,10 @@ public class CTMSScreen extends Screen
         TEXTURES_HANDLING.load();
         PacksListWidget list = new PacksListWidget(
                 //? if >=1.20.4 {
-                /*client, width, height - 64, 28, 32, this
-                *///?} else {
-                client, width, height, 32, height - 32, 25, this
-                 //?}
+                client, width, height - 64, 28, 32, this
+                //?} else {
+                /*client, width, height, 32, height - 32, 25, this
+                 *///?}
         );
         addDrawableChild(list);
 
@@ -123,13 +123,13 @@ public class CTMSScreen extends Screen
 
 
         //? if >=1.20.4 {
-        /*public PacksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
+        public PacksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
         {
             super(client, width, height, y, itemHeight);
             this.parent = parent;
         }
-        *///?} else {
-        public PacksListWidget(
+        //?} else {
+        /*public PacksListWidget(
                 MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
                 Screen parent
 
@@ -138,15 +138,15 @@ public class CTMSScreen extends Screen
             super(client, width, height, top, bottom, itemHeight);
             this.parent = parent;
         }
-        //?}
+        *///?}
 
         //? if <1.20.6 {
-        @Override
+        /*@Override
         protected int getScrollbarPositionX()
         {
             return this.width / 2 + 160;
         }
-        //?}
+        *///?}
 
         @Override
         public int getRowWidth()

@@ -53,11 +53,13 @@ public class ControlsScreen extends Screen
         drawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
-    @Override
+    //? if <1.20.6 {
+    /*@Override
     public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float delta)
     {
         super.renderBackgroundTexture(drawContext);
     }
+    *///?}
 
     @Override
     protected void init()
@@ -66,10 +68,10 @@ public class ControlsScreen extends Screen
 
         ControlsListWidget list = new ControlsListWidget(
                 //? if <1.20.4 {
-                client, width, height, 32, height - 32, 25,
-                //?} else {
-                /*client, width, height - 32, 32, 25,
-                 *///?}
+                /*client, width, height, 32, height - 32, 25,
+                 *///?} else {
+                client, width, height - 32, 32, 25,
+                //?}
                 ctmSelector
         );
         addDrawableChild(list);
@@ -117,7 +119,7 @@ public class ControlsScreen extends Screen
         private final CTMSelector ctmSelector;
 
         //? if <1.20.4 {
-        public ControlsListWidget(
+        /*public ControlsListWidget(
                 MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
                 CTMSelector ctmSelector
         )
@@ -126,15 +128,15 @@ public class ControlsScreen extends Screen
             this.ctmSelector = ctmSelector;
         }
 
-        //?} else {
-        /*public ControlsListWidget(
+        *///?} else {
+        public ControlsListWidget(
                 MinecraftClient client, int width, int height, int y, int itemHeight, CTMSelector ctmSelector
         )
         {
             super(client, width, height, y, itemHeight);
             this.ctmSelector = ctmSelector;
         }
-        *///?}
+        //?}
 
         public void add(Control control)
         {
