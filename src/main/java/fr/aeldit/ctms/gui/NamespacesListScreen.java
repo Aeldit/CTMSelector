@@ -55,7 +55,13 @@ public class NamespacesListScreen extends Screen
     @Override
     protected void init()
     {
-        ModListWidget list = new ModListWidget(client, width, height - 64, 28, 24, this);
+        ModListWidget list = new ModListWidget(
+                //? if >=1.20.4 {
+                /*client, width, height - 64, 28, 32, this
+                 *///?} else {
+                client, width, height, 32, height - 32, 25, this
+                //?}
+        );
         addDrawableChild(list);
 
         // Sorts the namespaces alphabetically
@@ -98,11 +104,23 @@ public class NamespacesListScreen extends Screen
         private final ModEntryBuilder builder = new ModEntryBuilder(client, width);
         private final Screen parent;
 
-        public ModListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
+
+        //? if >=1.20.4 {
+        /*public ModListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
         {
             super(client, width, height, y, itemHeight);
             this.parent = parent;
         }
+        *///?} else {
+        public ModListWidget(
+                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
+                Screen parent
+        )
+        {
+            super(client, width, height, top, bottom, itemHeight);
+            this.parent = parent;
+        }
+        //?}
 
         @Contract(pure = true)
         @Override

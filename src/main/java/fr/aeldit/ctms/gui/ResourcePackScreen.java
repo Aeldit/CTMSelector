@@ -58,7 +58,14 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            BlocksListWidget list = new BlocksListWidget(client, width, height - 64, 28, 24, ctmPack);
+            BlocksListWidget list = new BlocksListWidget(
+                    //? if <1.20.4 {
+                    client, width, height, 32, height - 32, 25,
+                    //?} else {
+                    /*client, width, height - 64, 28, 24,
+                     *///?}
+                    ctmPack
+            );
             addDrawableChild(list);
 
             // Sorts the blocks alphabetically

@@ -17,11 +17,21 @@ public class BlocksListWidget extends ElementListWidget<BlockEntry>
     private final BlockEntryBuilder builder = new BlockEntryBuilder(client, width);
     private final CTMPack ctmPack;
 
-    public BlocksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, CTMPack ctmPack)
+    //? if <1.20.4 {
+    public BlocksListWidget(
+            MinecraftClient client, int width, int height, int top, int bottom, int itemHeight, CTMPack ctmPack
+    )
+    {
+        super(client, width, height, top, bottom, itemHeight);
+        this.ctmPack = ctmPack;
+    }
+    //?} else {
+    /*public BlocksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, CTMPack ctmPack)
     {
         super(client, width, height, y, itemHeight);
         this.ctmPack = ctmPack;
     }
+    *///?}
 
     public void add(CTMBlock block)
     {
