@@ -34,9 +34,19 @@ public class CTMBlock
         this.identifier = identifier;
         this.enabled = enabled;
 
+        int len = blockName.split(":").length;
+        String[] tmp;
+        if (len > 1)
+        {
+            tmp = blockName.split(":")[1].split("_");
+        }
+        else
+        {
+            tmp = blockName.split("_");
+        }
+
         // Changes the lowercase and underscore separated string by replacing each '_' by a space
         // and by uppercasing the first letter of each word
-        String[] tmp = blockName.split("_");
         StringBuilder stringBuilder = new StringBuilder();
         int index = 0;
 

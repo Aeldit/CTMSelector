@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents a CTM pack
@@ -25,8 +26,10 @@ import java.util.ArrayList;
  * displayed next to the pack name in the
  * {@link fr.aeldit.ctms.gui.CTMSScreen CTMSScreen}
  * <p>
- * The {@link #ctmBlocks} ArrayList contains a {@link CTMBlock} object
- * of each block with CTM properties found in the pack
+ * {@link #vanillaOnlyCtmBlocks} contains the blocks when we only have vanilla blocks. Otherwise, this is null
+ * <p>
+ * {@link #namespacesBlocks} contains for each namespace an ArrayList containing all {@link CTMBlock}
+ * object found in the pack. If there are no modded blocks, this is null
  * <p>
  * The second part contains methods to handle the activation /
  * deactivation of each {@code CTMBlock} in this pack
@@ -36,19 +39,20 @@ public class CTMPack
     private final String name;
     private final boolean isFolder;
     private final CTMSelector ctmSelector;
-    //private Identifier identifier;
-    private final ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
+    private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
+    // HashMap<namespace, blocks in the namespace>
+    private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks;
 
-    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector)
+    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector, boolean isModded)
     {
         this.name = name;
         this.isFolder = isFolder;
 
         this.ctmSelector = hasSelector ? new CTMSelector(this.name, isFolder) : null;
 
-        /*String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
-        this.identifier = new Identifier("minecraft", "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars
-        ("file/" + name) + "/iconPath");*/
+        // We either use only the vanilla array, or the hashmap
+        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
+        this.namespacesBlocks = isModded ? new HashMap<>() : null;
     }
 
     public String getName()
@@ -66,32 +70,81 @@ public class CTMPack
         return isFolder;
     }
 
-    public ArrayList<CTMBlock> getCtmBlocks()
+    public ArrayList<CTMBlock> getAllCTMBlocks()
     {
-        return ctmBlocks;
+        if (vanillaOnlyCtmBlocks != null)
+        {
+            return vanillaOnlyCtmBlocks;
+        }
+
+        ArrayList<CTMBlock> blocks = new ArrayList<>();
+
+        for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
+        {
+            blocks.addAll(ctmBlocks);
+        }
+        return blocks;
     }
 
-    public @Nullable CTMBlock getCtmBlockByName(String name)
+    public ArrayList<CTMBlock> getCTMBlocksForNamespace(String namespace)
     {
-        for (CTMBlock ctmBlock : ctmBlocks)
+        return namespacesBlocks.containsKey(namespace) ? namespacesBlocks.get(namespace) : new ArrayList<>(0);
+    }
+
+    public @Nullable CTMBlock getCTMBlockByName(String name)
+    {
+        if (vanillaOnlyCtmBlocks != null)
         {
-            if (ctmBlock.getBlockName().equals(name))
+            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
             {
-                return ctmBlock;
+                if (ctmBlock.getBlockName().equals(name))
+                {
+                    return ctmBlock;
+                }
+            }
+        }
+        else
+        {
+            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
+            {
+                for (CTMBlock ctmBlock : ctmBlocks)
+                {
+                    if (ctmBlock.getBlockName().equals(name))
+                    {
+                        return ctmBlock;
+                    }
+                }
             }
         }
         return null;
     }
 
-    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList)
+    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList, String namespace)
     {
-        ctmBlocks.addAll(ctmBlockList);
+        if (vanillaOnlyCtmBlocks != null)
+        {
+            vanillaOnlyCtmBlocks.addAll(ctmBlockList);
+        }
+        else
+        {
+            if (!namespacesBlocks.containsKey(namespace))
+            {
+                namespacesBlocks.put(namespace, new ArrayList<>(ctmBlockList.size()));
+            }
+
+            namespacesBlocks.get(namespace).addAll(ctmBlockList);
+        }
+    }
+
+    public ArrayList<String> getNamespaces()
+    {
+        return new ArrayList<>(namespacesBlocks.keySet());
     }
 
     //=========================================================================
     // Selectors
     //=========================================================================
-    public @Nullable CTMSelector getCtmSelector()
+    public CTMSelector getCtmSelector()
     {
         return ctmSelector;
     }
@@ -101,10 +154,15 @@ public class CTMPack
         return ctmSelector != null;
     }
 
+    public boolean isModded()
+    {
+        return vanillaOnlyCtmBlocks == null;
+    }
+
     //=========================================================================
     // Control
     //=========================================================================
-    public boolean isBlockDisabledFromGroup(@NotNull CTMBlock ctmBlock)
+    public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
         if (ctmSelector == null)
         {
@@ -115,106 +173,55 @@ public class CTMPack
         return control != null && !control.isEnabled();
     }
 
-    /*public Identifier getIdentifier()
-    {
-        return identifier;
-    }
-
-    public void setIdentifier(int icon_index)
-    {
-        String packPath = RESOURCE_PACKS_DIR + "/" + name;
-        Identifier id = new Identifier("ctms", String.valueOf(icon_index));
-
-        if (isFolder)
-        {
-            if (Files.exists(Path.of(packPath + "/pack.png")))
-            {
-                String var10003 = Util.replaceInvalidChars("file/" + name, Identifier::isPathCharacterValid);
-                id = new Identifier("minecraft",
-                        "pack/" + var10003 + "/" + Hashing.sha1().hashUnencodedChars("file/" + name) + "/iconPath"
-                );
-
-                /*try (InputStream stream = new FileInputStream(packPath + "/pack.png"))
-                {
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(id, new
-                    NativeImageBackedTexture(NativeImage.read(stream)));
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        else
-        {
-            /*try (ZipFile zipFile = new ZipFile(packPath))
-            {
-                for (FileHeader fileHeader : zipFile.getFileHeaders())
-                {
-                    if (fileHeader.toString().equals("pack.png"))
-                    {
-                        MinecraftClient.getInstance().getTextureManager().registerTexture(id,
-                                new NativeImageBackedTexture(NativeImage.read(zipFile.getInputStream(fileHeader)))
-                        );
-                        break;
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-        this.identifier = id;
-    }*/
-
     //=========================================================================
     // CTMBlocks
     //=========================================================================
     public void toggle(CTMBlock block)
     {
-        if (ctmSelector == null)
+        if (!isBlockDisabledFromGroup(block))
         {
-            return;
-        }
-
-        if (ctmBlocks.contains(block))
-        {
-            if (!isBlockDisabledFromGroup(block))
-            {
-                ctmBlocks.get(ctmBlocks.indexOf(block)).toggle();
-            }
+            block.toggle();
         }
     }
 
     public void resetOptions()
     {
-        for (CTMBlock ctmBlock : ctmBlocks)
+        if (vanillaOnlyCtmBlocks != null)
         {
-            if (!isBlockDisabledFromGroup(ctmBlock))
+            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
             {
-                ctmBlock.setEnabled(true);
+                if (!isBlockDisabledFromGroup(ctmBlock))
+                {
+                    ctmBlock.setEnabled(true);
+                }
+            }
+        }
+        else
+        {
+            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
+            {
+                for (CTMBlock ctmBlock : ctmBlocks)
+                {
+                    if (!isBlockDisabledFromGroup(ctmBlock))
+                    {
+                        ctmBlock.setEnabled(true);
+                    }
+                }
             }
         }
     }
 
     public boolean isBlockEnabled(String blockName)
     {
-        CTMBlock ctmBlock = getCtmBlockByName(blockName);
+        CTMBlock ctmBlock = getCTMBlockByName(blockName);
         if (ctmBlock == null)
         {
-            return false;
+            return true;
         }
 
         if (!isBlockDisabledFromGroup(ctmBlock))
         {
-            for (CTMBlock block : ctmBlocks)
-            {
-                if (block.getBlockName().equals(blockName))
-                {
-                    return block.isEnabled();
-                }
-            }
+            return ctmBlock.isEnabled();
         }
         return false;
     }

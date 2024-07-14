@@ -19,7 +19,10 @@
   "ctms.screen.config.save&quit": "Save & Quit",
   "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times if the pack is a zip file, because we need to edit the zip file, which we can't do if Minecraft is using it",
   "ctms.screen.block.parentControlIsDisabled": "§cThis block is contained by a Controls group that is disabled.\n\nTo change its value, enable the group that contains it",
+  "ctms.screen.config.mods": "By Mod",
+  "ctms.screen.config.mods.tooltip": "See the different blocks but separated depending on the mod they are from",
   "-----------------------------------------------CONTROLS_SCREEN----------------------------------------------": "",
   "ctms.screen.control.title": "'s Controls",
-  "ctms.screen.control.noControls": "This resource pack does not contain any Controls. This text should not be displayed, if you see this, please report it on GitHub or Discord"
+  "------------------------------------------------BY_MOD_SCREEN-----------------------------------------------": "",
+  "ctms.screen.byMod.title": ": By Mod"
 }
