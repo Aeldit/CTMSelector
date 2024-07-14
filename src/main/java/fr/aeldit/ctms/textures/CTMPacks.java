@@ -14,7 +14,13 @@ public class CTMPacks
     @Contract(" -> new")
     public static @NotNull ArrayList<String> getEnabledPacks()
     {
-        return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager().getEnabledIds());
+        return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager()
+                //? if <1.20.6 {
+                .getEnabledNames()
+                //?} else {
+                /*.getEnabledIds()
+                 *///?}
+        );
     }
 
     public static boolean isPackEnabled(String packName)

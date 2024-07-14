@@ -54,18 +54,15 @@ public class ControlsScreen extends Screen
     }
 
     @Override
+    public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float delta)
+    {
+        super.renderBackgroundTexture(drawContext);
+    }
+
+    @Override
     protected void init()
     {
         CTMSelector ctmSelector = ctmPack.getCtmSelector();
-        if (ctmSelector == null)
-        {
-            if (client != null)
-            {
-                addDrawableChild(new TextWidget(Text.translatable("ctms.screen.control.noControls"),
-                        client.textRenderer));
-            }
-            return;
-        }
 
         ControlsListWidget list = new ControlsListWidget(client, width, height - 32, 32, 25, ctmSelector);
         addDrawableChild(list);
@@ -107,9 +104,9 @@ public class ControlsScreen extends Screen
      *
      * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
      */
-    private static class ControlsListWidget extends ElementListWidget<Entry>
+    private static class ControlsListWidget extends ElementListWidget<ControlEntry>
     {
-        private final EntryBuilder builder = new EntryBuilder(client, width);
+        private final ControlEntryBuilder builder = new ControlEntryBuilder(client, width);
         private final CTMSelector ctmSelector;
 
         public ControlsListWidget(
@@ -127,10 +124,10 @@ public class ControlsScreen extends Screen
         }
     }
 
-    private record EntryBuilder(MinecraftClient client, int width)
+    private record ControlEntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(
+        public @NotNull ControlsScreen.ControlEntry build(
                 CTMSelector ctmSelector, @NotNull Control control
         )
         {
@@ -149,17 +146,17 @@ public class ControlsScreen extends Screen
             layout.add(toggleButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
-            return new Entry(control, layout);
+            return new ControlEntry(control, layout);
         }
     }
 
-    static class Entry extends ElementListWidget.Entry<Entry>
+    static class ControlEntry extends ElementListWidget.Entry<ControlEntry>
     {
         private final Control control;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
 
-        Entry(Control control, LayoutWidget layout)
+        ControlEntry(Control control, LayoutWidget layout)
         {
             this.control = control;
             this.layout = layout;

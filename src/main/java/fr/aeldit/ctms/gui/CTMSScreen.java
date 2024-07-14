@@ -55,10 +55,16 @@ public class CTMSScreen extends Screen
     }
 
     @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
+    {
+        super.renderBackgroundTexture(context);
+    }
+
+    @Override
     protected void init()
     {
         TEXTURES_HANDLING.load();
-        ListWidget list = new ListWidget(client, width, height - 64, 28, 32, this);
+        PacksListWidget list = new PacksListWidget(client, width, height - 64, 28, 32, this);
         addDrawableChild(list);
 
         ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
@@ -85,7 +91,7 @@ public class CTMSScreen extends Screen
         );
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
-                20, Identifier.of(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
+                20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
@@ -101,17 +107,18 @@ public class CTMSScreen extends Screen
      *
      * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
      */
-    private static class ListWidget extends ElementListWidget<Entry>
+    private static class PacksListWidget extends ElementListWidget<PackEntry>
     {
-        private final EntryBuilder builder = new EntryBuilder(client, width);
+        private final PackEntryBuilder builder = new PackEntryBuilder(client, width);
         private final Screen parent;
 
-        public ListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
+        public PacksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
         {
             super(client, width, height, y, itemHeight);
             this.parent = parent;
         }
 
+        @Override
         protected int getScrollbarPositionX()
         {
             return this.width / 2 + 160;
@@ -129,10 +136,10 @@ public class CTMSScreen extends Screen
         }
     }
 
-    private record EntryBuilder(MinecraftClient client, int width)
+    private record PackEntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull Entry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
+        public @NotNull CTMSScreen.PackEntry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
             var text = new TextWidget(180, 24,
@@ -156,17 +163,17 @@ public class CTMSScreen extends Screen
             layout.add(followButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2 + 22);
-            return new Entry(ctmPack, layout);
+            return new PackEntry(ctmPack, layout);
         }
     }
 
-    static class Entry extends ElementListWidget.Entry<Entry>
+    static class PackEntry extends ElementListWidget.Entry<PackEntry>
     {
         private final CTMPack pack;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
 
-        Entry(CTMPack pack, LayoutWidget layout)
+        PackEntry(CTMPack pack, LayoutWidget layout)
         {
             this.pack = pack;
             this.layout = layout;

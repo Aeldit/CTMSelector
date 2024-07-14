@@ -106,9 +106,16 @@ public class NamespacesListScreen extends Screen
 
         @Contract(pure = true)
         @Override
+        protected int getScrollbarPositionX()
+        {
+            return this.width / 2 + 160;
+        }
+
+        @Contract(pure = true)
+        @Override
         public int getRowWidth()
         {
-            return 280;
+            return 300;
         }
 
         public void add(CTMPack ctmPack, String namespace)
