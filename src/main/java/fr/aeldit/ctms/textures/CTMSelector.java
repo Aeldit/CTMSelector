@@ -42,10 +42,10 @@ public class CTMSelector
         return false;
     }
 
-    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Control.SerializableControl> controls)
+    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Group.SerializableGroup> controls)
     {
         ArrayList<String> s = new ArrayList<>(controls.size());
-        for (Control.SerializableControl sc : controls)
+        for (Group.SerializableGroup sc : controls)
         {
             StringBuilder sbFiles = new StringBuilder();
             sbFiles.append("[\n");
@@ -91,7 +91,7 @@ public class CTMSelector
     //=========================================================================
     // Non-static part
     //=========================================================================
-    private final ArrayList<Control> packControls = new ArrayList<>();
+    private final ArrayList<Group> packGroups = new ArrayList<>();
     private final String packName;
     private final boolean isFolder;
 
@@ -103,24 +103,24 @@ public class CTMSelector
         readFile();
     }
 
-    public ArrayList<Control> getControls()
+    public ArrayList<Group> getControls()
     {
-        return packControls;
+        return packGroups;
     }
 
     /**
      * @param ctmBlock The {@link CTMBlock} object
      * @return The controls group that contains the block | null otherwise
      */
-    public @Nullable Control getControlsGroupWithBlock(@NotNull CTMBlock ctmBlock)
+    public @Nullable Group getControlsGroupWithBlock(@NotNull CTMBlock ctmBlock)
     {
-        for (Control control : packControls)
+        for (Group group : packGroups)
         {
-            for (CTMBlock block : control.getContainedBlocksList())
+            for (CTMBlock block : group.getContainedBlocksList())
             {
                 if (block == ctmBlock)
                 {
-                    return control;
+                    return group;
                 }
             }
         }
@@ -209,7 +209,7 @@ public class CTMSelector
 
     public void readFile()
     {
-        ArrayList<Control.SerializableControl> serializableControls = new ArrayList<>();
+        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
         String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
 
         if (isFolder)
@@ -222,9 +222,9 @@ public class CTMSelector
                 {
                     Gson gson = new Gson();
                     Reader reader = Files.newBufferedReader(ctmSelectorPath);
-                    serializableControls.addAll(Arrays.asList(gson.fromJson(
+                    serializableGroups.addAll(Arrays.asList(gson.fromJson(
                             reader,
-                            Control.SerializableControl[].class
+                            Group.SerializableGroup[].class
                     )));
                     reader.close();
                 }
@@ -244,9 +244,9 @@ public class CTMSelector
                     {
                         Gson gson = new Gson();
                         Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
-                        serializableControls.addAll(Arrays.asList(gson.fromJson(
+                        serializableGroups.addAll(Arrays.asList(gson.fromJson(
                                 reader,
-                                Control.SerializableControl[].class
+                                Group.SerializableGroup[].class
                         )));
                         reader.close();
                         break;
@@ -259,15 +259,15 @@ public class CTMSelector
             }
         }
 
-        // Adds the controls properly initialized to the packControls array
-        for (Control.SerializableControl cr : serializableControls)
+        // Adds the controls properly initialized to the packGroups array
+        for (Group.SerializableGroup cr : serializableGroups)
         {
-            packControls.add(new Control(
-                                     cr.type(), cr.groupName(), cr.buttonTooltip(),
-                                     cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                                     Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
-                                     isFolder, isFolder ? null : packPathString
-                             )
+            packGroups.add(new Group(
+                                   cr.type(), cr.groupName(), cr.buttonTooltip(),
+                                   cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
+                                   Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
+                                   isFolder, isFolder ? null : packPathString
+                           )
             );
         }
     }
@@ -275,17 +275,17 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    public void toggle(@NotNull Control control)
+    public void toggle(@NotNull Group group)
     {
-        if (packControls.contains(control))
+        if (packGroups.contains(group))
         {
-            control.toggle();
+            group.toggle();
         }
     }
 
     public void resetOptions()
     {
-        for (Control controls : packControls)
+        for (Group controls : packGroups)
         {
             controls.setEnabled(true);
         }
@@ -296,15 +296,15 @@ public class CTMSelector
      */
     public void updateControlsStates()
     {
-        ArrayList<Control.SerializableControl> serializableControlToWrite = new ArrayList<>(packControls.size());
+        ArrayList<Group.SerializableGroup> serializableGroupToWrite = new ArrayList<>(packGroups.size());
 
-        for (Control cr : packControls)
+        for (Group cr : packGroups)
         {
             for (CTMBlock ctmBlock : cr.getContainedBlocksList())
             {
                 ctmBlock.setEnabled(cr.isEnabled());
             }
-            serializableControlToWrite.add(cr.getAsRecord());
+            serializableGroupToWrite.add(cr.getAsRecord());
         }
 
         Path ctmSelectorPath = Path.of("%s/%s/ctm_selector.json".formatted(RESOURCE_PACKS_DIR, packName));
@@ -315,7 +315,7 @@ public class CTMSelector
             {
                 Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = Files.newBufferedWriter(ctmSelectorPath);
-                gsonWriter.toJson(serializableControlToWrite, writer);
+                gsonWriter.toJson(serializableGroupToWrite, writer);
                 writer.close();
             }
             catch (IOException e)
@@ -326,7 +326,7 @@ public class CTMSelector
         else
         {
             HashMap<String, byte[]> h = new HashMap<>(1);
-            byte[] b = toByteArray(serializableControlToWrite);
+            byte[] b = toByteArray(serializableGroupToWrite);
             h.put("ctm_selector.json", b);
             Utils.writeBytesToZip(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)).toString(), h);
         }

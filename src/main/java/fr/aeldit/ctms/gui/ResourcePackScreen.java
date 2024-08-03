@@ -95,7 +95,7 @@ public class ResourcePackScreen extends Screen
             {
                 addDrawableChild(
                         ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
-                                        Objects.requireNonNull(client).setScreen(new ControlsScreen(this, ctmPack))
+                                        Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
                                 )
                                 .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
                                 .dimensions(width - 110, 6, 100, 20)

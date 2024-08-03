@@ -1,6 +1,6 @@
 package fr.aeldit.ctms.textures.entryTypes;
 
-import fr.aeldit.ctms.textures.Control;
+import fr.aeldit.ctms.textures.Group;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a block found in a {@link java.util.Properties Properties} file
  * that has the CTM method
  * <p>
- * {@link Control} object that contains this block
+ * {@link Group} object that contains this block
  * <p>
  * {@link #blockName} is in the form {@code "block_name"}
  * <p>
@@ -17,8 +17,8 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  * A block being enabled or disabled depends only on the state of
  * the field {@link #enabled} if the block is not contained
- * by any {@link Control}. If the block is contained by at least 1
- * {@link Control},
+ * by any {@link Group}. If the block is contained by at least 1
+ * {@link Group},
  * it depends on whether this group is activated or not
  */
 public class CTMBlock

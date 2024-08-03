@@ -75,12 +75,12 @@ public class FilesHandling
                     }
 
                     // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList
-                    // in the Control object
+                    // in the Group object
                     if (hasCTMSelector)
                     {
-                        for (Control control : ctmPack.getCtmSelector().getControls())
+                        for (Group group : ctmPack.getCtmSelector().getControls())
                         {
-                            ArrayList<FileHeader> fileHeaders = control.getPropertiesFilesFileHeaders();
+                            ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
                             if (fileHeaders == null)
                             {
                                 continue;
@@ -99,7 +99,7 @@ public class FilesHandling
                                     CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
                                     if (ctmBlock != null)
                                     {
-                                        control.addContainedBlock(ctmBlock);
+                                        group.addContainedBlock(ctmBlock);
                                     }
                                 }
                             }
@@ -143,12 +143,12 @@ public class FilesHandling
                 }
 
                 // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
-                // Control object
+                // Group object
                 if (hasCTMSelector)
                 {
-                    for (Control control : ctmPack.getCtmSelector().getControls())
+                    for (Group group : ctmPack.getCtmSelector().getControls())
                     {
-                        ArrayList<Path> paths = control.getPropertiesFilesPaths();
+                        ArrayList<Path> paths = group.getPropertiesFilesPaths();
                         if (paths == null)
                         {
                             continue;
@@ -167,7 +167,7 @@ public class FilesHandling
                                 CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
                                 if (ctmBlock != null)
                                 {
-                                    control.addContainedBlock(ctmBlock);
+                                    group.addContainedBlock(ctmBlock);
                                 }
                             }
                         }

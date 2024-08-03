@@ -1,7 +1,7 @@
 package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.Control;
+import fr.aeldit.ctms.textures.Group;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -27,15 +27,17 @@ import java.util.Objects;
 import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
-public class ControlsScreen extends Screen
+public class GroupsScreen extends Screen
 {
     private final Screen parent;
     private final CTMPack ctmPack;
 
-    public ControlsScreen(Screen parent, @NotNull CTMPack ctmPack)
+    public GroupsScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
-        super(Text.of(Formatting.GOLD + ctmPack.getName() + Formatting.RESET + Text.translatable("ctms.screen" +
-                ".control.title").getString()));
+        super(Text.of(
+                Formatting.GOLD + ctmPack.getName()
+                        + Formatting.RESET + Text.translatable("ctms.screen.group.title").getString())
+        );
         this.parent = parent;
         this.ctmPack = ctmPack;
     }
@@ -66,7 +68,7 @@ public class ControlsScreen extends Screen
     {
         CTMSelector ctmSelector = ctmPack.getCtmSelector();
 
-        ControlsListWidget list = new ControlsListWidget(
+        GroupsListWidget list = new GroupsListWidget(
                 //? if <1.20.4 {
                 /*client, width, height, 32, height - 32, 25,
                  *///?} else {
@@ -77,12 +79,12 @@ public class ControlsScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        ArrayList<Control> toSort = new ArrayList<>(ctmSelector.getControls());
-        toSort.sort(Comparator.comparing(Control::getGroupName));
+        ArrayList<Group> toSort = new ArrayList<>(ctmSelector.getControls());
+        toSort.sort(Comparator.comparing(Group::getGroupName));
 
-        for (Control control : toSort)
+        for (Group group : toSort)
         {
-            list.add(control);
+            list.add(group);
         }
 
         addDrawableChild(
@@ -113,13 +115,13 @@ public class ControlsScreen extends Screen
      *
      * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
      */
-    private static class ControlsListWidget extends ElementListWidget<ControlEntry>
+    private static class GroupsListWidget extends ElementListWidget<GroupEntry>
     {
-        private final ControlEntryBuilder builder = new ControlEntryBuilder(client, width);
+        private final GroupEntryBuilder builder = new GroupEntryBuilder(client, width);
         private final CTMSelector ctmSelector;
 
         //? if <1.20.4 {
-        /*public ControlsListWidget(
+        /*public GroupsListWidget(
                 MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
                 CTMSelector ctmSelector
         )
@@ -129,7 +131,7 @@ public class ControlsScreen extends Screen
         }
 
         *///?} else {
-        public ControlsListWidget(
+        public GroupsListWidget(
                 MinecraftClient client, int width, int height, int y, int itemHeight, CTMSelector ctmSelector
         )
         {
@@ -138,47 +140,47 @@ public class ControlsScreen extends Screen
         }
         //?}
 
-        public void add(Control control)
+        public void add(Group group)
         {
-            addEntry(builder.build(ctmSelector, control));
+            addEntry(builder.build(ctmSelector, group));
         }
     }
 
-    private record ControlEntryBuilder(MinecraftClient client, int width)
+    private record GroupEntryBuilder(MinecraftClient client, int width)
     {
         @Contract("_, _ -> new")
-        public @NotNull ControlsScreen.ControlEntry build(
-                CTMSelector ctmSelector, @NotNull Control control
+        public @NotNull GroupsScreen.GroupEntry build(
+                CTMSelector ctmSelector, @NotNull Group group
         )
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, Text.of(control.getGroupName()), client.textRenderer);
+            var text = new TextWidget(160, 20 + 2, Text.of(group.getGroupName()), client.textRenderer);
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
-                    .initially(control.isEnabled())
+                    .initially(group.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmSelector.toggle(control)
+                           (button, value) -> ctmSelector.toggle(group)
                     );
-            toggleButton.setTooltip(Tooltip.of(control.getButtonTooltip()));
+            toggleButton.setTooltip(Tooltip.of(group.getButtonTooltip()));
             text.alignLeft();
             layout.add(EmptyWidget.ofWidth(15));
             layout.add(text);
             layout.add(toggleButton);
             layout.refreshPositions();
             layout.setX(width / 2 - layout.getWidth() / 2);
-            return new ControlEntry(control, layout);
+            return new GroupEntry(group, layout);
         }
     }
 
-    static class ControlEntry extends ElementListWidget.Entry<ControlEntry>
+    static class GroupEntry extends ElementListWidget.Entry<GroupEntry>
     {
-        private final Control control;
+        private final Group group;
         private final LayoutWidget layout;
         private final List<ClickableWidget> children = Lists.newArrayList();
 
-        ControlEntry(Control control, LayoutWidget layout)
+        GroupEntry(Group group, LayoutWidget layout)
         {
-            this.control = control;
+            this.group = group;
             this.layout = layout;
             this.layout.forEachChild(this.children::add);
         }
@@ -202,7 +204,7 @@ public class ControlsScreen extends Screen
                 boolean hovered, float delta
         )
         {
-            context.drawTexture(control.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
+            context.drawTexture(group.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
             layout.forEachChild(child -> {
                 child.setY(y);
                 child.render(context, mouseX, mouseY, delta);

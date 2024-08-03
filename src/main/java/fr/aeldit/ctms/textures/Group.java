@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Contains a list of blocks that can be toggled together using only one click
  */
-public class Control
+public class Group
 {
     /**
      * Holds the data of 1 control that needs to be written to the {@code "ctm_selector.json"} file (which contains a
@@ -33,12 +33,12 @@ public class Control
      *                             points to a directory, all properties files found inside it recursively will be
      *                             included (ex: {@code "minecraft:optifine/ctm/connect/logs"}
      * @param iconPath             The path to the icon that will be displayed on the screen for this group. Must be
-     *                             formed in the same way as the {@link Control#propertiesFilesStrings}, but must be
+     *                             formed in the same way as the {@link Group#propertiesFilesStrings}, but must be
      *                             a path to a single {@code .png} file
      * @param isEnabled            If the block is enabled, this part is changed by the user of the mod (optional)
-     * @param buttonTooltip        The tooltip to display on the button of the Control group (optional)
+     * @param buttonTooltip        The tooltip to display on the button of the group (optional)
      */
-    public record SerializableControl(
+    public record SerializableGroup(
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
@@ -68,7 +68,7 @@ public class Control
     //==================================================================
     // Methods
     //==================================================================
-    public Control(
+    public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
             boolean isEnabled, @NotNull Path packPath, boolean isInFolder, @Nullable String zipPackPath
@@ -177,9 +177,9 @@ public class Control
         return buttonTooltip;
     }
 
-    public SerializableControl getAsRecord()
+    public SerializableGroup getAsRecord()
     {
-        return new SerializableControl(
+        return new SerializableGroup(
                 type, groupName, propertiesFilesStrings, iconPath, isEnabled,
                 buttonTooltip.getString()
         );
@@ -204,7 +204,7 @@ public class Control
     }
 
     /**
-     * @return The absolute path to each Properties file contained by the Control
+     * @return The absolute path to each Properties file contained by the Group
      */
     public @Nullable ArrayList<Path> getPropertiesFilesPaths()
     {
