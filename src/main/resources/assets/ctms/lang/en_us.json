@@ -10,6 +10,7 @@
   "ctms.screen.reload.tooltip": "Reload the resource packs. You should use this if you added or removed resource packs from your resourcepacks folder",
   "ctms.screen.openResourcePacksFolder": "Open Packs Folder",
   "ctms.screen.done": "Done",
+  "ctms.screen.options": "Options",
   "--------------------------------------------RESOURCE_PACK_SCREEN--------------------------------------------": "",
   "ctms.screen.config.reset": "Reset",
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (§aON§f)\n\nThis will not reset the value of the blocks that are disabled by a Controls group",

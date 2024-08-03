@@ -38,7 +38,7 @@ public class Control
      * @param isEnabled            If the block is enabled, this part is changed by the user of the mod (optional)
      * @param buttonTooltip        The tooltip to display on the button of the Control group (optional)
      */
-    public record SerializableControls(
+    public record SerializableControl(
             @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
@@ -177,9 +177,10 @@ public class Control
         return buttonTooltip;
     }
 
-    public SerializableControls getAsRecord()
+    public SerializableControl getAsRecord()
     {
-        return new SerializableControls(type, groupName, propertiesFilesStrings, iconPath, isEnabled,
+        return new SerializableControl(
+                type, groupName, propertiesFilesStrings, iconPath, isEnabled,
                 buttonTooltip.getString()
         );
     }

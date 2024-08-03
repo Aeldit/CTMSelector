@@ -25,12 +25,12 @@ public class CTMSelector
     //=========================================================================
     // Static part
     //=========================================================================
-    public static boolean hasFolderPackControls(@NotNull Path packPath)
+    public static boolean hasCTMSelector(@NotNull Path packPath)
     {
         return Files.exists(Path.of("%s/ctm_selector.json".formatted(packPath)));
     }
 
-    public static boolean hasZipPackControls(@NotNull ZipFile zipFile) throws ZipException
+    public static boolean hasCTMSelector(@NotNull ZipFile zipFile) throws ZipException
     {
         for (FileHeader fileHeader : zipFile.getFileHeaders())
         {
@@ -42,10 +42,10 @@ public class CTMSelector
         return false;
     }
 
-    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Control.SerializableControls> controls)
+    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Control.SerializableControl> controls)
     {
         ArrayList<String> s = new ArrayList<>(controls.size());
-        for (Control.SerializableControls sc : controls)
+        for (Control.SerializableControl sc : controls)
         {
             StringBuilder sbFiles = new StringBuilder();
             sbFiles.append("[\n");
@@ -59,7 +59,8 @@ public class CTMSelector
             }
             sbFiles.append("\n\t\t]");
 
-            s.add(String.format("""
+            s.add(String.format(
+                    """
                             \t{
                             \t\t"type": "%s",
                             \t\t"group_name": "%s",
@@ -67,7 +68,8 @@ public class CTMSelector
                             \t\t"icon_path": "%s",
                             \t\t"enabled": %b,
                             \t\t"button_tooltip": "%s"
-                            \t}""", sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
+                            \t}""",
+                    sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
                     sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
             ));
         }
@@ -207,7 +209,7 @@ public class CTMSelector
 
     public void readFile()
     {
-        ArrayList<Control.SerializableControls> serializableControls = new ArrayList<>();
+        ArrayList<Control.SerializableControl> serializableControls = new ArrayList<>();
         String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
 
         if (isFolder)
@@ -220,8 +222,9 @@ public class CTMSelector
                 {
                     Gson gson = new Gson();
                     Reader reader = Files.newBufferedReader(ctmSelectorPath);
-                    serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
-                            Control.SerializableControls[].class
+                    serializableControls.addAll(Arrays.asList(gson.fromJson(
+                            reader,
+                            Control.SerializableControl[].class
                     )));
                     reader.close();
                 }
@@ -241,8 +244,9 @@ public class CTMSelector
                     {
                         Gson gson = new Gson();
                         Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
-                        serializableControls.addAll(Arrays.asList(gson.fromJson(reader,
-                                Control.SerializableControls[].class
+                        serializableControls.addAll(Arrays.asList(gson.fromJson(
+                                reader,
+                                Control.SerializableControl[].class
                         )));
                         reader.close();
                         break;
@@ -256,14 +260,14 @@ public class CTMSelector
         }
 
         // Adds the controls properly initialized to the packControls array
-        for (Control.SerializableControls cr : serializableControls)
+        for (Control.SerializableControl cr : serializableControls)
         {
             packControls.add(new Control(
-                            cr.type(), cr.groupName(), cr.buttonTooltip(),
-                            cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
-                            isFolder, isFolder ? null : packPathString
-                    )
+                                     cr.type(), cr.groupName(), cr.buttonTooltip(),
+                                     cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
+                                     Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
+                                     isFolder, isFolder ? null : packPathString
+                             )
             );
         }
     }
@@ -292,7 +296,7 @@ public class CTMSelector
      */
     public void updateControlsStates()
     {
-        ArrayList<Control.SerializableControls> serializableControlsToWrite = new ArrayList<>(packControls.size());
+        ArrayList<Control.SerializableControl> serializableControlToWrite = new ArrayList<>(packControls.size());
 
         for (Control cr : packControls)
         {
@@ -300,7 +304,7 @@ public class CTMSelector
             {
                 ctmBlock.setEnabled(cr.isEnabled());
             }
-            serializableControlsToWrite.add(cr.getAsRecord());
+            serializableControlToWrite.add(cr.getAsRecord());
         }
 
         Path ctmSelectorPath = Path.of("%s/%s/ctm_selector.json".formatted(RESOURCE_PACKS_DIR, packName));
@@ -311,7 +315,7 @@ public class CTMSelector
             {
                 Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = Files.newBufferedWriter(ctmSelectorPath);
-                gsonWriter.toJson(serializableControlsToWrite, writer);
+                gsonWriter.toJson(serializableControlToWrite, writer);
                 writer.close();
             }
             catch (IOException e)
@@ -322,7 +326,7 @@ public class CTMSelector
         else
         {
             HashMap<String, byte[]> h = new HashMap<>(1);
-            byte[] b = toByteArray(serializableControlsToWrite);
+            byte[] b = toByteArray(serializableControlToWrite);
             h.put("ctm_selector.json", b);
             Utils.writeBytesToZip(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)).toString(), h);
         }

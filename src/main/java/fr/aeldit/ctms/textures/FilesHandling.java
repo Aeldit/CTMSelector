@@ -52,9 +52,9 @@ public class FilesHandling
                         continue;
                     }
 
-                    boolean hasControls = hasZipPackControls(zipFile);
+                    boolean hasCTMSelector = CTMSelector.hasCTMSelector(zipFile);
 
-                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasControls, isZipPackModded(zipFile));
+                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasCTMSelector, isZipPackModded(zipFile));
                     CTM_PACKS.add(ctmPack);
 
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
@@ -76,7 +76,7 @@ public class FilesHandling
 
                     // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList
                     // in the Control object
-                    if (hasControls)
+                    if (hasCTMSelector)
                     {
                         for (Control control : ctmPack.getCtmSelector().getControls())
                         {
@@ -113,9 +113,9 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.toPath()))
             {
-                boolean hasControls = hasFolderPackControls(file.toPath());
+                boolean hasCTMSelector = hasCTMSelector(file.toPath());
 
-                CTMPack ctmPack = new CTMPack(file.getName(), true, hasControls, isFolderPackModded(file.toPath()));
+                CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isFolderPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
 
                 for (Path path : getFilesInFolderPack(file))
@@ -144,7 +144,7 @@ public class FilesHandling
 
                 // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
                 // Control object
-                if (hasControls)
+                if (hasCTMSelector)
                 {
                     for (Control control : ctmPack.getCtmSelector().getControls())
                     {

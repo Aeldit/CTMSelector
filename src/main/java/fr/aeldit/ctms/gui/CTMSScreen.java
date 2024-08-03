@@ -54,7 +54,6 @@ public class CTMSScreen extends Screen
         DrawContext.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xffffff);
     }
 
-
     //? if <1.20.6 {
     /*@Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
@@ -85,9 +84,23 @@ public class CTMSScreen extends Screen
             list.add(ctmPack);
         }
 
+        ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
+                width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
+                new Identifier(CTMS_MODID, "textures/gui/options.png"),
+                20, 40,
+                button -> {
+                    MinecraftClient.getInstance().setScreen(this);
+                },
+                Text.empty()
+        );
+        addDrawableChild(optionsButton);
+
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.openResourcePacksFolder"),
-                                button -> Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks"))
+                ButtonWidget.builder(
+                                Text.translatable("ctms.screen.openResourcePacksFolder"),
+                                button -> Util.getOperatingSystem().open(new File(
+                                        FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks")
+                                )
                         )
                         .dimensions(width / 2 - 154, height - 28, 150, 20)
                         .build()
@@ -99,8 +112,10 @@ public class CTMSScreen extends Screen
                         .build()
         );
 
-        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(width / 2 - 180, height - 28, 20, 20, 0, 0,
-                20, new Identifier(CTMS_MODID, "textures/gui/reload.png"), 20, 40,
+        ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
+                width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
+                new Identifier(CTMS_MODID, "textures/gui/reload.png"),
+                20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
                     MinecraftClient.getInstance().setScreen(this);
@@ -167,12 +182,13 @@ public class CTMSScreen extends Screen
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(10);
             var text = new TextWidget(180, 24,
-                    CTMPacks.isPackEnabled(ctmPack.getName()) // If the pack is not enabled, it is in italic and gray
-                    ? ctmPack.getNameAsText()
-                    : Text.of(Formatting.GRAY
-                            + Text.of(Formatting.ITALIC
-                            + ctmPack.getName()).getString()
-                    )
+                                      CTMPacks.isPackEnabled(ctmPack.getName())
+                                      // If the pack is not enabled, it is in italic and gray
+                                      ? ctmPack.getNameAsText()
+                                      : Text.of(Formatting.GRAY
+                                                        + Text.of(Formatting.ITALIC
+                                                                          + ctmPack.getName()).getString()
+                                      )
                     , client.textRenderer
             );
             var followButton = ButtonWidget.builder(
