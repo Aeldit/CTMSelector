@@ -149,11 +149,6 @@ public class CTMPack
         return ctmSelector;
     }
 
-    public boolean hasCtmSelector()
-    {
-        return ctmSelector != null;
-    }
-
     public boolean isModded()
     {
         return vanillaOnlyCtmBlocks == null;
@@ -164,11 +159,6 @@ public class CTMPack
     //=========================================================================
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
-        if (ctmSelector == null)
-        {
-            return false;
-        }
-
         Group group = ctmSelector.getGroupWithBlock(ctmBlock);
         return group != null && !group.isEnabled();
     }

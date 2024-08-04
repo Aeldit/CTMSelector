@@ -94,17 +94,14 @@ public class ResourcePackScreen extends Screen
                             .build()
             );
 
-            if (ctmPack.hasCtmSelector())
-            {
-                addDrawableChild(
-                        ButtonWidget.builder(TEXT_GROUPS, button ->
-                                        Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
-                                )
-                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.groups.tooltip")))
-                                .dimensions(width - 110, 6, 100, 20)
-                                .build()
-                );
-            }
+            addDrawableChild(
+                    ButtonWidget.builder(TEXT_GROUPS, button ->
+                                    Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
+                            )
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.groups.tooltip")))
+                            .dimensions(width - 110, 6, 100, 20)
+                            .build()
+            );
 
             if (ctmPack.isModded())
             {
