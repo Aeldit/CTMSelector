@@ -14,8 +14,8 @@
   "--------------------------------------------RESOURCE_PACK_SCREEN--------------------------------------------": "",
   "ctms.screen.config.reset": "Reset",
   "ctms.screen.config.reset.tooltip": "Reset all the options to their default values (§aON§f)\n\nThis will not reset the value of the blocks that are disabled by a Controls group",
-  "ctms.screen.config.controls": "Groups",
-  "ctms.screen.config.controls.tooltip": "Opens the §6controls §rscreen associated with the resource pack",
+  "ctms.screen.config.groups": "Groups",
+  "ctms.screen.config.groups.tooltip": "Opens the §6controls §rscreen associated with the resource pack",
   "ctms.screen.config.cancel.tooltip": "Quit without saving the changed options",
   "ctms.screen.config.save&quit": "Save & Quit",
   "ctms.screen.config.save&quit.tooltip": "This will reload the resources 2 times if the pack is a zip file, because we need to edit the zip file, which we can't do if Minecraft is using it",
@@ -23,7 +23,7 @@
   "ctms.screen.config.mods": "By Mod",
   "ctms.screen.config.mods.tooltip": "See the different blocks but separated depending on the mod they are from",
   "------------------------------------------------GROUPS_SCREEN-----------------------------------------------": "",
-  "ctms.screen.group.title": "'s Groups",
+  "ctms.screen.group.title": " Groups",
   "------------------------------------------------BY_MOD_SCREEN-----------------------------------------------": "",
   "ctms.screen.byMod.title": ": By Mod"
 }

@@ -29,6 +29,7 @@ import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 @Environment(EnvType.CLIENT)
 public class GroupsScreen extends Screen
 {
+    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
     private final Screen parent;
     private final CTMPack ctmPack;
 
@@ -36,7 +37,9 @@ public class GroupsScreen extends Screen
     {
         super(Text.of(
                 Formatting.GOLD + ctmPack.getName()
-                        + Formatting.RESET + Text.translatable("ctms.screen.group.title").getString())
+                        + Formatting.RESET
+                        + (ctmPack.getName().endsWith("s") ? Text.empty() : Text.of("'s"))
+                        + Text.translatable("ctms.screen.group.title").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -70,9 +73,9 @@ public class GroupsScreen extends Screen
 
         GroupsListWidget list = new GroupsListWidget(
                 //? if <1.20.4 {
-                /*client, width, height, 32, height - 32, 25,
+                /*client, width, height, 32, height - 32, 24,
                  *///?} else {
-                client, width, height - 32, 32, 25,
+                client, width, height - 64, 32, 24,
                 //?}
                 ctmSelector
         );
@@ -88,14 +91,14 @@ public class GroupsScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                ButtonWidget.builder(TEXT_RESET, button -> {
                             ctmSelector.resetOptions();
                             ctmSelector.updateGroupsStates();
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                        .dimensions(10, 6, 75, 20)
+                        .dimensions(10, 6, 100, 20)
                         .build()
         );
 
@@ -105,7 +108,7 @@ public class GroupsScreen extends Screen
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
-                        .dimensions(width / 2 - 100, height - 28, 200, 20)
+                        .dimensions(width / 2 - 100, height - 26, 200, 20)
                         .build()
         );
     }

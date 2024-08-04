@@ -24,6 +24,9 @@ import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 @Environment(EnvType.CLIENT)
 public class ResourcePackScreen extends Screen
 {
+    private static final Text TEXT_GROUPS = Text.translatable("ctms.screen.config.groups");
+    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
+    private static final Text TEXT_MODS = Text.translatable("ctms.screen.config.mods");
     private final Screen parent;
     private final CTMPack ctmPack;
     private final boolean enabled;
@@ -64,9 +67,9 @@ public class ResourcePackScreen extends Screen
         {
             BlocksListWidget list = new BlocksListWidget(
                     //? if <1.20.4 {
-                    /*client, width, height, 32, height - 32, 25,
+                    /*client, width, height, 32, height - 32, 24,
                      *///?} else {
-                    client, width, height - 64, 28, 24,
+                    client, width, height - 64, 32, 24,
                     //?}
                     ctmPack
             );
@@ -82,7 +85,7 @@ public class ResourcePackScreen extends Screen
             }
 
             addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                    ButtonWidget.builder(TEXT_RESET, button -> {
                                 ctmPack.resetOptions();
                                 close();
                             })
@@ -94,10 +97,10 @@ public class ResourcePackScreen extends Screen
             if (ctmPack.hasCtmSelector())
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
+                        ButtonWidget.builder(TEXT_GROUPS, button ->
                                         Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
                                 )
-                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
+                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.groups.tooltip")))
                                 .dimensions(width - 110, 6, 100, 20)
                                 .build()
                 );
@@ -106,7 +109,7 @@ public class ResourcePackScreen extends Screen
             if (ctmPack.isModded())
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable("ctms.screen.config.mods"), button ->
+                        ButtonWidget.builder(TEXT_MODS, button ->
                                         Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
                                                 this,
                                                 ctmPack
@@ -121,7 +124,7 @@ public class ResourcePackScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 - 100, height - 28, 200, 20)
+                        .dimensions(width / 2 - 100, height - 26, 200, 20)
                         .build()
         );
     }
