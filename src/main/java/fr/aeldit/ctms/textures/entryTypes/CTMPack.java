@@ -169,7 +169,7 @@ public class CTMPack
             return false;
         }
 
-        Group group = ctmSelector.getControlsGroupWithBlock(ctmBlock);
+        Group group = ctmSelector.getGroupWithBlock(ctmBlock);
         return group != null && !group.isEnabled();
     }
 

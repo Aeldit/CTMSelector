@@ -22,8 +22,8 @@ import java.util.List;
 public class Group
 {
     /**
-     * Holds the data of 1 control that needs to be written to the {@code "ctm_selector.json"} file (which contains a
-     * list of control
+     * Holds the data of 1 group that needs to be written to the {@code "ctm_selector.json"} file (which contains a
+     * list of groups)
      *
      * @param type                 The type of texture property that will be toggled. For now, this can only be set
      *                             to {@code "ctm"}

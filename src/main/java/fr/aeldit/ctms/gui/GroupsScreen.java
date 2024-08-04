@@ -79,7 +79,7 @@ public class GroupsScreen extends Screen
         addDrawableChild(list);
 
         // Sorts the blocks alphabetically
-        ArrayList<Group> toSort = new ArrayList<>(ctmSelector.getControls());
+        ArrayList<Group> toSort = new ArrayList<>(ctmSelector.getGroups());
         toSort.sort(Comparator.comparing(Group::getGroupName));
 
         for (Group group : toSort)
@@ -90,7 +90,7 @@ public class GroupsScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             ctmSelector.resetOptions();
-                            ctmSelector.updateControlsStates();
+                            ctmSelector.updateGroupsStates();
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
@@ -101,7 +101,7 @@ public class GroupsScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            ctmSelector.updateControlsStates();
+                            ctmSelector.updateGroupsStates();
                             TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })

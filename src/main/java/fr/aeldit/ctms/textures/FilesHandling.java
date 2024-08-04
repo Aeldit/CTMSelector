@@ -54,7 +54,7 @@ public class FilesHandling
 
                     boolean hasCTMSelector = CTMSelector.hasCTMSelector(zipFile);
 
-                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasCTMSelector, isZipPackModded(zipFile));
+                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasCTMSelector, isPackModded(zipFile));
                     CTM_PACKS.add(ctmPack);
 
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
@@ -78,7 +78,7 @@ public class FilesHandling
                     // in the Group object
                     if (hasCTMSelector)
                     {
-                        for (Group group : ctmPack.getCtmSelector().getControls())
+                        for (Group group : ctmPack.getCtmSelector().getGroups())
                         {
                             ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
                             if (fileHeaders == null)
@@ -115,7 +115,7 @@ public class FilesHandling
             {
                 boolean hasCTMSelector = hasCTMSelector(file.toPath());
 
-                CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isFolderPackModded(file.toPath()));
+                CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
 
                 for (Path path : getFilesInFolderPack(file))
@@ -146,7 +146,7 @@ public class FilesHandling
                 // Group object
                 if (hasCTMSelector)
                 {
-                    for (Group group : ctmPack.getCtmSelector().getControls())
+                    for (Group group : ctmPack.getCtmSelector().getGroups())
                     {
                         ArrayList<Path> paths = group.getPropertiesFilesPaths();
                         if (paths == null)
@@ -408,7 +408,7 @@ public class FilesHandling
         return false;
     }
 
-    private boolean isZipPackModded(@NotNull ZipFile zipFile) throws ZipException
+    private boolean isPackModded(@NotNull ZipFile zipFile) throws ZipException
     {
         for (FileHeader fileHeader : zipFile.getFileHeaders())
         {
@@ -422,7 +422,7 @@ public class FilesHandling
         return false;
     }
 
-    private boolean isFolderPackModded(Path packPath)
+    private boolean isPackModded(Path packPath)
     {
         Path filePath = Path.of("%s/assets".formatted(packPath));
         if (Files.exists(filePath))
@@ -669,13 +669,13 @@ public class FilesHandling
      */
     private void removeEmptyKeys(@NotNull Properties properties)
     {
-        for (int i = 0; i < 4; ++i)
+        for (String type : types)
         {
-            if (properties.containsKey(types[i]))
+            if (properties.containsKey(type))
             {
-                if (properties.getProperty(types[i]).isEmpty())
+                if (properties.getProperty(type).isEmpty())
                 {
-                    properties.remove(types[i]);
+                    properties.remove(type);
                 }
             }
         }

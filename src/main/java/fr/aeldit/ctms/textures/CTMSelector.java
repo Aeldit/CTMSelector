@@ -42,10 +42,10 @@ public class CTMSelector
         return false;
     }
 
-    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Group.SerializableGroup> controls)
+    public static byte @NotNull [] toByteArray(@NotNull ArrayList<Group.SerializableGroup> groups)
     {
-        ArrayList<String> s = new ArrayList<>(controls.size());
-        for (Group.SerializableGroup sc : controls)
+        ArrayList<String> s = new ArrayList<>(groups.size());
+        for (Group.SerializableGroup sc : groups)
         {
             StringBuilder sbFiles = new StringBuilder();
             sbFiles.append("[\n");
@@ -103,16 +103,16 @@ public class CTMSelector
         readFile();
     }
 
-    public ArrayList<Group> getControls()
+    public ArrayList<Group> getGroups()
     {
         return packGroups;
     }
 
     /**
      * @param ctmBlock The {@link CTMBlock} object
-     * @return The controls group that contains the block | null otherwise
+     * @return The group that contains the block | null otherwise
      */
-    public @Nullable Group getControlsGroupWithBlock(@NotNull CTMBlock ctmBlock)
+    public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
     {
         for (Group group : packGroups)
         {
@@ -259,7 +259,7 @@ public class CTMSelector
             }
         }
 
-        // Adds the controls properly initialized to the packGroups array
+        // Adds the groups properly initialized to the packGroups array
         for (Group.SerializableGroup cr : serializableGroups)
         {
             packGroups.add(new Group(
@@ -285,16 +285,16 @@ public class CTMSelector
 
     public void resetOptions()
     {
-        for (Group controls : packGroups)
+        for (Group groups : packGroups)
         {
-            controls.setEnabled(true);
+            groups.setEnabled(true);
         }
     }
 
     /**
-     * Updates the 'enabled' field in the controls file
+     * Updates the 'enabled' field in the groups file
      */
-    public void updateControlsStates()
+    public void updateGroupsStates()
     {
         ArrayList<Group.SerializableGroup> serializableGroupToWrite = new ArrayList<>(packGroups.size());
 
