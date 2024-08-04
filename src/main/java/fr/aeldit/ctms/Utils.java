@@ -48,5 +48,31 @@ public class Utils
         }
     }
 
+    /**
+     * Takes the result of the string wanted in 'pretty' form split on its underscores
+     *
+     * @param s The split string list
+     * @return A string containing each word separated by a space, and the first letter of each word uppercased
+     */
+    public static @NotNull String getPrettyString(String @NotNull [] s)
+    {
+        // Changes the lowercase and underscore separated string by replacing each '_' by a space
+        // and by uppercasing the first letter of each word
+        StringBuilder stringBuilder = new StringBuilder();
+        int index = 0;
+
+        for (String str : s)
+        {
+            stringBuilder.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
+
+            if (index < s.length - 1)
+            {
+                stringBuilder.append(" ");
+            }
+            index++;
+        }
+        return stringBuilder.toString();
+    }
+
     //public static int ICON_INDEX = 0;
 }
