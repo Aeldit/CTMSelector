@@ -23,7 +23,7 @@
   "ctms.screen.config.mods": "By Mod",
   "ctms.screen.config.mods.tooltip": "See the different blocks but separated depending on the mod they are from",
   "------------------------------------------------GROUPS_SCREEN-----------------------------------------------": "",
-  "ctms.screen.group.title": " Groups",
+  "ctms.screen.group.title": "Groups",
   "------------------------------------------------BY_MOD_SCREEN-----------------------------------------------": "",
   "ctms.screen.byMod.title": ": By Mod"
 }

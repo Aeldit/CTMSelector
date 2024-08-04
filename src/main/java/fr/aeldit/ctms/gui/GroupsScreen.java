@@ -38,7 +38,7 @@ public class GroupsScreen extends Screen
         super(Text.of(
                 Formatting.GOLD + ctmPack.getName()
                         + Formatting.RESET
-                        + (ctmPack.getName().endsWith("s") ? Text.empty() : Text.of("'s"))
+                        + (ctmPack.getName().endsWith("s") ? " " : "'s ")
                         + Text.translatable("ctms.screen.group.title").getString())
         );
         this.parent = parent;
