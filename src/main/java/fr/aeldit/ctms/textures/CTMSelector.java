@@ -95,12 +95,19 @@ public class CTMSelector
     private final String packName;
     private final boolean isFolder;
 
-    public CTMSelector(@NotNull String packName, boolean isFolder)
+    public CTMSelector(@NotNull String packName, boolean isFolder, boolean fromFile)
     {
         this.packName = packName;
         this.isFolder = isFolder;
 
-        readFile();
+        if (fromFile)
+        {
+            readFile();
+        }
+        else
+        {
+            getGroupsFromFolderTree();
+        }
     }
 
     public ArrayList<Group> getGroups()
@@ -207,7 +214,73 @@ public class CTMSelector
         return ctmBlocks;
     }
 
-    public void readFile()
+    private void getGroupsFromFolderTree()
+    {
+        Path packFile = Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName));
+        if (!Files.exists(packFile))
+        {
+            return;
+        }
+
+        File[] files = packFile.toFile().listFiles();
+        if (files == null)
+        {
+            return;
+        }
+
+        HashMap<String, ArrayList<String>> groups = new HashMap<>();
+
+        for (File file : files)
+        {
+            if (file.isDirectory())
+            {
+                getGroupsInDir(file, groups);
+            }
+        }
+
+        ArrayList<String> keysToRemove = new ArrayList<>();
+        for (String key : groups.keySet())
+        {
+            if (groups.get(key).size() < 2)
+            {
+                keysToRemove.add(key);
+            }
+        }
+        for (String key : keysToRemove)
+        {
+            groups.remove(key);
+        }
+        System.out.println(groups);
+    }
+
+    private void getGroupsInDir(@NotNull File dir, HashMap<String, ArrayList<String>> groups)
+    {
+        File[] files = dir.listFiles();
+        if (files == null)
+        {
+            return;
+        }
+
+        String groupName = dir.getName();
+        if (!groups.containsKey(groupName))
+        {
+            groups.put(groupName, new ArrayList<>());
+        }
+
+        for (File file : files)
+        {
+            if (file.isDirectory())
+            {
+                getGroupsInDir(file, groups);
+            }
+            else if (file.isFile() && file.getName().endsWith(".properties"))
+            {
+                groups.get(groupName).add(file.getName());
+            }
+        }
+    }
+
+    private void readFile()
     {
         ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
         String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);

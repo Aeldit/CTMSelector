@@ -43,12 +43,12 @@ public class CTMPack
     // HashMap<namespace, blocks in the namespace>
     private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks;
 
-    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector, boolean isModded)
+    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelectorFile, boolean isModded)
     {
         this.name = name;
         this.isFolder = isFolder;
 
-        this.ctmSelector = hasSelector ? new CTMSelector(this.name, isFolder) : null;
+        this.ctmSelector = new CTMSelector(this.name, isFolder, hasSelectorFile);
 
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
