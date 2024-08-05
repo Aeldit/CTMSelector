@@ -259,11 +259,12 @@ public class CTMSelector
             ArrayList<String> filesPaths = new ArrayList<>();
             groups.get(group).forEach(file -> filesPaths.add(file.toString()));
 
+            // TODO -> Check if the pack is a folder or a Zip file
             packGroups.add(
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
                             null, filesPaths, getIconPath(group), true,
-                            Path.of(assetsDir.toString().replace("assets/", "")), isFolder, null
+                            Path.of(assetsDir.toString().replace("assets/", "")), null
                     )
             );
         }
@@ -429,8 +430,8 @@ public class CTMSelector
                     new Group(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
-                            isFolder, isFolder ? null : packPathString
+                            isFolder ? Path.of(packPathString) : null,
+                            isFolder ? null : packPathString
                     )
             );
         }

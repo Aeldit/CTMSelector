@@ -72,7 +72,7 @@ public class Group
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
-            boolean isEnabled, @NotNull Path packPath, boolean isInFolder, @Nullable String zipPackPath
+            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
     )
     {
         this.type = type;
@@ -83,7 +83,7 @@ public class Group
         this.isEnabled = isEnabled;
 
         // Obtains the path to each block
-        if (isInFolder)
+        if (packPath != null)
         {
             this.propertiesFilesPaths = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
