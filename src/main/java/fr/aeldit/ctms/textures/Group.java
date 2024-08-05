@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Contains a list of blocks that can be toggled together using only one click
  */
@@ -89,7 +90,11 @@ public class Group
 
             for (String s : propertiesFilesStrings)
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, s.replace(":", "/")));
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(
+                        packPath,
+                        s.replace("%s/assets/".formatted(packPath), "")
+                                .replaceFirst("/", ":")
+                ));
 
                 if (!s.endsWith(".properties"))
                 {
@@ -138,6 +143,10 @@ public class Group
             }
         }
 
+        iconPath = iconPath
+                // The '/' after the '%s' is to get rid of the first slash
+                .replace("%s/".formatted(packPath), "")
+                .replaceFirst("/", ":");
         // Case where the namespace is not specified
         if (!iconPath.contains(":"))
         {

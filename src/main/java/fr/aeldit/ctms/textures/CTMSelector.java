@@ -257,14 +257,12 @@ public class CTMSelector
         for (String group : groups.keySet())
         {
             ArrayList<String> filesPaths = new ArrayList<>();
-
             groups.get(group).forEach(file -> filesPaths.add(file.toString()));
-            String iconPath = getIconPath(group).replace("%s/".formatted(assetsDir), "").replaceFirst("/", ":");
 
             packGroups.add(
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                            null, filesPaths, iconPath, true,
+                            null, filesPaths, getIconPath(group), true,
                             Path.of(assetsDir.toString().replace("assets/", "")), isFolder, null
                     )
             );
@@ -351,7 +349,7 @@ public class CTMSelector
         return false;
     }
 
-    private void getFilesInDirRec(File dir, ArrayList<File> blocks)
+    private void getFilesInDirRec(@NotNull File dir, ArrayList<File> blocks)
     {
         File[] files = dir.listFiles();
         if (files == null)
@@ -427,12 +425,13 @@ public class CTMSelector
         // Adds the groups properly initialized to the packGroups array
         for (Group.SerializableGroup cr : serializableGroups)
         {
-            packGroups.add(new Group(
-                                   cr.type(), cr.groupName(), cr.buttonTooltip(),
-                                   cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                                   Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
-                                   isFolder, isFolder ? null : packPathString
-                           )
+            packGroups.add(
+                    new Group(
+                            cr.type(), cr.groupName(), cr.buttonTooltip(),
+                            cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
+                            Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
+                            isFolder, isFolder ? null : packPathString
+                    )
             );
         }
     }
