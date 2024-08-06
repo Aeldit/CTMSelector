@@ -72,7 +72,7 @@ public class Group
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
-            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
+            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath, boolean fromFile
     )
     {
         this.type = type;
@@ -85,18 +85,26 @@ public class Group
         // Obtains the path to each block
         if (packPath != null)
         {
+            // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
+            if (!fromFile)
+            {
+                ArrayList<String> tmp = new ArrayList<>(propertiesFilesStrings.size());
+                for (String propFile : propertiesFilesStrings)
+                {
+                    tmp.add(propFile.replace("%s/".formatted(packPath.toString()), "").replaceFirst("/", ":"));
+                }
+                propertiesFilesStrings.clear();
+                propertiesFilesStrings = tmp;
+            }
+
             this.propertiesFilesPaths = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
 
-            for (String s : propertiesFilesStrings)
+            for (String propFile : propertiesFilesStrings)
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(
-                        packPath,
-                        s.replace("%s/assets/".formatted(packPath), "")
-                                .replaceFirst("/", ":")
-                ));
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile));
 
-                if (!s.endsWith(".properties"))
+                if (!propFile.endsWith(".properties"))
                 {
                     if (Files.isDirectory(assetsInPackPath))
                     {
@@ -143,10 +151,14 @@ public class Group
             }
         }
 
-        iconPath = iconPath
-                // The '/' after the '%s' is to get rid of the first slash
-                .replace("%s/".formatted(packPath), "")
-                .replaceFirst("/", ":");
+        // The '/' after the '%s' is to get rid of the first slash
+        iconPath = iconPath.replace("%s/".formatted(packPath), "");
+        if (!iconPath.contains(":"))
+        {
+            iconPath = iconPath.replaceFirst("/", ":");
+        }
+        System.out.println(iconPath);
+
         // Case where the namespace is not specified
         if (!iconPath.contains(":"))
         {

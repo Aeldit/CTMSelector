@@ -264,7 +264,7 @@ public class CTMSelector
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
                             null, filesPaths, getIconPath(group), true,
-                            Path.of(assetsDir.toString().replace("assets/", "")), null
+                            Path.of(assetsDir.toString().replace("assets/", "")), null, false
                     )
             );
         }
@@ -431,7 +431,8 @@ public class CTMSelector
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
                             isFolder ? Path.of(packPathString) : null,
-                            isFolder ? null : packPathString
+                            isFolder ? null : packPathString,
+                            true
                     )
             );
         }
