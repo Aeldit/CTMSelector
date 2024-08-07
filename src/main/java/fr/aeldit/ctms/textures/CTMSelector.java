@@ -426,15 +426,7 @@ public class CTMSelector
         // Adds the groups properly initialized to the packGroups array
         for (Group.SerializableGroup cr : serializableGroups)
         {
-            packGroups.add(
-                    new Group(
-                            cr.type(), cr.groupName(), cr.buttonTooltip(),
-                            cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            isFolder ? Path.of(packPath) : null,
-                            isFolder ? null : packPath,
-                            true
-                    )
-            );
+            packGroups.add(new Group(cr, isFolder ? Path.of(packPath) : null, isFolder ? null : packPath));
         }
     }
 

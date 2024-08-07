@@ -70,6 +70,7 @@ public class Group
     //==================================================================
     // Methods
     //==================================================================
+    // Initialize from the folder tree
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
@@ -159,6 +160,88 @@ public class Group
 
         this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
         this.iconPath = iconPath;
+
+        // If the namespace is not specified, we use the 'unknown pack' icon
+        if (iconPath.contains(":"))
+        {
+            String[] split = iconPath.split(":");
+            this.identifier = new Identifier(split[0], split[1]);
+        }
+        else
+        {
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+        }
+    }
+
+    // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
+    public Group(
+            @NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath
+    )
+    {
+        this.type = serializableGroup.type;
+        this.groupName = serializableGroup.groupName;
+        this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
+        this.isEnabled = serializableGroup.isEnabled;
+
+        // Obtains the path to each block
+        if (packPath != null)
+        {
+            this.propertiesFilesPaths = new ArrayList<>();
+            this.propertiesFilesFileHeaders = null;
+
+            for (String propFile : serializableGroup.propertiesFilesPaths)
+            {
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
+
+                if (propFile.endsWith(".properties"))
+                {
+                    this.propertiesFilesPaths.add(assetsInPackPath);
+                }
+                else
+                {
+                    if (Files.isDirectory(assetsInPackPath))
+                    {
+                        addPropertiesFilesRec(assetsInPackPath.toFile());
+                    }
+                }
+            }
+        }
+        else
+        {
+            this.propertiesFilesPaths = null;
+            this.propertiesFilesFileHeaders = new ArrayList<>();
+
+            if (zipPackPath != null)
+            {
+                try (ZipFile zipFile = new ZipFile(zipPackPath))
+                {
+                    for (String s : serializableGroup.propertiesFilesPaths)
+                    {
+                        String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
+
+                        if (pathInZip.endsWith(".properties"))
+                        {
+                            FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
+                            if (fh != null)
+                            {
+                                this.propertiesFilesFileHeaders.add(fh);
+                            }
+                        }
+                        else
+                        {
+                            getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                        }
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        this.identifierLikePropertiesPaths = serializableGroup.propertiesFilesPaths;
+        this.iconPath = serializableGroup.iconPath;
 
         // If the namespace is not specified, we use the 'unknown pack' icon
         if (iconPath.contains(":"))
