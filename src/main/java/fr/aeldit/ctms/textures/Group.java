@@ -97,7 +97,7 @@ public class Group
 
             for (String propFile : identifierLikePropertiesPaths)
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile));
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
 
                 if (propFile.endsWith(".properties"))
                 {
