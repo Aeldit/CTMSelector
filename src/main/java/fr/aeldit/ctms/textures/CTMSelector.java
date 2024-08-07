@@ -199,13 +199,9 @@ public class CTMSelector
     {
         for (Group group : packGroups)
         {
-            // TODO -> Use group.getContainedBlocksList().contains(ctmBlock)
-            for (CTMBlock block : group.getContainedBlocksList())
+            if (group.getContainedBlocksList().contains(ctmBlock))
             {
-                if (block == ctmBlock)
-                {
-                    return group;
-                }
+                return group;
             }
         }
         return null;
