@@ -32,6 +32,7 @@ public class GroupsScreen extends Screen
     private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
     private final Screen parent;
     private final CTMPack ctmPack;
+    private final CTMSelector ctmSelector;
 
     public GroupsScreen(Screen parent, @NotNull CTMPack ctmPack)
     {
@@ -43,11 +44,13 @@ public class GroupsScreen extends Screen
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
+        this.ctmSelector = ctmPack.getCtmSelector();
     }
 
     @Override
     public void close()
     {
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack, ctmSelector.updateGroupsStates());
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -69,15 +72,12 @@ public class GroupsScreen extends Screen
     @Override
     protected void init()
     {
-        CTMSelector ctmSelector = ctmPack.getCtmSelector();
-
         GroupsListWidget list = new GroupsListWidget(
                 //? if <1.20.4 {
-                /*client, width, height, 32, height - 32, 24,
+                /*client, width, height, 32, height - 32, 24
                  *///?} else {
-                client, width, height - 64, 32, 24,
+                client, width, height - 64, 32, 24
                 //?}
-                ctmSelector
         );
         addDrawableChild(list);
 
@@ -93,8 +93,6 @@ public class GroupsScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(TEXT_RESET, button -> {
                             ctmSelector.resetOptions();
-                            ctmSelector.updateGroupsStates();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -103,11 +101,7 @@ public class GroupsScreen extends Screen
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            ctmSelector.updateGroupsStates();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                         .dimensions(width / 2 - 100, height - 26, 200, 20)
                         .build()
         );
@@ -121,7 +115,6 @@ public class GroupsScreen extends Screen
     private static class GroupsListWidget extends ElementListWidget<GroupEntry>
     {
         private final GroupEntryBuilder builder = new GroupEntryBuilder(client, width);
-        private final CTMSelector ctmSelector;
 
         //? if <1.20.4 {
         /*public GroupsListWidget(
@@ -135,26 +128,23 @@ public class GroupsScreen extends Screen
 
         *///?} else {
         public GroupsListWidget(
-                MinecraftClient client, int width, int height, int y, int itemHeight, CTMSelector ctmSelector
+                MinecraftClient client, int width, int height, int y, int itemHeight
         )
         {
             super(client, width, height, y, itemHeight);
-            this.ctmSelector = ctmSelector;
         }
         //?}
 
         public void add(Group group)
         {
-            addEntry(builder.build(ctmSelector, group));
+            addEntry(builder.build(group));
         }
     }
 
     private record GroupEntryBuilder(MinecraftClient client, int width)
     {
-        @Contract("_, _ -> new")
-        public @NotNull GroupsScreen.GroupEntry build(
-                CTMSelector ctmSelector, @NotNull Group group
-        )
+        @Contract("_ -> new")
+        public @NotNull GroupsScreen.GroupEntry build(@NotNull Group group)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
             var text = new TextWidget(160, 20 + 2, Text.of(group.getGroupName()), client.textRenderer);
@@ -162,7 +152,7 @@ public class GroupsScreen extends Screen
                     .omitKeyText()
                     .initially(group.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                           (button, value) -> ctmSelector.toggle(group)
+                           (button, value) -> group.toggle()
                     );
             toggleButton.setTooltip(Tooltip.of(group.getButtonTooltip()));
             text.alignLeft();
