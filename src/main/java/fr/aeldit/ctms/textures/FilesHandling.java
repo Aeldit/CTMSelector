@@ -350,7 +350,7 @@ public class FilesHandling
         }
 
         ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
-        String namespace = path.remove(0);
+        String namespace = path.removeFirst();
         StringBuilder s = new StringBuilder();
         for (String str : path)
         {
