@@ -63,6 +63,11 @@ public class Utils
 
         for (String str : s)
         {
+            if (str.length() < 2)
+            {
+                continue;
+            }
+
             stringBuilder.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
 
             if (index < s.length - 1)

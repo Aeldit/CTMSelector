@@ -361,7 +361,7 @@ public class FilesHandling
 
         for (int i = 0; i < 4; ++i)
         {
-            if (properties.containsKey(types[i]))
+            if (properties.containsKey(types[i]) && !properties.getProperty(types[i]).isEmpty())
             {
                 for (String block : properties.getProperty(types[i]).split(" "))
                 {
@@ -613,7 +613,7 @@ public class FilesHandling
                             {
                                 try (FileOutputStream fos = new FileOutputStream(path.toFile()))
                                 {
-                                    removeEmptyKeys(properties); // TODO -> See if removing this fixes Continuity errors
+                                    removeEmptyKeys(properties);
                                     properties.store(fos, null);
                                 }
                                 catch (IOException e)
@@ -714,8 +714,13 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> blocksOrTiles =
-                                new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
+                        String property = properties.getProperty(types[i]);
+                        if (property.isEmpty())
+                        {
+                            continue;
+                        }
+
+                        ArrayList<String> blocksOrTiles = new ArrayList<>(List.of(property.split(" ")));
                         blocksOrTiles.remove(optionName);
                         properties.put(types[i], blocksOrTiles.toString()
                                 .replace("[", "")
@@ -750,8 +755,13 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> currentType =
-                                new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
+                        String property = properties.getProperty(types[i]);
+                        if (property.isEmpty())
+                        {
+                            continue;
+                        }
+
+                        ArrayList<String> currentType = new ArrayList<>(List.of(property.split(" ")));
                         currentType.remove(optionName);
                         properties.put(types[i], currentType.toString()
                                 .replace("[", "")
