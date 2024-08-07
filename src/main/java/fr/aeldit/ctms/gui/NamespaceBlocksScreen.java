@@ -37,6 +37,7 @@ public class NamespaceBlocksScreen extends Screen
     @Override
     public void close()
     {
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -53,9 +54,9 @@ public class NamespaceBlocksScreen extends Screen
         BlocksListWidget list = new BlocksListWidget(
                 //? if <1.20.4 {
                 /*client, width, height, 32, height - 32, 25,
-                *///?} else {
+                 *///?} else {
                 client, width, height - 64, 28, 24,
-                 //?}
+                //?}
                 ctmPack
         );
         addDrawableChild(list);
@@ -72,7 +73,6 @@ public class NamespaceBlocksScreen extends Screen
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
                             ctmPack.resetOptions();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
                         .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
@@ -81,10 +81,7 @@ public class NamespaceBlocksScreen extends Screen
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                         .dimensions(width / 2 - 100, height - 28, 200, 20)
                         .build()
         );

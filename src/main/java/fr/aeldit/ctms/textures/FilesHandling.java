@@ -597,8 +597,8 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            boolean localChanged = updateProperties(ctmPack, properties, enabledBlocks, enabledTiles,
-                                                                    disabledBlocks, disabledTiles
+                            boolean localChanged = updateProperties(
+                                    ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles
                             );
 
                             changed |= localChanged;
@@ -607,7 +607,7 @@ public class FilesHandling
                             {
                                 try (FileOutputStream fos = new FileOutputStream(path.toFile()))
                                 {
-                                    removeEmptyKeys(properties);
+                                    removeEmptyKeys(properties); // TODO -> See if removing this fixes Continuity errors
                                     properties.store(fos, null);
                                 }
                                 catch (IOException e)
@@ -708,10 +708,11 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> currentType =
+                        ArrayList<String> blocksOrTiles =
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
-                        currentType.remove(optionName);
-                        properties.put(types[i], currentType.toString()
+                        System.out.println(blocksOrTiles);
+                        blocksOrTiles.remove(optionName);
+                        properties.put(types[i], blocksOrTiles.toString()
                                 .replace("[", "")
                                 .replace("]", "")
                                 .replace(",", "")

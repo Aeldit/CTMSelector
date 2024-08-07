@@ -50,7 +50,8 @@ public class GroupsScreen extends Screen
     @Override
     public void close()
     {
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack, ctmSelector.updateGroupsStates());
+        ctmSelector.updateGroupsStates();
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
