@@ -716,7 +716,6 @@ public class FilesHandling
                         changed = true;
                         ArrayList<String> blocksOrTiles =
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
-                        System.out.println(blocksOrTiles);
                         blocksOrTiles.remove(optionName);
                         properties.put(types[i], blocksOrTiles.toString()
                                 .replace("[", "")
