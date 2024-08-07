@@ -74,7 +74,7 @@ public class Group
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
-            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath, boolean fromFile
+            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
     )
     {
         this.type = type;
@@ -86,12 +86,9 @@ public class Group
         if (packPath != null)
         {
             // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
-            if (!fromFile)
-            {
-                ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
-                identifierLikePropertiesPaths.clear();
-                identifierLikePropertiesPaths = tmp;
-            }
+            ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
+            identifierLikePropertiesPaths.clear();
+            identifierLikePropertiesPaths = tmp;
 
             this.propertiesFilesPaths = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;

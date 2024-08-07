@@ -265,7 +265,7 @@ public class CTMSelector
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
                             null, filesPaths, getIconPath(group), true,
-                            Path.of(packPath), null, false
+                            Path.of(packPath), null
                     )
             );
         }
