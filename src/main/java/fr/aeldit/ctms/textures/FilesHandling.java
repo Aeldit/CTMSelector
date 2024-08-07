@@ -18,7 +18,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.Utils.*;
-import static fr.aeldit.ctms.textures.CTMSelector.*;
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInProperties;
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInZipProperties;
 
 public class FilesHandling
 {
@@ -113,7 +114,7 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.toPath()))
             {
-                boolean hasCTMSelector = hasCTMSelector(file.toPath());
+                boolean hasCTMSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath())));
 
                 CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
@@ -142,35 +143,40 @@ public class FilesHandling
                     }
                 }
 
-                // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
-                // Group object
-                if (hasCTMSelector)
+                addBlocksObjectsToGroups(ctmPack);
+            }
+        }
+    }
+
+    /**
+     * Adds to each group's {@link Group#containedBlocks}'s ArrayList the blocks it contains
+     *
+     * @param ctmPack The current resource pack
+     */
+    private void addBlocksObjectsToGroups(@NotNull CTMPack ctmPack)
+    {
+        for (Group group : ctmPack.getCtmSelector().getGroups())
+        {
+            ArrayList<Path> paths = group.getPropertiesFilesPaths();
+            if (paths == null)
+            {
+                continue;
+            }
+
+            for (Path path : paths)
+            {
+                ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
+                if (blocksNames == null)
                 {
-                    for (Group group : ctmPack.getCtmSelector().getGroups())
+                    continue;
+                }
+
+                for (String blockName : blocksNames)
+                {
+                    CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
+                    if (ctmBlock != null)
                     {
-                        ArrayList<Path> paths = group.getPropertiesFilesPaths();
-                        if (paths == null)
-                        {
-                            continue;
-                        }
-
-                        for (Path path : paths)
-                        {
-                            ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
-                            if (blocksNames == null)
-                            {
-                                continue;
-                            }
-
-                            for (String blockName : blocksNames)
-                            {
-                                CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
-                                if (ctmBlock != null)
-                                {
-                                    group.addContainedBlock(ctmBlock);
-                                }
-                            }
-                        }
+                        group.addContainedBlock(ctmBlock);
                     }
                 }
             }
