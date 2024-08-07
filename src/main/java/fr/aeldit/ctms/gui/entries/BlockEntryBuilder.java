@@ -24,12 +24,12 @@ public record BlockEntryBuilder(MinecraftClient client, int width)
         var layout = DirectionalLayoutWidget.horizontal().spacing(5);
         var text = new TextWidget(
                 160,
-                20 + 2, ctmPack.isBlockDisabledFromGroup(block)
-                        ?
-                        Text.of(Formatting.RED
-                                + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString()
-                        )
-                        : block.getPrettyName(),
+                20 + 2,
+                ctmPack.isBlockDisabledFromGroup(block)
+                ? Text.of(
+                        Formatting.RED + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString()
+                )
+                : block.getPrettyName(),
                 client.textRenderer
         );
 
@@ -51,7 +51,7 @@ public record BlockEntryBuilder(MinecraftClient client, int width)
                     .omitKeyText()
                     .initially(block.isEnabled())
                     .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmPack.toggle(block)
+                           (button, value) -> ctmPack.toggle(block)
                     );
             toggleButton.setTooltip(Tooltip.of(Text.empty()));
             layout.add(toggleButton);
