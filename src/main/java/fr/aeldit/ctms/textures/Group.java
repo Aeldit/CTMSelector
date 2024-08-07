@@ -302,7 +302,6 @@ public class Group
 
     public SerializableGroup getAsRecord()
     {
-        System.out.println("Writing = " + identifierLikePropertiesPaths);
         return new SerializableGroup(
                 type, groupName, identifierLikePropertiesPaths, iconPath, isEnabled,
                 buttonTooltip.getString()
