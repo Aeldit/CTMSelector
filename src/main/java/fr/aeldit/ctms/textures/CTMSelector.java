@@ -173,12 +173,13 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final ArrayList<Group> packGroups = new ArrayList<>();
-    private final String packName;
+    private final String packName, packPath;
     private final boolean isFolder;
 
     public CTMSelector(@NotNull String packName, boolean isFolder, boolean fromFile)
     {
         this.packName = packName;
+        this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
         this.isFolder = isFolder;
 
         if (fromFile)
@@ -217,7 +218,7 @@ public class CTMSelector
 
     private void getGroupsFromFolderTree()
     {
-        Path assetsDir = Path.of("%s/%s/assets/".formatted(RESOURCE_PACKS_DIR, packName));
+        Path assetsDir = Path.of("%s/assets/".formatted(packPath));
         if (!Files.exists(assetsDir))
         {
             return;
@@ -264,7 +265,7 @@ public class CTMSelector
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
                             null, filesPaths, getIconPath(group), true,
-                            Path.of(assetsDir.toString().replace("assets/", "")), null, false
+                            Path.of(packPath), null, false
                     )
             );
         }
@@ -374,11 +375,10 @@ public class CTMSelector
     private void readFile()
     {
         ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
-        String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
 
         if (isFolder)
         {
-            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPathString));
+            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
             if (Files.exists(ctmSelectorPath))
             {
@@ -400,7 +400,7 @@ public class CTMSelector
         }
         else
         {
-            try (ZipFile zipFile = new ZipFile(packPathString))
+            try (ZipFile zipFile = new ZipFile(packPath))
             {
                 for (FileHeader fileHeader : zipFile.getFileHeaders())
                 {
@@ -430,8 +430,8 @@ public class CTMSelector
                     new Group(
                             cr.type(), cr.groupName(), cr.buttonTooltip(),
                             cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                            isFolder ? Path.of(packPathString) : null,
-                            isFolder ? null : packPathString,
+                            isFolder ? Path.of(packPath) : null,
+                            isFolder ? null : packPath,
                             true
                     )
             );
@@ -473,7 +473,7 @@ public class CTMSelector
             serializableGroupToWrite.add(cr.getAsRecord());
         }
 
-        Path ctmSelectorPath = Path.of("%s/%s/ctm_selector.json".formatted(RESOURCE_PACKS_DIR, packName));
+        Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
         if (isFolder)
         {
@@ -494,7 +494,7 @@ public class CTMSelector
             HashMap<String, byte[]> h = new HashMap<>(1);
             byte[] b = toByteArray(serializableGroupToWrite);
             h.put("ctm_selector.json", b);
-            Utils.writeBytesToZip(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)).toString(), h);
+            Utils.writeBytesToZip(Path.of(packPath).toString(), h);
         }
     }
 }
