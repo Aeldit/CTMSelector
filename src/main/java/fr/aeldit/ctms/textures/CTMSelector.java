@@ -26,11 +26,6 @@ public class CTMSelector
     //=========================================================================
     // Static part
     //=========================================================================
-    public static boolean hasCTMSelector(@NotNull Path packPath)
-    {
-        return Files.exists(Path.of("%s/ctm_selector.json".formatted(packPath)));
-    }
-
     public static boolean hasCTMSelector(@NotNull ZipFile zipFile) throws ZipException
     {
         for (FileHeader fileHeader : zipFile.getFileHeaders())
@@ -173,12 +168,11 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final ArrayList<Group> packGroups = new ArrayList<>();
-    private final String packName, packPath;
+    private final String packPath;
     private final boolean isFolder;
 
     public CTMSelector(@NotNull String packName, boolean isFolder, boolean fromFile)
     {
-        this.packName = packName;
         this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
         this.isFolder = isFolder;
 
@@ -188,7 +182,7 @@ public class CTMSelector
         }
         else
         {
-            getGroupsFromFolderTree();
+            getGroupsFromFolderTree(isFolder);
         }
     }
 
@@ -205,6 +199,7 @@ public class CTMSelector
     {
         for (Group group : packGroups)
         {
+            // TODO -> Use group.getContainedBlocksList().contains(ctmBlock)
             for (CTMBlock block : group.getContainedBlocksList())
             {
                 if (block == ctmBlock)
@@ -216,7 +211,7 @@ public class CTMSelector
         return null;
     }
 
-    private void getGroupsFromFolderTree()
+    private void getGroupsFromFolderTree(boolean isFolder)
     {
         Path assetsDir = Path.of("%s/assets/".formatted(packPath));
         if (!Files.exists(assetsDir))
@@ -260,12 +255,11 @@ public class CTMSelector
             ArrayList<String> filesPaths = new ArrayList<>();
             groups.get(group).forEach(file -> filesPaths.add(file.toString()));
 
-            // TODO -> Check if the pack is a folder or a Zip file
             packGroups.add(
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
                             null, filesPaths, getIconPath(group), true,
-                            Path.of(packPath), null
+                            isFolder ? Path.of(packPath) : null, isFolder ? null : packPath
                     )
             );
         }
@@ -433,19 +427,11 @@ public class CTMSelector
     //=========================================================================
     // Options handling
     //=========================================================================
-    public void toggle(@NotNull Group group)
-    {
-        if (packGroups.contains(group))
-        {
-            group.toggle();
-        }
-    }
-
     public void resetOptions()
     {
-        for (Group groups : packGroups)
+        for (Group group : packGroups)
         {
-            groups.setEnabled(true);
+            group.setEnabled(true);
         }
     }
 
@@ -456,13 +442,13 @@ public class CTMSelector
     {
         ArrayList<Group.SerializableGroup> serializableGroupToWrite = new ArrayList<>(packGroups.size());
 
-        for (Group cr : packGroups)
+        for (Group group : packGroups)
         {
-            for (CTMBlock ctmBlock : cr.getContainedBlocksList())
+            for (CTMBlock ctmBlock : group.getContainedBlocksList())
             {
-                ctmBlock.setEnabled(cr.isEnabled());
+                ctmBlock.setEnabled(group.isEnabled());
             }
-            serializableGroupToWrite.add(cr.getAsRecord());
+            serializableGroupToWrite.add(group.getAsRecord());
         }
 
         Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
