@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
+import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
 
 @Environment(EnvType.CLIENT)
 public class NamespacesListScreen extends Screen
@@ -75,11 +77,11 @@ public class NamespacesListScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                ButtonWidget.builder(TEXT_RESET, button -> {
                             ctmPack.resetOptions();
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                        .tooltip(TOOLTIP_RESET)
                         .dimensions(10, 6, 100, 20)
                         .build()
         );

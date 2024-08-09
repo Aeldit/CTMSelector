@@ -277,11 +277,18 @@ public class CTMSelector
 
         for (File file : groupDir)
         {
+            // The file 0.png is usually the block with all the borders, so we use this file if it exists
+            if (file.isFile() && file.toString().endsWith("0.png"))
+            {
+                return file.toString();
+            }
+
             if (file.isFile() && file.getName().endsWith(".png"))
             {
                 return file.toString();
             }
-            else if (file.isDirectory())
+
+            if (file.isDirectory())
             {
                 return getIconPath(file.toString());
             }

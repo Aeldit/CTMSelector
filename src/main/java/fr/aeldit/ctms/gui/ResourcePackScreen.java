@@ -20,13 +20,16 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
+import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
 
 @Environment(EnvType.CLIENT)
 public class ResourcePackScreen extends Screen
 {
     private static final Text TEXT_GROUPS = Text.translatable("ctms.screen.config.groups");
-    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
     private static final Text TEXT_MODS = Text.translatable("ctms.screen.config.mods");
+    private static final Tooltip TOOLTIP_GROUPS = Tooltip.of(Text.translatable("ctms.screen.config.groups.tooltip"));
+    private static final Tooltip TOOLTIP_MODS = Tooltip.of(Text.translatable("ctms.screen.config.mods.tooltip"));
     private final Screen parent;
     private final CTMPack ctmPack;
     private final boolean enabled;
@@ -89,7 +92,7 @@ public class ResourcePackScreen extends Screen
                                 ctmPack.resetOptions();
                                 close();
                             })
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                            .tooltip(TOOLTIP_RESET)
                             .dimensions(10, 6, 100, 20)
                             .build()
             );
@@ -98,7 +101,7 @@ public class ResourcePackScreen extends Screen
                     ButtonWidget.builder(TEXT_GROUPS, button ->
                                     Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
                             )
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.groups.tooltip")))
+                            .tooltip(TOOLTIP_GROUPS)
                             .dimensions(width - 110, 6, 100, 20)
                             .build()
             );
@@ -112,7 +115,7 @@ public class ResourcePackScreen extends Screen
                                                 ctmPack
                                         ))
                                 )
-                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.mods.tooltip")))
+                                .tooltip(TOOLTIP_MODS)
                                 .dimensions(width - 110, height - 28, 100, 20)
                                 .build()
                 );

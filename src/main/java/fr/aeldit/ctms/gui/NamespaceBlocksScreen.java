@@ -22,6 +22,8 @@ import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 @Environment(EnvType.CLIENT)
 public class NamespaceBlocksScreen extends Screen
 {
+    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
+    private static final Tooltip TOOLTIP_RESET = Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip"));
     private final Screen parent;
     private final CTMPack ctmPack;
     private final String namespace;
@@ -71,11 +73,11 @@ public class NamespaceBlocksScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                ButtonWidget.builder(TEXT_RESET, button -> {
                             ctmPack.resetOptions();
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                        .tooltip(TOOLTIP_RESET)
                         .dimensions(10, 6, 100, 20)
                         .build()
         );

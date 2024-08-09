@@ -25,11 +25,12 @@ import java.util.List;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
+import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
+import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
 
 @Environment(EnvType.CLIENT)
 public class GroupsScreen extends Screen
 {
-    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
     private final Screen parent;
     private final CTMPack ctmPack;
     private final CTMSelector ctmSelector;
@@ -96,7 +97,7 @@ public class GroupsScreen extends Screen
                             ctmSelector.resetOptions();
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                        .tooltip(TOOLTIP_RESET)
                         .dimensions(10, 6, 100, 20)
                         .build()
         );
@@ -148,7 +149,14 @@ public class GroupsScreen extends Screen
         public @NotNull GroupsScreen.GroupEntry build(@NotNull Group group)
         {
             var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-            var text = new TextWidget(160, 20 + 2, Text.of(group.getGroupName()), client.textRenderer);
+            var text = new TextWidget(
+                    160, 20 + 2,
+                    Text.of(group.isEnabled()
+                            ? group.getGroupName()
+                            : Formatting.RED + Text.of(Formatting.ITALIC + group.getGroupName()).getString()
+                    ),
+                    client.textRenderer
+            );
             var toggleButton = CyclingButtonWidget.onOffBuilder()
                     .omitKeyText()
                     .initially(group.isEnabled())

@@ -33,6 +33,10 @@ import static fr.aeldit.ctms.Utils.*;
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
 {
+    private static final Identifier IDENTIFIER_OPTIONS = new Identifier(CTMS_MODID, "textures/gui/options.png");
+    private static final Identifier IDENTIFIER_RELOAD = new Identifier(CTMS_MODID, "textures/gui/reload.png");
+    private static final Text TEXT_OPEN_PACKS = Text.translatable("ctms.screen.openResourcePacksFolder");
+    private static final Tooltip TOOLTIP_RELOAD = Tooltip.of(Text.translatable("ctms.screen.reload.tooltip"));
     private final Screen parent;
 
     public CTMSScreen(Screen parent)
@@ -67,11 +71,11 @@ public class CTMSScreen extends Screen
     {
         TEXTURES_HANDLING.load();
         PacksListWidget list = new PacksListWidget(
-                //? if >=1.20.4 {
-                client, width, height - 64, 28, 32, this
-                //?} else {
+                //? if <1.20.4 {
                 /*client, width, height, 32, height - 32, 25, this
-                 *///?}
+                 *///?} else {
+                client, width, height - 64, 32, 32, this
+                //?}
         );
         addDrawableChild(list);
 
@@ -86,7 +90,7 @@ public class CTMSScreen extends Screen
 
         ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
                 width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/options.png"),
+                IDENTIFIER_OPTIONS,
                 20, 40,
                 button -> {
                     MinecraftClient.getInstance().setScreen(this);
@@ -97,7 +101,7 @@ public class CTMSScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(
-                                Text.translatable("ctms.screen.openResourcePacksFolder"),
+                                TEXT_OPEN_PACKS,
                                 button -> Util.getOperatingSystem().open(new File(
                                         FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks")
                                 )
@@ -114,7 +118,7 @@ public class CTMSScreen extends Screen
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/reload.png"),
+                IDENTIFIER_RELOAD,
                 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
@@ -122,7 +126,7 @@ public class CTMSScreen extends Screen
                 },
                 Text.empty()
         );
-        reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
+        reloadButton.setTooltip(TOOLTIP_RELOAD);
         addDrawableChild(reloadButton);
     }
 
