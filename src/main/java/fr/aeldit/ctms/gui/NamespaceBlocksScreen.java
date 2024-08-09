@@ -22,6 +22,8 @@ import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 @Environment(EnvType.CLIENT)
 public class NamespaceBlocksScreen extends Screen
 {
+    private static final Text TEXT_RESET = Text.translatable("ctms.screen.config.reset");
+    private static final Tooltip TOOLTIP_RESET = Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip"));
     private final Screen parent;
     private final CTMPack ctmPack;
     private final String namespace;
@@ -37,6 +39,7 @@ public class NamespaceBlocksScreen extends Screen
     @Override
     public void close()
     {
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -53,9 +56,9 @@ public class NamespaceBlocksScreen extends Screen
         BlocksListWidget list = new BlocksListWidget(
                 //? if <1.20.4 {
                 /*client, width, height, 32, height - 32, 25,
-                *///?} else {
+                 *///?} else {
                 client, width, height - 64, 28, 24,
-                 //?}
+                //?}
                 ctmPack
         );
         addDrawableChild(list);
@@ -70,21 +73,17 @@ public class NamespaceBlocksScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
+                ButtonWidget.builder(TEXT_RESET, button -> {
                             ctmPack.resetOptions();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
                             close();
                         })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                        .tooltip(TOOLTIP_RESET)
                         .dimensions(10, 6, 100, 20)
                         .build()
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                         .dimensions(width / 2 - 100, height - 28, 200, 20)
                         .build()
         );

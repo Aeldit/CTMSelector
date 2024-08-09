@@ -18,7 +18,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.Utils.*;
-import static fr.aeldit.ctms.textures.CTMSelector.*;
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInProperties;
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInZipProperties;
 
 public class FilesHandling
 {
@@ -113,7 +114,7 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.toPath()))
             {
-                boolean hasCTMSelector = hasCTMSelector(file.toPath());
+                boolean hasCTMSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath())));
 
                 CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
@@ -142,35 +143,40 @@ public class FilesHandling
                     }
                 }
 
-                // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList in the
-                // Group object
-                if (hasCTMSelector)
+                addBlocksObjectsToGroups(ctmPack);
+            }
+        }
+    }
+
+    /**
+     * Adds to each group's {@link Group#containedBlocks}'s ArrayList the blocks it contains
+     *
+     * @param ctmPack The current resource pack
+     */
+    private void addBlocksObjectsToGroups(@NotNull CTMPack ctmPack)
+    {
+        for (Group group : ctmPack.getCtmSelector().getGroups())
+        {
+            ArrayList<Path> paths = group.getPropertiesFilesPaths();
+            if (paths == null)
+            {
+                continue;
+            }
+
+            for (Path path : paths)
+            {
+                ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
+                if (blocksNames == null)
                 {
-                    for (Group group : ctmPack.getCtmSelector().getGroups())
+                    continue;
+                }
+
+                for (String blockName : blocksNames)
+                {
+                    CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
+                    if (ctmBlock != null)
                     {
-                        ArrayList<Path> paths = group.getPropertiesFilesPaths();
-                        if (paths == null)
-                        {
-                            continue;
-                        }
-
-                        for (Path path : paths)
-                        {
-                            ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
-                            if (blocksNames == null)
-                            {
-                                continue;
-                            }
-
-                            for (String blockName : blocksNames)
-                            {
-                                CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
-                                if (ctmBlock != null)
-                                {
-                                    group.addContainedBlock(ctmBlock);
-                                }
-                            }
-                        }
+                        group.addContainedBlock(ctmBlock);
                     }
                 }
             }
@@ -344,7 +350,7 @@ public class FilesHandling
         }
 
         ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
-        String namespace = path.remove(0);
+        String namespace = path.removeFirst();
         StringBuilder s = new StringBuilder();
         for (String str : path)
         {
@@ -355,7 +361,7 @@ public class FilesHandling
 
         for (int i = 0; i < 4; ++i)
         {
-            if (properties.containsKey(types[i]))
+            if (properties.containsKey(types[i]) && !properties.getProperty(types[i]).isEmpty())
             {
                 for (String block : properties.getProperty(types[i]).split(" "))
                 {
@@ -597,8 +603,8 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            boolean localChanged = updateProperties(ctmPack, properties, enabledBlocks, enabledTiles,
-                                                                    disabledBlocks, disabledTiles
+                            boolean localChanged = updateProperties(
+                                    ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles
                             );
 
                             changed |= localChanged;
@@ -708,10 +714,15 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> currentType =
-                                new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
-                        currentType.remove(optionName);
-                        properties.put(types[i], currentType.toString()
+                        String property = properties.getProperty(types[i]);
+                        if (property.isEmpty())
+                        {
+                            continue;
+                        }
+
+                        ArrayList<String> blocksOrTiles = new ArrayList<>(List.of(property.split(" ")));
+                        blocksOrTiles.remove(optionName);
+                        properties.put(types[i], blocksOrTiles.toString()
                                 .replace("[", "")
                                 .replace("]", "")
                                 .replace(",", "")
@@ -744,8 +755,13 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> currentType =
-                                new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
+                        String property = properties.getProperty(types[i]);
+                        if (property.isEmpty())
+                        {
+                            continue;
+                        }
+
+                        ArrayList<String> currentType = new ArrayList<>(List.of(property.split(" ")));
                         currentType.remove(optionName);
                         properties.put(types[i], currentType.toString()
                                 .replace("[", "")
