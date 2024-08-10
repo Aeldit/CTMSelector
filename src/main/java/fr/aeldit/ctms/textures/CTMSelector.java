@@ -13,10 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
 import static fr.aeldit.ctms.Utils.getPrettyString;
@@ -261,74 +258,104 @@ public class CTMSelector
         }
     }
 
-    private String getIconPath(String strPath)
+    /**
+     * Searches every directory until an image file is found (.png extension only)
+     *
+     * @param fileStrPath The path to the file (as a string)
+     * @return The path to the image file (as a string)
+     */
+    private String getIconPath(String fileStrPath)
     {
-        Path path = Path.of(strPath);
+        Path path = Path.of(fileStrPath);
         if (!Files.exists(path))
         {
             return "";
         }
 
-        File[] groupDir = path.toFile().listFiles();
-        if (groupDir == null)
-        {
-            return "";
-        }
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(path.toFile());
 
-        // The file 0.png is usually the block with all the borders, so we use this file if it exists
-        for (File file : groupDir)
+        while (!searchingDirsStack.empty())
         {
-            if (file.isFile() && file.toString().endsWith("0.png"))
+            File currentFile = searchingDirsStack.pop();
+            if (!Files.exists(currentFile.toPath()))
             {
-                return file.toString();
-            }
-        }
-
-        for (File file : groupDir)
-        {
-            if (file.isFile() && file.getName().endsWith(".png"))
-            {
-                return file.toString();
+                break;
             }
 
-            if (file.isDirectory())
+            File[] groupDir = currentFile.listFiles();
+            if (groupDir == null)
             {
-                return getIconPath(file.toString());
+                break;
+            }
+
+            // The file 0.png is usually the block with all the borders, so we use this file if it exists
+            for (File file : groupDir)
+            {
+                if (file.isFile() && file.toString().endsWith("0.png"))
+                {
+                    searchingDirsStack.clear();
+                    return file.toString();
+                }
+            }
+
+            for (File file : groupDir)
+            {
+                if (file.isFile() && file.getName().endsWith(".png"))
+                {
+                    searchingDirsStack.clear();
+                    return file.toString();
+                }
+
+                if (file.isDirectory())
+                {
+                    searchingDirsStack.push(file);
+                }
             }
         }
+        searchingDirsStack.clear();
         return "";
     }
 
     private void getGroupsInDir(@NotNull File dir, HashMap<String, ArrayList<File>> groups)
     {
-        File[] files = dir.listFiles();
-        if (files == null)
-        {
-            return;
-        }
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(dir);
 
-        String groupName = dir.toString();
-        if (!groups.containsKey(groupName))
+        while (!searchingDirsStack.empty())
         {
-            groups.put(groupName, new ArrayList<>());
-        }
+            File currentDir = searchingDirsStack.pop();
 
-        for (File file : files)
-        {
-            if (file.isDirectory())
+            File[] files = currentDir.listFiles();
+            if (files == null)
             {
-                if (containsPropertiesFiles(file))
-                {
-                    getFilesInDirRec(file, groups.get(groupName));
-                }
-                else
-                {
-                    getGroupsInDir(file, groups);
-                }
+                return;
             }
-            else if (file.isFile() && file.getName().endsWith(".properties"))
+
+            String groupName = currentDir.toString();
+            if (!groups.containsKey(groupName))
             {
-                groups.get(groupName).add(file);
+                groups.put(groupName, new ArrayList<>());
+            }
+
+            for (File file : files)
+            {
+                if (file.isDirectory())
+                {
+                    if (containsPropertiesFiles(file))
+                    {
+                        getFilesInDirRec(file, groups.get(groupName));
+                        System.out.println(groups.get(groupName));
+                    }
+                    else
+                    {
+                        searchingDirsStack.push(file);
+                    }
+                }
+                else if (file.isFile() && file.getName().endsWith(".properties"))
+                {
+                    groups.get(groupName).add(file);
+                }
             }
         }
     }
@@ -353,21 +380,28 @@ public class CTMSelector
 
     private void getFilesInDirRec(@NotNull File dir, ArrayList<File> blocks)
     {
-        File[] files = dir.listFiles();
-        if (files == null)
-        {
-            return;
-        }
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(dir);
 
-        for (File file : files)
+        while (!searchingDirsStack.empty())
         {
-            if (file.isDirectory())
+            File currentDir = searchingDirsStack.pop();
+            File[] files = currentDir.listFiles();
+            if (files == null)
             {
-                getFilesInDirRec(file, blocks);
+                return;
             }
-            else if (file.isFile() && file.getName().endsWith(".properties"))
+
+            for (File file : files)
             {
-                blocks.add(file);
+                if (file.isDirectory())
+                {
+                    searchingDirsStack.push(file);
+                }
+                else if (file.isFile() && file.getName().endsWith(".properties"))
+                {
+                    blocks.add(file);
+                }
             }
         }
     }
