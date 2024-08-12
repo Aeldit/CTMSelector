@@ -1,4 +1,4 @@
-# How create Controls for your pack
+# How to create Controls for your pack
 
 ## Introduction
 
