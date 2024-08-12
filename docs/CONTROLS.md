@@ -59,7 +59,7 @@ containing all the blocks you want to include in your group, or the path to each
 Each of these must contain the namespace followed by a `:`, followed by the path to the block from the namespace
 
 Its paths must start at the identifier (here it is `minecraft`, but if you have modded
-textures it could be `create` for example, so `create:optifine/ctm/connect/...`).
+textures it could be `create` for example, so `create:optifine/ctm/...`).
 
 ### Icon Path
 
