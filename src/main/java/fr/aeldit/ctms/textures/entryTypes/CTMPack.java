@@ -2,6 +2,7 @@ package fr.aeldit.ctms.textures.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
+import net.lingala.zip4j.ZipFile;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,12 +44,39 @@ public class CTMPack
     // HashMap<namespace, blocks in the namespace>
     private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks;
 
-    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelectorFile, boolean isModded)
+    /**
+     * Folder pack initialization
+     *
+     * @param name            The name of the folder containing the pack
+     * @param hasSelectorFile If the {@code ctm_selector.json} file is present
+     * @param isModded        If there are other namespaces than {@code minecraft}
+     */
+    public CTMPack(@NotNull String name, boolean hasSelectorFile, boolean isModded)
     {
         this.name = name;
-        this.isFolder = isFolder;
+        this.isFolder = true;
 
-        this.ctmSelector = new CTMSelector(this.name, isFolder, hasSelectorFile);
+        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile);
+
+        // We either use only the vanilla array, or the hashmap
+        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
+        this.namespacesBlocks = isModded ? new HashMap<>() : null;
+    }
+
+    /**
+     * Zip pack initialization
+     *
+     * @param name            The name of the zip file containing the pack
+     * @param hasSelectorFile If the {@code ctm_selector.json} file is present
+     * @param isModded        If there are other namespaces than {@code minecraft}
+     * @param zipFile         The {@code ZipFile} object
+     */
+    public CTMPack(@NotNull String name, boolean hasSelectorFile, boolean isModded, ZipFile zipFile)
+    {
+        this.name = name;
+        this.isFolder = false;
+
+        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile, zipFile);
 
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();

@@ -55,7 +55,7 @@ public class FilesHandling
 
                     boolean hasCTMSelector = CTMSelector.hasCTMSelector(zipFile);
 
-                    CTMPack ctmPack = new CTMPack(file.getName(), false, hasCTMSelector, isPackModded(zipFile));
+                    CTMPack ctmPack = new CTMPack(file.getName(), hasCTMSelector, isPackModded(zipFile), zipFile);
                     CTM_PACKS.add(ctmPack);
 
                     for (FileHeader fileHeader : zipFile.getFileHeaders())
@@ -116,7 +116,7 @@ public class FilesHandling
             {
                 boolean hasCTMSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath())));
 
-                CTMPack ctmPack = new CTMPack(file.getName(), true, hasCTMSelector, isPackModded(file.toPath()));
+                CTMPack ctmPack = new CTMPack(file.getName(), hasCTMSelector, isPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
 
                 for (Path path : getFilesInFolderPack(file))
@@ -349,6 +349,7 @@ public class FilesHandling
             tmpPath = "";
         }
 
+
         ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
         String namespace = path.removeFirst();
         StringBuilder s = new StringBuilder();
@@ -357,7 +358,8 @@ public class FilesHandling
             s.append(str);
             s.append("/");
         }
-        tmpPath = s.toString();
+        tmpPath = s.toString().replaceFirst(":", "/");
+        System.out.println("formatted(tmpPath, startTile) = " + namespace);
 
         for (int i = 0; i < 4; ++i)
         {
