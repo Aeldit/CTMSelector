@@ -5,6 +5,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
+import static fr.aeldit.ctms.Utils.getPrettyString;
+
 /**
  * Represents a block found in a {@link java.util.Properties Properties} file
  * that has the CTM method
@@ -34,33 +36,15 @@ public class CTMBlock
         this.identifier = identifier;
         this.enabled = enabled;
 
-        int len = blockName.split(":").length;
-        String[] tmp;
-        if (len > 1)
+        if (blockName.split(":").length > 1)
         {
-            tmp = blockName.split(":")[1].split("_");
+            this.prettyName = Text.of(getPrettyString(blockName.split(":")[1].split("_")));
         }
         else
         {
-            tmp = blockName.split("_");
+            this.prettyName = Text.of(getPrettyString(blockName.split("_")));
         }
 
-        // Changes the lowercase and underscore separated string by replacing each '_' by a space
-        // and by uppercasing the first letter of each word
-        StringBuilder stringBuilder = new StringBuilder();
-        int index = 0;
-
-        for (String str : tmp)
-        {
-            stringBuilder.append(str.substring(0, 1).toUpperCase()).append(str.substring(1));
-
-            if (index < tmp.length - 1)
-            {
-                stringBuilder.append(" ");
-            }
-            index++;
-        }
-        this.prettyName = Text.of(stringBuilder.toString());
     }
 
     public String getBlockName()
