@@ -55,14 +55,14 @@ public class CTMSelector
 
             s.add(String.format(
                     """
-                            \t{
-                            \t\t"type": "%s",
-                            \t\t"group_name": "%s",
-                            \t\t"properties_files": %s,
-                            \t\t"icon_path": "%s",
-                            \t\t"enabled": %b,
-                            \t\t"button_tooltip": "%s"
-                            \t}""",
+                    \t{
+                    \t\t"type": "%s",
+                    \t\t"group_name": "%s",
+                    \t\t"properties_files": %s,
+                    \t\t"icon_path": "%s",
+                    \t\t"enabled": %b,
+                    \t\t"button_tooltip": "%s"
+                    \t}""",
                     sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
                     sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
             ));
@@ -274,6 +274,7 @@ public class CTMSelector
         }
     }
 
+    // TODO -> Make work
     private void getGroupsFromZipTree(@NotNull ZipFile zipFile)
     {
         HashMap<String, ArrayList<FileHeader>> groups = new HashMap<>();
@@ -285,8 +286,8 @@ public class CTMSelector
             {
                 String fh = fileHeader.getFileName();
                 if (!fh.startsWith("assets/")
-                        || StringUtils.countMatches(fh, "/") != 4
-                        || !fh.contains("/optifine/ctm/")
+                    || StringUtils.countMatches(fh, "/") != 4
+                    || !fh.contains("/optifine/ctm/")
                 )
                 {
                     continue;
@@ -499,8 +500,8 @@ public class CTMSelector
             }
 
             if (!fileHeader.isDirectory()
-                    && fileHeader.getFileName().startsWith(dir)
-                    && fileHeader.getFileName().endsWith(".properties")
+                && fileHeader.getFileName().startsWith(dir)
+                && fileHeader.getFileName().endsWith(".properties")
             )
             {
                 return true;
@@ -553,7 +554,7 @@ public class CTMSelector
                 // If the current dir doesn't have the same number of slashes as the dir popped from the stack
                 String fhStr = fileHeader.getFileName();
                 if (StringUtils.countMatches(fhStr, "/") != nbSlashes
-                        || !fhStr.startsWith(currentDir) || fhStr.equals(currentDir)
+                    || !fhStr.startsWith(currentDir) || fhStr.equals(currentDir)
                 )
                 {
                     continue;

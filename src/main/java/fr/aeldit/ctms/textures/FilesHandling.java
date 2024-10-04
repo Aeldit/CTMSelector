@@ -149,7 +149,7 @@ public class FilesHandling
     }
 
     /**
-     * Adds to each group's {@link Group#containedBlocks}'s ArrayList the blocks it contains
+     * Adds to each group's Group#containedBlocks's ArrayList the blocks it contains
      *
      * @param ctmPack The current resource pack
      */
