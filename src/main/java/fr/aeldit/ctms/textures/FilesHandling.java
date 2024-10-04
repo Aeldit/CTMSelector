@@ -270,9 +270,9 @@ public class FilesHandling
                 }
                 // HORIZONTAL and VERTICAL methods
                 else if (properties.getProperty("method").equals("horizontal")
-                        || properties.getProperty("method").equals("vertical")
-                        || properties.getProperty("method").equals("horizontal+vertical")
-                        || properties.getProperty("method").equals("vertical+horizontal")
+                         || properties.getProperty("method").equals("vertical")
+                         || properties.getProperty("method").equals("horizontal+vertical")
+                         || properties.getProperty("method").equals("vertical+horizontal")
                 )
                 {
                     String[] spacedTiles = properties.getProperty("tiles").split(" ");
@@ -344,7 +344,7 @@ public class FilesHandling
         }
 
         ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
-        String namespace = path.remove(0);
+        String namespace = path.removeFirst();
         StringBuilder s = new StringBuilder();
         for (String str : path)
         {
@@ -361,7 +361,11 @@ public class FilesHandling
                 {
                     ctmBlocks.add(new CTMBlock(
                             block,
-                            new Identifier(namespace, "%s%s.png".formatted(tmpPath, startTile)),
+                            //? if <1.21 {
+                            /*new Identifier(namespace, "%s%s.png".formatted(tmpPath, startTile)),
+                             *///?} else {
+                            Identifier.of(namespace, "%s%s.png".formatted(tmpPath, startTile)),
+                            //?}
                             types[i].equals("matchBlocks") || types[i].equals("matchTiles")
                     ));
                 }
@@ -532,10 +536,10 @@ public class FilesHandling
                                     // We take the properties in a byte array,
                                     // so we can write it in the zip later
                                     byte[] tmp = properties.toString()
-                                            .replace("{", "")
-                                            .replace("}", "")
-                                            .replace(", ", "\n")
-                                            .getBytes();
+                                                           .replace("{", "")
+                                                           .replace("}", "")
+                                                           .replace(", ", "\n")
+                                                           .getBytes();
                                     headersBytes.put(fileHeader.toString(), tmp);
                                 }
                             }
@@ -712,9 +716,9 @@ public class FilesHandling
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
                         currentType.remove(optionName);
                         properties.put(types[i], currentType.toString()
-                                .replace("[", "")
-                                .replace("]", "")
-                                .replace(",", "")
+                                                            .replace("[", "")
+                                                            .replace("]", "")
+                                                            .replace(",", "")
                         );
 
                         String opposite = types[i + 2];
@@ -748,9 +752,9 @@ public class FilesHandling
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
                         currentType.remove(optionName);
                         properties.put(types[i], currentType.toString()
-                                .replace("[", "")
-                                .replace("]", "")
-                                .replace(",", "")
+                                                            .replace("[", "")
+                                                            .replace("]", "")
+                                                            .replace(",", "")
                         );
 
                         String opposite = types[i - 2];

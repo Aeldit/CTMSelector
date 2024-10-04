@@ -21,7 +21,7 @@ extensions.configure<StonecutterSettings> {
     centralScript = "build.gradle.kts"
 
     shared {
-        versions("1.20.2", "1.20.4", "1.20.6", "1.21")
+        versions("1.20.2", "1.20.4", "1.20.6", "1.21.0")
         vcsVersion = "1.20.6"
     }
 

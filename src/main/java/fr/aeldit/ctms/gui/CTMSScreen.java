@@ -86,35 +86,41 @@ public class CTMSScreen extends Screen
 
         ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
                 width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/options.png"),
+                //? if <1.21 {
+                /*new Identifier(CTMS_MODID, "textures/gui/options.png"),
+                 *///? } else {
+                Identifier.of(CTMS_MODID, "textures/gui/options.png"),
+                //?}
                 20, 40,
-                button -> {
-                    MinecraftClient.getInstance().setScreen(this);
-                },
+                button -> MinecraftClient.getInstance().setScreen(this),
                 Text.empty()
         );
         addDrawableChild(optionsButton);
 
         addDrawableChild(
                 ButtonWidget.builder(
-                                Text.translatable("ctms.screen.openResourcePacksFolder"),
-                                button -> Util.getOperatingSystem().open(new File(
-                                        FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks")
-                                )
-                        )
-                        .dimensions(width / 2 - 154, height - 28, 150, 20)
-                        .build()
+                                    Text.translatable("ctms.screen.openResourcePacksFolder"),
+                                    button -> Util.getOperatingSystem().open(new File(
+                                            FabricLoader.getInstance().getGameDir().toFile(), "resourcepacks")
+                                    )
+                            )
+                            .dimensions(width / 2 - 154, height - 28, 150, 20)
+                            .build()
         );
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 + 4, height - 28, 150, 20)
-                        .build()
+                            .dimensions(width / 2 + 4, height - 28, 150, 20)
+                            .build()
         );
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
-                new Identifier(CTMS_MODID, "textures/gui/reload.png"),
+                //? if <1.21 {
+                /*new Identifier(CTMS_MODID, "textures/gui/reload.png"),
+                 *///? } else {
+                Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
+                //?}
                 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
@@ -186,18 +192,18 @@ public class CTMSScreen extends Screen
                                       // If the pack is not enabled, it is in italic and gray
                                       ? ctmPack.getNameAsText()
                                       : Text.of(Formatting.GRAY
-                                                        + Text.of(Formatting.ITALIC
-                                                                          + ctmPack.getName()).getString()
+                                                + Text.of(Formatting.ITALIC
+                                                          + ctmPack.getName()).getString()
                                       )
                     , client.textRenderer
             );
             var followButton = ButtonWidget.builder(
-                            Text.translatable("ctms.screen.open"),
-                            button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
-                    )
-                    .dimensions(0, 0, 40, 20)
-                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.open.tooltip")))
-                    .build();
+                                                   Text.translatable("ctms.screen.open"),
+                                                   button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
+                                           )
+                                           .dimensions(0, 0, 40, 20)
+                                           .tooltip(Tooltip.of(Text.translatable("ctms.screen.open.tooltip")))
+                                           .build();
             text.alignCenter();
             layout.add(text);
             layout.add(followButton);

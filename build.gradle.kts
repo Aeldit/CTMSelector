@@ -22,16 +22,25 @@ object Constants {
 }
 
 class ModData {
+    val hasVersionRange = properties.containsKey("range_name")
+
     val mcVersion = property("minecraft_version").toString()
-    val javaVersion = property("java_version").toString()
+
+    val rangedName = if (hasVersionRange) property("range_name").toString() else mcVersion
+    private val modrinthVersions = if (hasVersionRange) property("modrinth_versions") else mcVersion
+    val versionsList = modrinthVersions.toString().split(" ")
+    val min = if (hasVersionRange) versionsList[0] else mcVersion
+    val max = if (hasVersionRange) versionsList[versionsList.size - 1] else mcVersion
 
     val fabricVersion = property("fabric_version").toString()
     val modmenuVersion = property("modmenu_version").toString()
     val continuityVersion = property("continuity_version").toString()
 
-    val fullVersion = "${Constants.MOD_VERSION}+${mcVersion}"
+    val fullVersion = "${Constants.MOD_VERSION}+${rangedName}"
 
-    val isj21 = javaVersion == "21"
+    val isj21 = mcVersion !in listOf("1.19.4", "1.20.1", "1.20.2", "1.20.4")
+
+    val javaVersion = if (isj21) "21" else "17"
 }
 
 val mod = ModData()
@@ -50,16 +59,17 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${mod.fabricVersion}")
 
     // Fabric API
-    fun addFabricModule(name: String) {
+    for (name in listOf(
+        // ModMenu dependencies
+        "fabric-resource-loader-v0",
+        "fabric-key-binding-api-v1",
+        // CyanLib dependencies
+        "fabric-lifecycle-events-v1",
+        "fabric-screen-api-v1"
+    )) {
         val module = fabricApi.module(name, mod.fabricVersion)
         modImplementation(module)
     }
-    // ModMenu dependencies
-    addFabricModule("fabric-resource-loader-v0")
-    addFabricModule("fabric-key-binding-api-v1")
-
-    addFabricModule("fabric-lifecycle-events-v1")
-    addFabricModule("fabric-screen-api-v1")
 
     // ModMenu
     modImplementation("com.terraformersmc:modmenu:${mod.modmenuVersion}")
@@ -102,7 +112,8 @@ tasks {
     processResources {
         inputs.property("version", mod.fullVersion)
         inputs.property("loader_version", Constants.LOADER_VERSION)
-        inputs.property("mc_version", mod.mcVersion)
+        inputs.property("min", mod.min)
+        inputs.property("max", mod.max)
         inputs.property("java_version", mod.javaVersion)
 
         filesMatching("fabric.mod.json") {
@@ -110,7 +121,8 @@ tasks {
                 mapOf(
                     "version" to mod.fullVersion,
                     "loader_version" to Constants.LOADER_VERSION,
-                    "mc_version" to mod.mcVersion,
+                    "min" to mod.min,
+                    "max" to mod.max,
                     "java_version" to mod.javaVersion
                 )
             )
@@ -132,13 +144,17 @@ publishMods {
         accessToken = System.getenv("MODRINTH_TOKEN")
 
         projectId = "6OpnBWtt"
-        displayName = "[${mod.mcVersion}] CTM Selector ${Constants.MOD_VERSION}"
+        displayName = "[${mod.rangedName}] CTM Selector ${Constants.MOD_VERSION}"
         version = mod.fullVersion
         type = STABLE
 
         file = tasks.remapJar.get().archiveFile
 
-        minecraftVersions.add(mod.mcVersion)
+        if (mod.hasVersionRange) {
+            minecraftVersions.addAll(mod.versionsList)
+        } else {
+            minecraftVersions.add(mod.mcVersion)
+        }
         modLoaders.add("fabric")
 
         requires("fabric-api", "modmenu", "continuity")

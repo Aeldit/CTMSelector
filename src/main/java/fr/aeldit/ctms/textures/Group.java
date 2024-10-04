@@ -141,11 +141,19 @@ public class Group
         // Case where the namespace is not specified
         if (!iconPath.contains(":"))
         {
-            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            //? if <1.21 {
+            /*this.identifier = new Identifier("textures/misc/unknown_pack.png");
+             *///? } else {
+            this.identifier = Identifier.of("textures/misc/unknown_pack.png");
+            //?}
         }
         else
         {
-            this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
+            //? if <1.21 {
+            /*this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
+             *///? } else {
+            this.identifier = Identifier.of(iconPath.split(":")[0], iconPath.split(":")[1]);
+            //?}
         }
     }
 
