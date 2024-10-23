@@ -88,7 +88,7 @@ public class CTMSScreen extends Screen
                 width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
                 //? if <1.21 {
                 /*new Identifier(CTMS_MODID, "textures/gui/options.png"),
-                 *///? } else {
+                 *///?} else {
                 Identifier.of(CTMS_MODID, "textures/gui/options.png"),
                 //?}
                 20, 40,
@@ -118,7 +118,7 @@ public class CTMSScreen extends Screen
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
                 //? if <1.21 {
                 /*new Identifier(CTMS_MODID, "textures/gui/reload.png"),
-                 *///? } else {
+                 *///?} else {
                 Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
                 //?}
                 20, 40,

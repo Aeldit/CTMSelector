@@ -143,7 +143,7 @@ public class Group
         {
             //? if <1.21 {
             /*this.identifier = new Identifier("textures/misc/unknown_pack.png");
-             *///? } else {
+             *///?} else {
             this.identifier = Identifier.of("textures/misc/unknown_pack.png");
             //?}
         }
@@ -151,7 +151,7 @@ public class Group
         {
             //? if <1.21 {
             /*this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
-             *///? } else {
+             *///?} else {
             this.identifier = Identifier.of(iconPath.split(":")[0], iconPath.split(":")[1]);
             //?}
         }
