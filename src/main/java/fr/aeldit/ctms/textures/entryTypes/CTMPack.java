@@ -72,7 +72,7 @@ public class CTMPack
 
         loadBlocks(file);
 
-        this.ctmSelector = new CTMSelector(this.name, Files.exists(Path.of(file.toPath() + "%s/ctm_selector.json")));
+        this.ctmSelector = new CTMSelector(name, Files.exists(Path.of(file.toPath() + "%s/ctm_selector.json")));
         addBlocksToGroups();
     }
 
@@ -93,7 +93,7 @@ public class CTMPack
 
         loadBlocks(zipFile);
 
-        this.ctmSelector = new CTMSelector(this.name, hasCTMSelector(zipFile), zipFile);
+        this.ctmSelector = new CTMSelector(name, hasCTMSelector(zipFile), zipFile);
         addBlocksToGroups(zipFile);
     }
 
