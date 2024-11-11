@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInProperties;
+import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInZipProperties;
+
 /**
  * Represents a CTM pack
  *
@@ -62,13 +65,14 @@ public class CTMPack
         this.name = file.getName();
         this.isFolder = true;
 
-        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile);
-
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
 
         loadBlocks(file);
+
+        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile);
+        addBlocksToGroups();
     }
 
     /**
@@ -83,13 +87,14 @@ public class CTMPack
         this.name = zipFile.getFile().getName();
         this.isFolder = false;
 
-        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile, zipFile);
-
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
 
         loadBlocks(zipFile);
+
+        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile, zipFile);
+        addBlocksToGroups(zipFile);
     }
 
     public String getName()
@@ -105,6 +110,16 @@ public class CTMPack
     public boolean isFolder()
     {
         return isFolder;
+    }
+
+    public CTMSelector getCtmSelector()
+    {
+        return ctmSelector;
+    }
+
+    public boolean isModded()
+    {
+        return vanillaOnlyCtmBlocks == null;
     }
 
     public ArrayList<CTMBlock> getAllCTMBlocks()
@@ -178,9 +193,71 @@ public class CTMPack
         }
     }
 
-    //******************************************************************************************************************
-    //                                                 INITIALIZATION                                                 //
-    //******************************************************************************************************************
+    //=======================================================================//
+    //                                 Group                                 //
+    //=======================================================================//
+    public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
+    {
+        Group group = ctmSelector.getGroupWithBlock(ctmBlock);
+        return group != null && !group.isEnabled();
+    }
+
+    //=======================================================================//
+    //                               CTMBlocks                               //
+    //=======================================================================//
+    public void toggle(CTMBlock block)
+    {
+        if (!isBlockDisabledFromGroup(block))
+        {
+            block.toggle();
+        }
+    }
+
+    public void resetOptions()
+    {
+        if (vanillaOnlyCtmBlocks != null)
+        {
+            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
+            {
+                if (!isBlockDisabledFromGroup(ctmBlock))
+                {
+                    ctmBlock.setEnabled(true);
+                }
+            }
+        }
+        else
+        {
+            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
+            {
+                for (CTMBlock ctmBlock : ctmBlocks)
+                {
+                    if (!isBlockDisabledFromGroup(ctmBlock))
+                    {
+                        ctmBlock.setEnabled(true);
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isBlockEnabled(String blockName)
+    {
+        CTMBlock ctmBlock = getCTMBlockByName(blockName);
+        if (ctmBlock == null)
+        {
+            return true;
+        }
+
+        if (!isBlockDisabledFromGroup(ctmBlock))
+        {
+            return ctmBlock.isEnabled();
+        }
+        return false;
+    }
+
+    //================================================================================================================//
+    //                                             BLOCKS INITIALIZATION                                              //
+    //================================================================================================================//
 
     /**
      * Lists all the properties files found inside the given pack directory
@@ -441,80 +518,71 @@ public class CTMPack
         }
     }
 
-    // OLD
+    //================================================================================================================//
+    //                                              GROUPS INITIALIZATION                                             //
+    //================================================================================================================//
 
-    //=========================================================================
-    // Selectors
-    //=========================================================================
-    public CTMSelector getCtmSelector()
+    /**
+     * For each group in this pack, add the {@link CTMBlock} instances of the blocks that they contain (the blocks were
+     * initialized before, so we get them from the list of existing to not have duplicated {@link CTMBlock} instances)
+     */
+    private void addBlocksToGroups()
     {
-        return ctmSelector;
-    }
-
-    public boolean isModded()
-    {
-        return vanillaOnlyCtmBlocks == null;
-    }
-
-    //=========================================================================
-    // Group
-    //=========================================================================
-    public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
-    {
-        Group group = ctmSelector.getGroupWithBlock(ctmBlock);
-        return group != null && !group.isEnabled();
-    }
-
-    //=========================================================================
-    // CTMBlocks
-    //=========================================================================
-    public void toggle(CTMBlock block)
-    {
-        if (!isBlockDisabledFromGroup(block))
+        for (Group group : ctmSelector.getGroups())
         {
-            block.toggle();
-        }
-    }
-
-    public void resetOptions()
-    {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
+            ArrayList<Path> paths = group.getPropertiesFilesPaths();
+            if (paths == null)
             {
-                if (!isBlockDisabledFromGroup(ctmBlock))
-                {
-                    ctmBlock.setEnabled(true);
-                }
+                continue;
             }
-        }
-        else
-        {
-            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
+
+            for (Path path : paths)
             {
-                for (CTMBlock ctmBlock : ctmBlocks)
+                ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
+                if (blocksNames == null)
                 {
-                    if (!isBlockDisabledFromGroup(ctmBlock))
+                    continue;
+                }
+
+                for (String blockName : blocksNames)
+                {
+                    CTMBlock ctmBlock = getCTMBlockByName(blockName);
+                    if (ctmBlock != null)
                     {
-                        ctmBlock.setEnabled(true);
+                        group.addContainedBlock(ctmBlock);
                     }
                 }
             }
         }
     }
 
-    public boolean isBlockEnabled(String blockName)
+    private void addBlocksToGroups(ZipFile zipFile)
     {
-        CTMBlock ctmBlock = getCTMBlockByName(blockName);
-        if (ctmBlock == null)
+        for (Group group : ctmSelector.getGroups())
         {
-            return true;
-        }
+            ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
+            if (fileHeaders == null)
+            {
+                continue;
+            }
 
-        if (!isBlockDisabledFromGroup(ctmBlock))
-        {
-            return ctmBlock.isEnabled();
+            for (FileHeader fileHeader : fileHeaders)
+            {
+                ArrayList<String> blocksNames = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
+                if (blocksNames == null)
+                {
+                    continue;
+                }
+
+                for (String blockName : blocksNames)
+                {
+                    CTMBlock ctmBlock = getCTMBlockByName(blockName);
+                    if (ctmBlock != null)
+                    {
+                        group.addContainedBlock(ctmBlock);
+                    }
+                }
+            }
         }
-        return false;
     }
 }

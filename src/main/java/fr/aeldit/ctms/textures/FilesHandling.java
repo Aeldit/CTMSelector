@@ -6,7 +6,6 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -25,76 +24,6 @@ public class FilesHandling
 {
     private final String ctmPath = "optifine/ctm/";
     private final String[] types = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
-
-    /**
-     * Adds to each group's Group#containedBlocks's ArrayList the blocks it contains
-     *
-     * @param ctmPack The current resource pack
-     */
-    private void addBlocksToGroups(ZipFile zipFile, @NotNull CTMPack ctmPack)
-    {
-        for (Group group : ctmPack.getCtmSelector().getGroups())
-        {
-            ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
-            if (fileHeaders == null)
-            {
-                continue;
-            }
-
-            for (FileHeader fileHeader : fileHeaders)
-            {
-                ArrayList<String> blocksNames = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
-                if (blocksNames == null)
-                {
-                    continue;
-                }
-
-                for (String blockName : blocksNames)
-                {
-                    CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
-                    if (ctmBlock != null)
-                    {
-                        group.addContainedBlock(ctmBlock);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Adds to each group's Group#containedBlocks's ArrayList the blocks it contains
-     *
-     * @param ctmPack The current resource pack
-     */
-    private void addBlocksToGroups(@NotNull CTMPack ctmPack)
-    {
-        for (Group group : ctmPack.getCtmSelector().getGroups())
-        {
-            ArrayList<Path> paths = group.getPropertiesFilesPaths();
-            if (paths == null)
-            {
-                continue;
-            }
-
-            for (Path path : paths)
-            {
-                ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
-                if (blocksNames == null)
-                {
-                    continue;
-                }
-
-                for (String blockName : blocksNames)
-                {
-                    CTMBlock ctmBlock = ctmPack.getCTMBlockByName(blockName);
-                    if (ctmBlock != null)
-                    {
-                        group.addContainedBlock(ctmBlock);
-                    }
-                }
-            }
-        }
-    }
 
     public void load()
     {
@@ -127,15 +56,6 @@ public class FilesHandling
 
                     CTMPack ctmPack = new CTMPack(zipFile, hasCTMSelector, isPackModded(zipFile));
                     CTM_PACKS.add(ctmPack);
-
-                    //loadOptionsForValidProperties(zipFile, ctmPack, file);
-
-                    // If the pack has a controls file, we add the already existing CTMBlock objects to the ArrayList
-                    // in the Group object
-                    /*if (hasCTMSelector)
-                    {
-                        addBlocksToGroups(zipFile, ctmPack);
-                    }*/
                 }
                 catch (IOException e)
                 {
@@ -148,10 +68,6 @@ public class FilesHandling
 
                 CTMPack ctmPack = new CTMPack(file, hasCTMSelector, isPackModded(file.toPath()));
                 CTM_PACKS.add(ctmPack);
-
-                // loadOptionsForValidProperties(ctmPack, file);
-
-                // addBlocksToGroups(ctmPack);
             }
         }
     }
