@@ -58,8 +58,7 @@ public class CTMPack
     /**
      * Folder pack initialization
      *
-     * @param file            The pack directory
-     * @param hasSelectorFile If the {@code ctm_selector.json} file is present
+     * @param file The pack directory
      */
     public CTMPack(@NotNull File file)
     {
@@ -80,8 +79,7 @@ public class CTMPack
     /**
      * Zip pack initialization
      *
-     * @param zipFile         The pack {@code ZipFile}
-     * @param hasSelectorFile If the {@code ctm_selector.json} file is present
+     * @param zipFile The pack {@code ZipFile}
      */
     public CTMPack(@NotNull ZipFile zipFile)
     {
