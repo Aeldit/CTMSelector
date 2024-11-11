@@ -550,17 +550,6 @@ public class CTMSelector
     //=========================================================================
     // Static part
     //=========================================================================
-    public static boolean hasCTMSelector(@NotNull ZipFile zipFile) throws ZipException
-    {
-        for (FileHeader fileHeader : zipFile.getFileHeaders())
-        {
-            if (fileHeader.toString().equals("ctm_selector.json"))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static byte @NotNull [] toByteArray(@NotNull ArrayList<Group.SerializableGroup> groups)
     {

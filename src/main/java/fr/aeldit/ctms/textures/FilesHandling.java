@@ -52,7 +52,7 @@ public class FilesHandling
                         continue;
                     }
 
-                    CTM_PACKS.add(new CTMPack(zipFile, CTMSelector.hasCTMSelector(zipFile), isPackModded(zipFile)));
+                    CTM_PACKS.add(new CTMPack(zipFile));
                 }
                 catch (IOException e)
                 {
@@ -61,10 +61,7 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.toPath()))
             {
-                CTM_PACKS.add(new CTMPack(
-                        file, Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath()))),
-                        isPackModded(file.toPath())
-                ));
+                CTM_PACKS.add(new CTMPack(file));
             }
         }
     }
@@ -101,43 +98,6 @@ public class FilesHandling
                     {
                         return true;
                     }
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean isPackModded(@NotNull ZipFile zipFile) throws ZipException
-    {
-        for (FileHeader fileHeader : zipFile.getFileHeaders())
-        {
-            String[] s = fileHeader.toString().split("/");
-            // If s.length > 1, s[1] is the namespace
-            if (s.length > 1 && !s[1].equals("minecraft"))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isPackModded(Path packPath)
-    {
-        Path filePath = Path.of("%s/assets".formatted(packPath));
-        if (Files.exists(filePath))
-        {
-            File[] files = filePath.toFile().listFiles();
-            if (files == null)
-            {
-                return false;
-            }
-
-            // Iterates over the namespaces
-            for (File file : files)
-            {
-                if (file.isDirectory() && !file.getName().equals("minecraft"))
-                {
-                    return true;
                 }
             }
         }

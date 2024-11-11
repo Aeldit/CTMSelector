@@ -3,6 +3,7 @@ package fr.aeldit.ctms.textures.entryTypes;
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -58,20 +60,20 @@ public class CTMPack
      *
      * @param file            The pack directory
      * @param hasSelectorFile If the {@code ctm_selector.json} file is present
-     * @param isModded        If there are other namespaces than {@code minecraft}
      */
-    public CTMPack(@NotNull File file, boolean hasSelectorFile, boolean isModded)
+    public CTMPack(@NotNull File file)
     {
         this.name = file.getName();
         this.isFolder = true;
 
+        boolean isModded = isPackModded(file);
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
 
         loadBlocks(file);
 
-        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile);
+        this.ctmSelector = new CTMSelector(this.name, Files.exists(Path.of(file.toPath() + "%s/ctm_selector.json")));
         addBlocksToGroups();
     }
 
@@ -80,20 +82,20 @@ public class CTMPack
      *
      * @param zipFile         The pack {@code ZipFile}
      * @param hasSelectorFile If the {@code ctm_selector.json} file is present
-     * @param isModded        If there are other namespaces than {@code minecraft}
      */
-    public CTMPack(@NotNull ZipFile zipFile, boolean hasSelectorFile, boolean isModded)
+    public CTMPack(@NotNull ZipFile zipFile)
     {
         this.name = zipFile.getFile().getName();
         this.isFolder = false;
 
+        boolean isModded = isPackModded(zipFile);
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
 
         loadBlocks(zipFile);
 
-        this.ctmSelector = new CTMSelector(this.name, hasSelectorFile, zipFile);
+        this.ctmSelector = new CTMSelector(this.name, hasCTMSelector(zipFile), zipFile);
         addBlocksToGroups(zipFile);
     }
 
@@ -251,6 +253,72 @@ public class CTMPack
         if (!isBlockDisabledFromGroup(ctmBlock))
         {
             return ctmBlock.isEnabled();
+        }
+        return false;
+    }
+
+    //================================================================================================================//
+    //                                                 INITIALIZATION                                                 //
+    //================================================================================================================//
+    private boolean isPackModded(@NotNull File packFile)
+    {
+        Path filePath = Path.of("%s/assets".formatted(packFile.toPath()));
+        if (Files.exists(filePath))
+        {
+            File[] files = filePath.toFile().listFiles();
+            if (files == null)
+            {
+                return false;
+            }
+
+            // Iterates over the namespaces
+            for (File file : files)
+            {
+                if (file.isDirectory() && !file.getName().equals("minecraft"))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isPackModded(@NotNull ZipFile zipFile)
+    {
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                String[] s = fileHeader.toString().split("/");
+                // If s.length > 1, s[1] is the namespace
+                if (s.length > 1 && !s[1].equals("minecraft"))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    private boolean hasCTMSelector(@NotNull ZipFile zipFile)
+    {
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                if (fileHeader.toString().equals("ctm_selector.json"))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
         }
         return false;
     }
