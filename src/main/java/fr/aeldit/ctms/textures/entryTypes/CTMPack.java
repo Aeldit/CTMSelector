@@ -3,12 +3,17 @@ package fr.aeldit.ctms.textures.entryTypes;
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Represents a CTM pack
@@ -41,19 +46,20 @@ public class CTMPack
     private final boolean isFolder;
     private final CTMSelector ctmSelector;
     private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
-    // HashMap<namespace, blocks in the namespace>
-    private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks;
+    private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks; // HashMap<namespace, blocks in the namespace>
+    private static final String[] TYPES = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
+    private static final String CTM_PATH = "optifine/ctm/";
 
     /**
      * Folder pack initialization
      *
-     * @param name            The name of the folder containing the pack
+     * @param file            The pack directory
      * @param hasSelectorFile If the {@code ctm_selector.json} file is present
      * @param isModded        If there are other namespaces than {@code minecraft}
      */
-    public CTMPack(@NotNull String name, boolean hasSelectorFile, boolean isModded)
+    public CTMPack(@NotNull File file, boolean hasSelectorFile, boolean isModded)
     {
-        this.name = name;
+        this.name = file.getName();
         this.isFolder = true;
 
         this.ctmSelector = new CTMSelector(this.name, hasSelectorFile);
@@ -61,19 +67,20 @@ public class CTMPack
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
+
+        loadBlocks(file);
     }
 
     /**
      * Zip pack initialization
      *
-     * @param name            The name of the zip file containing the pack
+     * @param zipFile         The pack {@code ZipFile}
      * @param hasSelectorFile If the {@code ctm_selector.json} file is present
      * @param isModded        If there are other namespaces than {@code minecraft}
-     * @param zipFile         The {@code ZipFile} object
      */
-    public CTMPack(@NotNull String name, boolean hasSelectorFile, boolean isModded, ZipFile zipFile)
+    public CTMPack(@NotNull ZipFile zipFile, boolean hasSelectorFile, boolean isModded)
     {
-        this.name = name;
+        this.name = zipFile.getFile().getName();
         this.isFolder = false;
 
         this.ctmSelector = new CTMSelector(this.name, hasSelectorFile, zipFile);
@@ -81,6 +88,8 @@ public class CTMPack
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespacesBlocks = isModded ? new HashMap<>() : null;
+
+        loadBlocks(zipFile);
     }
 
     public String getName()
@@ -147,6 +156,11 @@ public class CTMPack
         return null;
     }
 
+    public ArrayList<String> getNamespaces()
+    {
+        return new ArrayList<>(namespacesBlocks.keySet());
+    }
+
     public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList, String namespace)
     {
         if (vanillaOnlyCtmBlocks != null)
@@ -164,10 +178,270 @@ public class CTMPack
         }
     }
 
-    public ArrayList<String> getNamespaces()
+    //******************************************************************************************************************
+    //                                                 INITIALIZATION                                                 //
+    //******************************************************************************************************************
+
+    /**
+     * Lists all the properties files found inside the given pack directory
+     *
+     * @param packFolder The directory of the pack
+     * @return The list of properties files that was found | {@code null} if none was found
+     */
+    private @NotNull ArrayList<Path> listFilesInFolderPack(@NotNull File packFolder)
     {
-        return new ArrayList<>(namespacesBlocks.keySet());
+        ArrayList<Path> paths = new ArrayList<>();
+
+        Stack<File> dirsToSearch = new Stack<>();
+        dirsToSearch.push(packFolder);
+
+        while (!dirsToSearch.isEmpty())
+        {
+            File currentDir = dirsToSearch.pop();
+            File[] files = currentDir.listFiles();
+            if (files == null)
+            {
+                continue;
+            }
+
+            for (File file : files)
+            {
+                if (file.isDirectory())
+                {
+                    dirsToSearch.push(file);
+                }
+                else if (file.isFile() && file.getName().endsWith(".properties"))
+                {
+                    paths.add(file.toPath());
+                }
+            }
+        }
+        return paths;
     }
+
+    /**
+     * Loads all the blocks found inside the properties files (themselves found inside the pack's directory)
+     */
+    private void loadBlocks(File packDir)
+    {
+        for (Path path : listFilesInFolderPack(packDir))
+        {
+            if (path.toFile().isFile() && path.toString().replace("\\", "/").contains(CTM_PATH))
+            {
+                if (path.toString().endsWith(".properties"))
+                {
+                    Properties properties = new Properties();
+                    try
+                    {
+                        properties.load(new FileInputStream(path.toFile()));
+                    }
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+
+                    if (!properties.isEmpty())
+                    {
+                        loadBlocksFromProperties(properties, path.toString(), packDir.getName());
+                    }
+                }
+            }
+        }
+    }
+
+    private void loadBlocks(@NotNull ZipFile zipFile)
+    {
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                if (fileHeader.toString().contains(CTM_PATH))
+                {
+                    if (fileHeader.toString().endsWith(".properties"))
+                    {
+                        Properties properties = new Properties();
+                        properties.load(zipFile.getInputStream(fileHeader));
+
+                        if (!properties.isEmpty())
+                        {
+                            loadBlocksFromProperties(properties, fileHeader.toString(), zipFile.getFile().getName());
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean isDigits(@NotNull String s)
+    {
+        for (char c : s.toCharArray())
+        {
+            if (!Character.isDigit(c))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * For each of the 4 properties found in {@link #TYPES} ({@code "matchBlocks"}, {@code "matchTiles"}, {@code
+     * "ctmDisabled"}, {@code "ctmTilesDisabled"}), add the blocks found to the list that will be returned.
+     * <p>
+     * Each of these blocks share the same identifier
+     *
+     * @param properties The properties object
+     * @param tmpPath    The path to the texture
+     * @param startTile  The texture
+     * @return An arraylist of {@link CTMBlock} containing the blocks with their Identifier initialized
+     */
+    private @NotNull ArrayList<CTMBlock> getCTMBlocksInProperties(
+            Properties properties, String tmpPath, @NotNull String startTile
+    )
+    {
+        ArrayList<CTMBlock> ctmBlocks = new ArrayList<>();
+
+        // If the extension of the file is given
+        if (startTile.endsWith(".png"))
+        {
+            startTile = startTile.replace(".png", "");
+        }
+        // If the texture file is a full path
+        if (startTile.contains("/"))
+        {
+            tmpPath = "";
+        }
+
+        ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
+        String namespace = path.removeFirst();
+        StringBuilder s = new StringBuilder();
+        for (String str : path)
+        {
+            s.append(str);
+            s.append("/");
+        }
+        tmpPath = s.toString().replaceFirst(":", "/");
+
+        Identifier identifier = new Identifier(namespace, "%s%s.png".formatted(tmpPath, startTile));
+
+        for (int i = 0; i < 4; ++i)
+        {
+            String type = TYPES[i];
+            boolean isEnabled = type.equals("matchBlocks") || type.equals("matchTiles");
+
+            if (!properties.containsKey(type))
+            {
+                continue;
+            }
+
+            for (String blockName : properties.getProperty(type).split(" "))
+            {
+                ctmBlocks.add(new CTMBlock(blockName, identifier, isEnabled));
+            }
+        }
+        return ctmBlocks;
+    }
+
+    private @NotNull String getPathToIdentifier(String @NotNull [] splitPath, int packNameIndex)
+    {
+        int index = packNameIndex + 1;
+        StringBuilder pathToIdentifier = new StringBuilder();
+
+        for (int i = 0; i < splitPath.length - 1; ++i)
+        {
+            if (i > index)
+            {
+                pathToIdentifier.append(splitPath[i]).append("/");
+            }
+        }
+        return pathToIdentifier.toString();
+    }
+
+    /**
+     * Adds all the blocks found in teh given properties to the pack ({@code this})
+     *
+     * @param spacedTiles      The tiles property split on spaces
+     * @param tiles            The tiles property split on '-'
+     * @param pathToIdentifier The path to the directory in which the identifier icon is located
+     * @param namespace        The namespace for the blocks
+     * @param range            The number of blocks used by the method - 1
+     */
+    private void addBlocksForRange(
+            Properties properties, String @NotNull [] spacedTiles, String @NotNull [] tiles, String pathToIdentifier,
+            String namespace, int range
+    )
+    {
+        if (spacedTiles[0].contains("-"))
+        {
+            if (tiles.length == 2 && isDigits(tiles[0]) && isDigits(tiles[1]))
+            {
+                // If there are range+1 (0-range) textures => the texture when not connected is present,
+                // so we use it (texture 0)
+                if (Integer.parseInt(tiles[0]) + range == Integer.parseInt(tiles[1]))
+                {
+                    addAllBlocks(getCTMBlocksInProperties(properties, pathToIdentifier, tiles[0]), namespace);
+                }
+            }
+        }
+        else
+        {
+            addAllBlocks(getCTMBlocksInProperties(properties, pathToIdentifier, spacedTiles[0]), namespace);
+        }
+    }
+
+    /**
+     * Adds to the given {@code ctmPack} all the blocks found in the given properties, depending on the method
+     */
+    private void loadBlocksFromProperties(@NotNull Properties properties, @NotNull String path, String packFileName)
+    {
+        if (!(
+                properties.containsKey("matchBlocks") || properties.containsKey("matchTiles")
+                || properties.containsKey("ctmDisabled") || properties.containsKey("ctmTilesDisabled")
+        ))
+        {
+            return;
+        }
+
+        String[] splitPath = path.split("/");
+        int packNameIndex = List.of(splitPath).indexOf(packFileName);
+        int namespaceIndex = packNameIndex + 2; // ".../packName/assets/namespace"
+        if (namespaceIndex >= splitPath.length)
+        {
+            return;
+        }
+
+        String namespace = splitPath[namespaceIndex];
+        String pathToIdentifier = getPathToIdentifier(splitPath, packNameIndex);
+
+        if (properties.containsKey("method") && properties.containsKey("tiles"))
+        {
+            String method = properties.getProperty("method");
+            String tilesProperty = properties.getProperty("tiles");
+            if (method.isEmpty() || tilesProperty.isEmpty())
+            {
+                return;
+            }
+
+            String[] spacedTiles = tilesProperty.split(" ");
+            String[] tiles = tilesProperty.split("-");
+
+            switch (method)
+            {
+            case "ctm_compact" -> addBlocksForRange(properties, spacedTiles, tiles, pathToIdentifier, namespace, 4);
+
+            case "ctm" -> addBlocksForRange(properties, spacedTiles, tiles, pathToIdentifier, namespace, 46);
+
+            case "horizontal", "vertical", "horizontal+vertical", "vertical+horizontal" ->
+                    addBlocksForRange(properties, spacedTiles, tiles, pathToIdentifier, namespace, 3);
+            }
+        }
+    }
+
+    // OLD
 
     //=========================================================================
     // Selectors

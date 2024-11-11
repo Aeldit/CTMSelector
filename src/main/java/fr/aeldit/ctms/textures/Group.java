@@ -170,10 +170,8 @@ public class Group
         }
     }
 
-    // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
-    public Group(
-            @NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath
-    )
+    // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file)
+    public Group(@NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath)
     {
         this.type = serializableGroup.type;
         this.groupName = serializableGroup.groupName;
