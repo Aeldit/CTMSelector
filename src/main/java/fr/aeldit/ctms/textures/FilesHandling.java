@@ -52,10 +52,7 @@ public class FilesHandling
                         continue;
                     }
 
-                    boolean hasCTMSelector = CTMSelector.hasCTMSelector(zipFile);
-
-                    CTMPack ctmPack = new CTMPack(zipFile, hasCTMSelector, isPackModded(zipFile));
-                    CTM_PACKS.add(ctmPack);
+                    CTM_PACKS.add(new CTMPack(zipFile, CTMSelector.hasCTMSelector(zipFile), isPackModded(zipFile)));
                 }
                 catch (IOException e)
                 {
@@ -64,10 +61,10 @@ public class FilesHandling
             }
             else if (file.isDirectory() && isFolderCtmPack(file.toPath()))
             {
-                boolean hasCTMSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath())));
-
-                CTMPack ctmPack = new CTMPack(file, hasCTMSelector, isPackModded(file.toPath()));
-                CTM_PACKS.add(ctmPack);
+                CTM_PACKS.add(new CTMPack(
+                        file, Files.exists(Path.of("%s/ctm_selector.json".formatted(file.toPath()))),
+                        isPackModded(file.toPath())
+                ));
             }
         }
     }
