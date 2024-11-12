@@ -72,7 +72,7 @@ public class CTMPack
 
         loadBlocks(file);
 
-        this.ctmSelector = new CTMSelector(name, Files.exists(Path.of(file.toPath() + "%s/ctm_selector.json")));
+        this.ctmSelector = new CTMSelector(name);
         addBlocksToGroups();
     }
 
@@ -93,7 +93,7 @@ public class CTMPack
 
         loadBlocks(zipFile);
 
-        this.ctmSelector = new CTMSelector(name, hasCTMSelector(zipFile), zipFile);
+        this.ctmSelector = new CTMSelector(name, zipFile);
         addBlocksToGroups(zipFile);
     }
 
@@ -290,25 +290,6 @@ public class CTMPack
                 String[] s = fileHeader.toString().split("/");
                 // If s.length > 1, s[1] is the namespace
                 if (s.length > 1 && !s[1].equals("minecraft"))
-                {
-                    return true;
-                }
-            }
-        }
-        catch (ZipException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return false;
-    }
-
-    private boolean hasCTMSelector(@NotNull ZipFile zipFile)
-    {
-        try
-        {
-            for (FileHeader fileHeader : zipFile.getFileHeaders())
-            {
-                if (fileHeader.toString().equals("ctm_selector.json"))
                 {
                     return true;
                 }

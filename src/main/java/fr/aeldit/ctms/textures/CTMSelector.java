@@ -21,18 +21,19 @@ import static fr.aeldit.ctms.Utils.getPrettyString;
 
 public class CTMSelector
 {
-    private final ArrayList<Group> packGroups = new ArrayList<>();
     private final String packPath;
     private final boolean isFolder;
+    private final ArrayList<Group> packGroups = new ArrayList<>();
 
-    public CTMSelector(@NotNull String packName, boolean fromFile)
+    public CTMSelector(@NotNull String packName)
     {
         this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
         this.isFolder = true;
 
-        if (fromFile)
+        Path ctmSelectorPath = Path.of(this.packPath + "/ctm_selector.json");
+        if (Files.exists(ctmSelectorPath))
         {
-            readFolder();
+            getCTMSelectorFromFile(ctmSelectorPath);
         }
         else
         {
@@ -40,12 +41,29 @@ public class CTMSelector
         }
     }
 
-    public CTMSelector(@NotNull String packName, boolean fromFile, ZipFile zipFile)
+    public CTMSelector(@NotNull String packName, @NotNull ZipFile zipFile)
     {
         this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
         this.isFolder = false;
 
-        if (fromFile)
+        boolean hasCTMSelectorFile = false;
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                if (fileHeader.toString().equals("ctm_selector.json"))
+                {
+                    hasCTMSelectorFile = true;
+                    break;
+                }
+            }
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (hasCTMSelectorFile)
         {
             readZipFile(zipFile);
         }
@@ -54,6 +72,72 @@ public class CTMSelector
             getGroupsFromZipTree(zipFile);
         }
     }
+
+    private void getCTMSelectorFromFile(Path ctmSelectorPath)
+    {
+        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
+        Gson gson = new Gson();
+        try (Reader reader = Files.newBufferedReader(ctmSelectorPath))
+        {
+            serializableGroups.addAll(
+                    Arrays.asList(
+                            gson.fromJson(
+                                    reader,
+                                    Group.SerializableGroup[].class
+                            )
+                    )
+            );
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Adds the groups properly initialized to the packGroups array
+        for (Group.SerializableGroup cr : serializableGroups)
+        {
+            packGroups.add(new Group(cr, Path.of(packPath), null));
+        }
+    }
+
+    private void readZipFile(@NotNull ZipFile zipFile)
+    {
+        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                if (fileHeader.getFileName().endsWith("ctm_selector.json"))
+                {
+                    Gson gson = new Gson();
+                    Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
+                    serializableGroups.addAll(
+                            Arrays.asList(
+                                    gson.fromJson(
+                                            reader,
+                                            Group.SerializableGroup[].class
+                                    )
+                            )
+                    );
+                    reader.close();
+                    break;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Adds the groups properly initialized to the packGroups array
+        for (Group.SerializableGroup group : serializableGroups)
+        {
+            packGroups.add(new Group(group, null, packPath));
+        }
+        serializableGroups.clear();
+    }
+
+    // OLD
 
     public ArrayList<Group> getGroups()
     {
@@ -428,70 +512,6 @@ public class CTMSelector
                     }
                 }
             }
-        }
-    }
-
-    private void readFolder()
-    {
-        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
-
-        Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
-
-        if (Files.exists(ctmSelectorPath))
-        {
-            try
-            {
-                Gson gson = new Gson();
-                Reader reader = Files.newBufferedReader(ctmSelectorPath);
-                serializableGroups.addAll(Arrays.asList(gson.fromJson(
-                        reader,
-                        Group.SerializableGroup[].class
-                )));
-                reader.close();
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // Adds the groups properly initialized to the packGroups array
-        for (Group.SerializableGroup cr : serializableGroups)
-        {
-            packGroups.add(new Group(cr, Path.of(packPath), null));
-        }
-    }
-
-    private void readZipFile(@NotNull ZipFile zipFile)
-    {
-        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
-
-        try
-        {
-            for (FileHeader fileHeader : zipFile.getFileHeaders())
-            {
-                if (fileHeader.getFileName().endsWith("ctm_selector.json"))
-                {
-                    Gson gson = new Gson();
-                    Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
-                    serializableGroups.addAll(Arrays.asList(gson.fromJson(
-                            reader,
-                            Group.SerializableGroup[].class
-                    )));
-                    reader.close();
-                    break;
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        // Adds the groups properly initialized to the packGroups array
-        for (Group.SerializableGroup group : serializableGroups)
-        {
-            packGroups.add(new Group(group, null, packPath));
         }
     }
 
