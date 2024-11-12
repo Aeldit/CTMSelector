@@ -1,6 +1,7 @@
 package fr.aeldit.ctms;
 
 import fr.aeldit.ctms.gui.CTMSScreen;
+import fr.aeldit.ctms.textures.FilesHandling;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -17,7 +18,7 @@ public class CTMSClientCore implements ClientModInitializer
     @Override
     public void onInitializeClient()
     {
-        TEXTURES_HANDLING.load();
+        FilesHandling.loadCTMPacks();
 
         /*for (CTMPack ctmPack : CTM_PACKS.getAvailableCTMPacks())
         {

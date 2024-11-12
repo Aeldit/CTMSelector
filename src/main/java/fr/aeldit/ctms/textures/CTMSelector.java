@@ -65,7 +65,7 @@ public class CTMSelector
 
         if (hasCTMSelectorFile)
         {
-            readZipFile(zipFile);
+            getCTMSelectorFromFile(zipFile);
         }
         else
         {
@@ -100,7 +100,7 @@ public class CTMSelector
         }
     }
 
-    private void readZipFile(@NotNull ZipFile zipFile)
+    private void getCTMSelectorFromFile(@NotNull ZipFile zipFile)
     {
         ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
         try
@@ -134,7 +134,6 @@ public class CTMSelector
         {
             packGroups.add(new Group(group, null, packPath));
         }
-        serializableGroups.clear();
     }
 
     // OLD

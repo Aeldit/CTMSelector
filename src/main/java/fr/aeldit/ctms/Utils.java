@@ -15,7 +15,6 @@ public class Utils
 {
     public static final String CTMS_MODID = "ctms";
 
-    public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;
 
     public static final Path RESOURCE_PACKS_DIR = FabricLoader.getInstance().getGameDir().resolve("resourcepacks");

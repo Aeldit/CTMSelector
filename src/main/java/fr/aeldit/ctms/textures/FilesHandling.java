@@ -1,6 +1,5 @@
 package fr.aeldit.ctms.textures;
 
-import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -17,15 +16,13 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.Utils.*;
-import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInProperties;
-import static fr.aeldit.ctms.textures.CTMSelector.getCTMBlocksNamesInZipProperties;
 
-public class FilesHandling
+public abstract class FilesHandling
 {
-    private final String ctmPath = "optifine/ctm/";
-    private final String[] types = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
+    private static final String ctmPath = "optifine/ctm/";
+    private static final String[] TYPES = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
 
-    public void load()
+    public static void loadCTMPacks()
     {
         CTM_PACKS = new CTMPacks();
 
@@ -66,7 +63,7 @@ public class FilesHandling
         }
     }
 
-    private boolean zipNotACTMPack(@NotNull ZipFile zipFile) throws ZipException
+    private static boolean zipNotACTMPack(@NotNull ZipFile zipFile) throws ZipException
     {
         for (FileHeader fileHeader : zipFile.getFileHeaders())
         {
@@ -78,7 +75,7 @@ public class FilesHandling
         return true;
     }
 
-    private boolean isFolderCtmPack(Path packPath)
+    private static boolean isFolderCtmPack(Path packPath)
     {
         Path filePath = Path.of("%s/assets".formatted(packPath));
         if (Files.exists(filePath))
@@ -113,14 +110,14 @@ public class FilesHandling
      * @param packFolder The folder whose files will be listed and returned
      * @return Returns the files present in the folder {@code packFolder}
      */
-    private @NotNull ArrayList<Path> getFilesInFolderPack(@NotNull File packFolder)
+    private static @NotNull ArrayList<Path> getFilesInFolderPack(@NotNull File packFolder)
     {
         ArrayList<Path> paths = new ArrayList<>();
         listFilesInFolderPack(packFolder, paths);
         return paths;
     }
 
-    private void listFilesInFolderPack(@NotNull File packFolder, ArrayList<Path> paths)
+    private static void listFilesInFolderPack(@NotNull File packFolder, ArrayList<Path> paths)
     {
         File[] files = packFolder.listFiles();
         if (files == null)
@@ -141,9 +138,78 @@ public class FilesHandling
         }
     }
 
-    public void updateUsedTextures(@NotNull CTMPack ctmPack)
+    public static void updateUsedTextures(@NotNull CTMPack ctmPack)
     {
-        if (!ctmPack.isFolder())
+        if (ctmPack.isFolder())
+        {
+            boolean changed = false;
+
+            // We use Path.of() to be sure that the path is correct, independently of the OS of the user
+            ArrayList<Path> paths = getFilesInFolderPack(
+                    new File(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, ctmPack.getName())).toString())
+            );
+            for (Path path : paths)
+            {
+                // ArrayLists have by default a size of 16, but ctm properties usually have only 1 block, so we don't
+                // need these 15 extra slots in the array
+                ArrayList<String> enabledBlocks = new ArrayList<>(1);
+                ArrayList<String> enabledTiles = new ArrayList<>(1);
+                ArrayList<String> disabledBlocks = new ArrayList<>(1);
+                ArrayList<String> disabledTiles = new ArrayList<>(1);
+
+                Properties properties = new Properties();
+                try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
+                {
+                    properties.load(fileInputStream);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+                if (properties.isEmpty())
+                {
+                    continue;
+                }
+
+                // Loads the enabled and disabled blocks from the properties
+                fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
+
+                if (!path.toString().replace("\\", "/").contains(ctmPath))
+                {
+                    continue;
+                }
+
+                // Toggles the blocks / tiles states (enabled / disabled)
+                if (path.toString().endsWith(".properties"))
+                {
+                    boolean localChanged = updateProperties(
+                            ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles
+                    );
+
+                    changed |= localChanged;
+
+                    if (localChanged)
+                    {
+                        try (FileOutputStream fos = new FileOutputStream(path.toFile()))
+                        {
+                            removeEmptyKeys(properties);
+                            properties.store(fos, null);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                MinecraftClient.getInstance().reloadResources();
+            }
+        }
+        else
         {
             String packPath = Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, ctmPack.getName())).toString();
 
@@ -220,71 +286,7 @@ public class FilesHandling
                 MinecraftClient.getInstance().reloadResources();
             }
         }
-        else
-        {
-            boolean changed = false;
-
-            // We use Path.of() to be sure that the path is correct, independently of the OS of the user
-            ArrayList<Path> paths = getFilesInFolderPack(
-                    new File(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, ctmPack.getName())).toString())
-            );
-            for (Path path : paths)
-            {
-                ArrayList<String> enabledBlocks = new ArrayList<>(1);
-                ArrayList<String> enabledTiles = new ArrayList<>(1);
-                ArrayList<String> disabledBlocks = new ArrayList<>(1);
-                ArrayList<String> disabledTiles = new ArrayList<>(1);
-
-                Properties properties = new Properties();
-
-                try (FileInputStream fileInputStream = new FileInputStream(path.toFile()))
-                {
-                    properties.load(fileInputStream);
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-
-                if (!properties.isEmpty())
-                {
-                    // Loads the enabled and disabled options from the file
-                    fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
-
-                    // Toggles the options in the file
-                    if (path.toString().replace("\\", "/").contains(ctmPath))
-                    {
-                        if (path.toString().endsWith(".properties"))
-                        {
-                            boolean localChanged = updateProperties(
-                                    ctmPack, properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles
-                            );
-
-                            changed |= localChanged;
-
-                            if (localChanged)
-                            {
-                                try (FileOutputStream fos = new FileOutputStream(path.toFile()))
-                                {
-                                    removeEmptyKeys(properties);
-                                    properties.store(fos, null);
-                                }
-                                catch (IOException e)
-                                {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (changed)
-            {
-                MinecraftClient.getInstance().reloadResources();
-            }
-        }
-        load();
+        loadCTMPacks();
     }
 
     /**
@@ -296,7 +298,7 @@ public class FilesHandling
      * @param disabledBlocks The list of disabledBlocks
      * @param disabledTiles  The list of disabledTiles
      */
-    private void fillBlocksLists(
+    private static void fillBlocksLists(
             @NotNull Properties properties,
             ArrayList<String> enabledBlocks, ArrayList<String> enabledTiles,
             ArrayList<String> disabledBlocks, ArrayList<String> disabledTiles
@@ -304,20 +306,20 @@ public class FilesHandling
     {
         if (properties.containsKey("matchBlocks"))
         {
-            enabledBlocks.addAll(Arrays.stream(properties.getProperty("matchBlocks").split(" ")).toList());
+            enabledBlocks.addAll(List.of(properties.getProperty("matchBlocks").split(" ")));
         }
         else if (properties.containsKey("matchTiles"))
         {
-            enabledTiles.addAll(Arrays.stream(properties.getProperty("matchTiles").split(" ")).toList());
+            enabledTiles.addAll(List.of(properties.getProperty("matchTiles").split(" ")));
         }
 
         if (properties.containsKey("ctmDisabled"))
         {
-            disabledBlocks.addAll(Arrays.stream(properties.getProperty("ctmDisabled").split(" ")).toList());
+            disabledBlocks.addAll(List.of(properties.getProperty("ctmDisabled").split(" ")));
         }
         else if (properties.containsKey("ctmTilesDisabled"))
         {
-            disabledTiles.addAll(Arrays.stream(properties.getProperty("ctmTilesDisabled").split(" ")).toList());
+            disabledTiles.addAll(List.of(properties.getProperty("ctmTilesDisabled").split(" ")));
         }
     }
 
@@ -326,9 +328,9 @@ public class FilesHandling
      *
      * @param properties The properties object
      */
-    private void removeEmptyKeys(@NotNull Properties properties)
+    private static void removeEmptyKeys(@NotNull Properties properties)
     {
-        for (String type : types)
+        for (String type : TYPES)
         {
             if (properties.containsKey(type))
             {
@@ -347,7 +349,7 @@ public class FilesHandling
      * @param properties The {@link Properties} instance to update
      * @return Whether a property was changed
      */
-    private boolean updateProperties(
+    private static boolean updateProperties(
             CTMPack ctmPack, Properties properties,
             @NotNull ArrayList<String> enabledBlocks, @NotNull ArrayList<String> enabledTiles,
             @NotNull ArrayList<String> disabledBlocks, @NotNull ArrayList<String> disabledTiles
@@ -360,40 +362,51 @@ public class FilesHandling
         // ENABLED BLOCKS and TILES
         for (int i = 0; i < 2; ++i)
         {
-            for (String optionName : blocks.get(i))
+            for (String blockOrTile : blocks.get(i))
             {
-                if (!ctmPack.isBlockEnabled(optionName))
+                // If the block is enabled in the user's change list, we don't do anything as we are iterating over the
+                // enabled blocks
+                if (ctmPack.isBlockEnabled(blockOrTile))
                 {
-                    if (properties.containsKey(types[i]))
-                    {
-                        changed = true;
-                        String property = properties.getProperty(types[i]);
-                        if (property.isEmpty())
-                        {
-                            continue;
-                        }
+                    continue;
+                }
 
-                        ArrayList<String> blocksOrTiles = new ArrayList<>(List.of(property.split(" ")));
-                        blocksOrTiles.remove(optionName);
-                        properties.put(types[i], blocksOrTiles.toString()
-                                                              .replace("[", "")
-                                                              .replace("]", "")
-                                                              .replace(",", "")
-                        );
+                // This property contains the enabled blocks or tiles (depending on the current TYPE)
+                String property = properties.getProperty(TYPES[i]);
+                if (property == null || property.isEmpty())
+                {
+                    continue;
+                }
 
-                        String opposite = types[i + 2];
-                        if (properties.containsKey(opposite))
-                        {
-                            properties.put(
-                                    opposite,
-                                    "%s %s".formatted(properties.getProperty(opposite), optionName)
-                            );
-                        }
-                        else
-                        {
-                            properties.put(opposite, optionName);
-                        }
-                    }
+                // Stores the fact that we changed at least one value, which means that we will need to reload the
+                // textures
+                changed = true;
+
+                // We remove the block that was changed by the user
+                ArrayList<String> blocksOrTiles = new ArrayList<>(List.of(property.split(" ")));
+                blocksOrTiles.remove(blockOrTile);
+
+                // And we write the modified property
+                properties.put(TYPES[i], blocksOrTiles.toString()
+                                                      .replace("[", "")
+                                                      .replace("]", "")
+                                                      .replace(",", "")
+                );
+
+                // We add the removed block to the opposite property type
+                // matchBlocks <=> ctmDisabled
+                // matchTiles <=> ctmTilesDisabled
+                String opposite = TYPES[i + 2];
+                if (properties.containsKey(opposite))
+                {
+                    properties.put(
+                            opposite,
+                            "%s %s".formatted(properties.getProperty(opposite), blockOrTile)
+                    );
+                }
+                else
+                {
+                    properties.put(opposite, blockOrTile);
                 }
             }
         }
@@ -403,38 +416,48 @@ public class FilesHandling
         {
             for (String optionName : blocks.get(i))
             {
-                if (ctmPack.isBlockEnabled(optionName))
+                // If the block is disabled in the user's change list, we don't do anything as we are iterating over the
+                // disabled blocks
+                if (!ctmPack.isBlockEnabled(optionName))
                 {
-                    if (properties.containsKey(types[i]))
-                    {
-                        changed = true;
-                        String property = properties.getProperty(types[i]);
-                        if (property.isEmpty())
-                        {
-                            continue;
-                        }
+                    continue;
+                }
 
-                        ArrayList<String> currentType = new ArrayList<>(List.of(property.split(" ")));
-                        currentType.remove(optionName);
-                        properties.put(types[i], currentType.toString()
-                                                            .replace("[", "")
-                                                            .replace("]", "")
-                                                            .replace(",", "")
-                        );
+                // This property contains the disabled blocks or tiles (depending on the current TYPE)
+                String property = properties.getProperty(TYPES[i]);
+                if (property == null || property.isEmpty())
+                {
+                    continue;
+                }
 
-                        String opposite = types[i - 2];
-                        if (properties.containsKey(opposite))
-                        {
-                            properties.put(
-                                    opposite,
-                                    "%s %s".formatted(properties.getProperty(opposite), optionName)
-                            );
-                        }
-                        else
-                        {
-                            properties.put(opposite, optionName);
-                        }
-                    }
+                // Stores the fact that we changed at least one value, which means that we will need to reload the
+                // textures
+                changed = true;
+
+                // We remove the block that was changed by the user
+                ArrayList<String> currentType = new ArrayList<>(List.of(property.split(" ")));
+                currentType.remove(optionName);
+
+                properties.put(TYPES[i], currentType.toString()
+                                                    .replace("[", "")
+                                                    .replace("]", "")
+                                                    .replace(",", "")
+                );
+
+                // We add the removed block to the opposite property type
+                // ctmDisabled <=> matchBlocks
+                // ctmTilesDisabled <=> matchTiles
+                String opposite = TYPES[i - 2];
+                if (properties.containsKey(opposite))
+                {
+                    properties.put(
+                            opposite,
+                            "%s %s".formatted(properties.getProperty(opposite), optionName)
+                    );
+                }
+                else
+                {
+                    properties.put(opposite, optionName);
                 }
             }
         }

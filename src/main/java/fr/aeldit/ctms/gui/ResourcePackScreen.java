@@ -2,6 +2,7 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.BlocksListWidget;
 import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.textures.FilesHandling;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
 import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
 
@@ -38,8 +38,11 @@ public class ResourcePackScreen extends Screen
     {
         super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
               ? Text.of(ctmPack.getName().replace(".zip", ""))
-              : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen" +
-                                                                                                              ".packDisabledTitle").getString())
+              : Text.of(
+                      Formatting.ITALIC +
+                      ctmPack.getName().replace(".zip", "")
+                      + Text.translatable("ctms.screen.packDisabledTitle").getString()
+              )
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -51,7 +54,7 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+            FilesHandling.updateUsedTextures(ctmPack);
         }
         Objects.requireNonNull(client).setScreen(parent);
     }
@@ -89,43 +92,43 @@ public class ResourcePackScreen extends Screen
 
             addDrawableChild(
                     ButtonWidget.builder(TEXT_RESET, button -> {
-                                ctmPack.resetOptions();
-                                close();
-                            })
-                            .tooltip(TOOLTIP_RESET)
-                            .dimensions(10, 6, 100, 20)
-                            .build()
+                                    ctmPack.resetOptions();
+                                    close();
+                                })
+                                .tooltip(TOOLTIP_RESET)
+                                .dimensions(10, 6, 100, 20)
+                                .build()
             );
 
             addDrawableChild(
                     ButtonWidget.builder(TEXT_GROUPS, button ->
-                                    Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
-                            )
-                            .tooltip(TOOLTIP_GROUPS)
-                            .dimensions(width - 110, 6, 100, 20)
-                            .build()
+                                        Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
+                                )
+                                .tooltip(TOOLTIP_GROUPS)
+                                .dimensions(width - 110, 6, 100, 20)
+                                .build()
             );
 
             if (ctmPack.isModded())
             {
                 addDrawableChild(
                         ButtonWidget.builder(TEXT_MODS, button ->
-                                        Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
-                                                this,
-                                                ctmPack
-                                        ))
-                                )
-                                .tooltip(TOOLTIP_MODS)
-                                .dimensions(width - 110, height - 28, 100, 20)
-                                .build()
+                                            Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
+                                                    this,
+                                                    ctmPack
+                                            ))
+                                    )
+                                    .tooltip(TOOLTIP_MODS)
+                                    .dimensions(width - 110, height - 28, 100, 20)
+                                    .build()
                 );
             }
         }
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 - 100, height - 26, 200, 20)
-                        .build()
+                            .dimensions(width / 2 - 100, height - 26, 200, 20)
+                            .build()
         );
     }
 }
