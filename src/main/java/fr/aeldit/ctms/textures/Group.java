@@ -30,13 +30,13 @@ public class Group
      *                             to {@code "ctm"}
      * @param groupName            The name of the group that will be display on the screen
      * @param propertiesFilesPaths The path to each directory or properties files that will be included in the group.
-     *                             These paths start from the namespace and go to the properties file. If the path
-     *                             points to a directory, all properties files found inside it recursively will be
-     *                             included (ex: {@code "minecraft:optifine/ctm/connect/logs"}
-     * @param iconPath             The path to the icon that will be displayed on the screen for this group. Must be
-     *                             formed in the same way as the {@link Group#identifierLikePropertiesPaths}, but
-     *                             must be
-     *                             a path to a single {@code .png} file
+     *                             These paths start from the namespace and go to the properties file (in the form
+     *                             {@code "namespace:path/to/file.properties"}).
+     *                             <p>
+     *                             If the path points to a directory, all properties files found inside it
+     *                             recursively will be included (ex: {@code "minecraft:optifine/ctm/connect/logs"}
+     * @param iconPath             The path to the icon that will be displayed on the screen for this group (in the
+     *                             form {@code "namespace:path/to/file.png"}).
      * @param isEnabled            If the block is enabled, this part is changed by the user of the mod (optional)
      * @param buttonTooltip        The tooltip to display on the button of the group (optional)
      */
@@ -47,9 +47,7 @@ public class Group
             @SerializedName("icon_path") @NotNull String iconPath,
             @SerializedName("enabled") boolean isEnabled,
             @SerializedName("button_tooltip") @Nullable String buttonTooltip
-    )
-    {
-    }
+    ) {}
 
     //=================================
     // Record fields
@@ -77,10 +75,10 @@ public class Group
             boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
     )
     {
-        this.type = type;
-        this.groupName = groupName;
+        this.type          = type;
+        this.groupName     = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.isEnabled = isEnabled;
+        this.isEnabled     = isEnabled;
 
         // Obtains the path to each block
         if (packPath != null)
@@ -90,7 +88,7 @@ public class Group
             identifierLikePropertiesPaths.clear();
             identifierLikePropertiesPaths = tmp;
 
-            this.propertiesFilesPaths = new ArrayList<>();
+            this.propertiesFilesPaths       = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
 
             for (String propFile : identifierLikePropertiesPaths)
@@ -123,7 +121,7 @@ public class Group
         }
         else
         {
-            this.propertiesFilesPaths = null;
+            this.propertiesFilesPaths       = null;
             this.propertiesFilesFileHeaders = new ArrayList<>();
 
             if (zipPackPath != null)
@@ -156,7 +154,7 @@ public class Group
         }
 
         this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
-        this.iconPath = iconPath;
+        this.iconPath                      = iconPath;
 
         // If the namespace is not specified, we use the 'unknown pack' icon
         if (iconPath.contains(":"))
@@ -173,15 +171,15 @@ public class Group
     // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file)
     public Group(@NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath)
     {
-        this.type = serializableGroup.type;
-        this.groupName = serializableGroup.groupName;
+        this.type          = serializableGroup.type;
+        this.groupName     = serializableGroup.groupName;
         this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
-        this.isEnabled = serializableGroup.isEnabled;
+        this.isEnabled     = serializableGroup.isEnabled;
 
         // Obtains the path to each block
         if (packPath != null)
         {
-            this.propertiesFilesPaths = new ArrayList<>();
+            this.propertiesFilesPaths       = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
 
             for (String propFile : serializableGroup.propertiesFilesPaths)
@@ -203,7 +201,7 @@ public class Group
         }
         else
         {
-            this.propertiesFilesPaths = null;
+            this.propertiesFilesPaths       = null;
             this.propertiesFilesFileHeaders = new ArrayList<>();
 
             if (zipPackPath != null)
@@ -236,7 +234,7 @@ public class Group
         }
 
         this.identifierLikePropertiesPaths = serializableGroup.propertiesFilesPaths;
-        this.iconPath = serializableGroup.iconPath;
+        this.iconPath                      = serializableGroup.iconPath;
 
         // If the namespace is not specified, we use the 'unknown pack' icon
         if (iconPath.contains(":"))
