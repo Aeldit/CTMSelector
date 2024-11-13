@@ -14,6 +14,7 @@ import java.util.Map;
 public class Utils
 {
     public static final String CTMS_MODID = "ctms";
+    public static final String CTM_PATH = "optifine/ctm/";
 
     public static CTMPacks CTM_PACKS;
 

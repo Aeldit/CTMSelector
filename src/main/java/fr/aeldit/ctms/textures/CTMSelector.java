@@ -16,8 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
-import static fr.aeldit.ctms.Utils.getPrettyString;
+import static fr.aeldit.ctms.Utils.*;
 
 public class CTMSelector
 {
@@ -153,6 +152,18 @@ public class CTMSelector
         return false;
     }
 
+    private boolean isInGroupDir(@NotNull FileHeader dir, String currentGroupToAddTo)
+    {
+        for (String s : dir.toString().split("/"))
+        {
+            if (s.equals(currentGroupToAddTo))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private @NotNull ArrayList<File> getAllPropertiesInDirRec(File dir)
     {
         ArrayList<File> propertiesFiles = new ArrayList<>();
@@ -179,6 +190,22 @@ public class CTMSelector
                 {
                     propertiesFiles.add(file);
                 }
+            }
+        }
+        return propertiesFiles;
+    }
+
+    private @NotNull ArrayList<FileHeader> getAllPropertiesInDirRec(
+            @NotNull FileHeader dir, @NotNull List<FileHeader> fileHeaders
+    )
+    {
+        ArrayList<FileHeader> propertiesFiles = new ArrayList<>();
+        String dirString = dir.toString();
+        for (FileHeader fh : fileHeaders)
+        {
+            if (fh.toString().contains(dirString) && fh.toString().endsWith(".properties"))
+            {
+                propertiesFiles.add(fh);
             }
         }
         return propertiesFiles;
@@ -228,6 +255,88 @@ public class CTMSelector
                 }
             }
         }
+    }
+
+    private void getGroupsInZipDir(
+            @NotNull FileHeader dir, @NotNull HashMap<String, ArrayList<FileHeader>> groups,
+            @NotNull List<FileHeader> fileHeaders
+    )
+    {
+        Stack<FileHeader> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(dir);
+
+        String currentGroupToAddTo = getLastDirForFileHeader(dir);
+        if (!groups.containsKey(currentGroupToAddTo))
+        {
+            groups.put(currentGroupToAddTo, new ArrayList<>());
+        }
+
+        while (!searchingDirsStack.isEmpty())
+        {
+            String fileOrDir = searchingDirsStack.pop().getFileName();
+
+            // For all fileHeaders inside fileOrDir
+            for (FileHeader fh : fileHeaders)
+            {
+                String fhStr = fh.getFileName();
+                if (fhStr.equals(fileOrDir) || !fhStr.startsWith(dir.toString()))
+                {
+                    continue;
+                }
+
+                if (fh.isDirectory())
+                {
+                    if (isInGroupDir(fh, currentGroupToAddTo))
+                    {
+                        groups.get(currentGroupToAddTo).addAll(getAllPropertiesInDirRec(fh, fileHeaders));
+                        continue;
+                    }
+
+                    currentGroupToAddTo = getLastDirForFileHeader(fh);
+                    if (!groups.containsKey(currentGroupToAddTo))
+                    {
+                        groups.put(currentGroupToAddTo, new ArrayList<>());
+                    }
+                    getAllPropertiesInDirRec(fh, fileHeaders);
+                }
+                else if (!fh.isDirectory() && fh.getFileName().endsWith(".properties"))
+                {
+                    groups.get(currentGroupToAddTo).add(fh);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param dirFileHeader The dir to check for
+     * @param fileHeaders   THe list of all fileHeaders in the Zip file
+     * @return An ArrayList containing all the fileHeaders that are in the current one
+     */
+    private @NotNull ArrayList<FileHeader> getCTMFileHeadersInDir(
+            @NotNull FileHeader dirFileHeader, @NotNull List<FileHeader> fileHeaders
+    )
+    {
+        ArrayList<FileHeader> fileHeadersInDir = new ArrayList<>();
+        String dirFileHeaderString = dirFileHeader.toString();
+        for (FileHeader fh : fileHeaders)
+        {
+            String fhStr = fh.toString();
+            if (fhStr.startsWith(dirFileHeaderString)
+                && fhStr.contains(CTM_PATH)
+                && StringUtils.countMatches(fhStr, "/") == 5
+                && fhStr.endsWith("/")
+            )
+            {
+                fileHeadersInDir.add(fh);
+            }
+        }
+        return fileHeadersInDir;
+    }
+
+    private @Nullable String getLastDirForFileHeader(@NotNull FileHeader fh)
+    {
+        String[] fhStr = fh.toString().split("/");
+        return fhStr.length == 0 ? null : fhStr[fhStr.length - 1];
     }
 
     private boolean subDirContainsProperties(@NotNull File dir)
@@ -385,20 +494,24 @@ public class CTMSelector
         try
         {
             List<FileHeader> fileHeaders = zipFile.getFileHeaders();
-            for (FileHeader fileHeader : fileHeaders)
+            for (FileHeader namespaceFileHeader : fileHeaders)
             {
-                String fh = fileHeader.getFileName();
-                if (!fh.startsWith("assets/")
-                    || StringUtils.countMatches(fh, "/") != 4 // TODO -> See if this can be removed
-                    || !fh.contains("/optifine/ctm/")
-                )
+                String fhStr = namespaceFileHeader.toString();
+                if (!fhStr.startsWith("assets/"))
                 {
                     continue;
                 }
 
+                // If we are not on a namespace, we continue
+                if (StringUtils.countMatches(fhStr, "/") != 2)
+                {
+                    continue;
+                }
+
+                ArrayList<FileHeader> fileHeadersInNamespace = getCTMFileHeadersInDir(namespaceFileHeader, fileHeaders);
+                for (FileHeader fileHeader : fileHeadersInNamespace)
                 {
                     getGroupsInZipDir(fileHeader, groups, fileHeaders);
-                    System.out.println(fileHeader.getFileName());
                 }
             }
         }
@@ -406,6 +519,8 @@ public class CTMSelector
         {
             throw new RuntimeException(e);
         }
+
+        System.out.println(groups);
 
         for (String group : groups.keySet())
         {
@@ -443,55 +558,6 @@ public class CTMSelector
             }
         }
         return null;
-    }
-
-    private void getGroupsInZipDir(
-            @NotNull FileHeader dir, HashMap<String, ArrayList<FileHeader>> groups,
-            @NotNull List<FileHeader> fileHeaders
-    )
-    {
-        Stack<FileHeader> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(dir);
-
-        while (!searchingDirsStack.isEmpty())
-        {
-            String groupName = searchingDirsStack.pop().getFileName();
-            if (!groups.containsKey(groupName))
-            {
-                groups.put(groupName, new ArrayList<>());
-            }
-
-            for (FileHeader fileHeader : fileHeaders)
-            {
-                String fhStr = fileHeader.getFileName();
-                if (!fhStr.startsWith(groupName) || fhStr.equals(groupName))
-                {
-                    continue;
-                }
-
-                if (fileHeader.isDirectory())
-                {
-                    if (zipDirContainsPropertiesFiles(fhStr, fileHeaders))
-                    {
-                        getFilesInZipDirRec(fhStr, groups.get(groupName), fileHeaders);
-                    }
-                    else
-                    {
-                        if (!searchingDirsStack.contains(fileHeader))
-                        {
-                            searchingDirsStack.push(fileHeader);
-                        }
-                    }
-                }
-                else
-                {
-                    if (fhStr.endsWith(".properties"))
-                    {
-                        groups.get(groupName).add(fileHeader);
-                    }
-                }
-            }
-        }
     }
 
     private boolean zipDirContainsPropertiesFiles(@NotNull String dir, @NotNull List<FileHeader> fileHeaders)
@@ -583,7 +649,7 @@ public class CTMSelector
 
         Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
-        if (isFolder)
+        /*if (isFolder)
         {
             try
             {
@@ -603,7 +669,7 @@ public class CTMSelector
             byte[] b = toByteArray(serializableGroupToWrite);
             h.put("ctm_selector.json", b);
             Utils.writeBytesToZip(Path.of(packPath).toString(), h);
-        }
+        }*/
     }
 
     //=========================================================================
