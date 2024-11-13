@@ -288,30 +288,30 @@ public class CTMSelector
                 continue;
             }
 
-            File[] ctmFiles = ctmDir.toFile().listFiles();
-            if (ctmFiles == null)
+            File[] files = ctmDir.toFile().listFiles();
+            if (files == null)
             {
                 continue;
             }
 
-            for (File file : ctmFiles)
+            for (File fileOrDir : files)
             {
-                if (file.isDirectory() && subDirContainsProperties(file))
+                if (fileOrDir.isDirectory() && subDirContainsProperties(fileOrDir))
                 {
-                    getGroupsInDir(file, groups);
+                    getGroupsInDir(fileOrDir, groups);
                 }
             }
         }
 
         for (String group : groups.keySet())
         {
-            ArrayList<String> filesPaths = new ArrayList<>();
-            groups.get(group).forEach(file -> filesPaths.add(file.toString()));
+            ArrayList<String> propertiesFilesPaths = new ArrayList<>();
+            groups.get(group).forEach(file -> propertiesFilesPaths.add(file.toString()));
 
             packGroups.add(
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                            null, filesPaths, getIconPath(group), true,
+                            null, propertiesFilesPaths, getIconPath(propertiesFilesPaths), true,
                             Path.of(packPath), null
                     )
             );
@@ -356,7 +356,7 @@ public class CTMSelector
             packGroups.add(
                     new Group(
                             "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                            null, filesPaths, getIconPath(group), true,
+                            null, filesPaths, getIconPath(filesPaths), true,
                             null, packPath
                     )
             );
@@ -389,59 +389,34 @@ public class CTMSelector
     /**
      * Searches every directory until an image file is found (.png extension only)
      *
-     * @param fileStrPath The path to the file (as a string)
+     * @param propertiesFilesPaths The path to the files ArrayList
      * @return The path to the image file (as a string)
      */
-    private String getIconPath(String fileStrPath)
+    private String getIconPath(@NotNull ArrayList<String> propertiesFilesPaths)
     {
-        Path path = Path.of(fileStrPath);
-        if (!Files.exists(path))
+        for (String propertiesFilePath : propertiesFilesPaths)
         {
-            return "";
-        }
-
-        Stack<File> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(path.toFile());
-
-        while (!searchingDirsStack.empty())
-        {
-            File currentFile = searchingDirsStack.pop();
-            if (!Files.exists(currentFile.toPath()))
+            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
+            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
+            if (!Files.exists(dir))
             {
-                break;
+                continue;
             }
 
-            File[] groupDir = currentFile.listFiles();
-            if (groupDir == null)
+            File[] files = dir.toFile().listFiles();
+            if (files == null)
             {
-                break;
+                continue;
             }
 
-            // The file 0.png is usually the block with all the borders, so we use this file if it exists
-            for (File file : groupDir)
+            for (File file : files)
             {
-                if (file.isFile() && file.toString().endsWith("0.png"))
+                if (file.isFile() && file.getName().equals("0.png"))
                 {
-                    searchingDirsStack.clear();
                     return file.toString();
                 }
             }
-
-            for (File file : groupDir)
-            {
-                if (file.isFile() && file.getName().endsWith(".png"))
-                {
-                    searchingDirsStack.clear();
-                    return file.toString();
-                }
-
-                if (file.isDirectory())
-                {
-                    searchingDirsStack.push(file);
-                }
-            }
         }
-        searchingDirsStack.clear();
         return "";
     }
 
