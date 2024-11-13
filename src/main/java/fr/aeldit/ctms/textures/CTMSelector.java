@@ -264,6 +264,65 @@ public class CTMSelector
         return false;
     }
 
+    /**
+     * Searches every directory until the 0.png image file is found
+     *
+     * @param propertiesFilesPaths The path to the files ArrayList
+     * @return The path to the image file (as a string)
+     */
+    private String getIconPath(@NotNull ArrayList<String> propertiesFilesPaths)
+    {
+        for (String propertiesFilePath : propertiesFilesPaths)
+        {
+            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
+            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
+            if (!Files.exists(dir))
+            {
+                continue;
+            }
+
+            File[] files = dir.toFile().listFiles();
+            if (files == null)
+            {
+                continue;
+            }
+
+            for (File file : files)
+            {
+                if (file.isFile() && file.getName().equals("0.png"))
+                {
+                    return file.toString();
+                }
+            }
+        }
+
+        // If no 0.png image was found, we search for any .png file
+        for (String propertiesFilePath : propertiesFilesPaths)
+        {
+            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
+            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
+            if (!Files.exists(dir))
+            {
+                continue;
+            }
+
+            File[] files = dir.toFile().listFiles();
+            if (files == null)
+            {
+                continue;
+            }
+
+            for (File file : files)
+            {
+                if (file.isFile() && file.getName().endsWith(".png"))
+                {
+                    return file.toString();
+                }
+            }
+        }
+        return "";
+    }
+
     private void getGroupsFromFolderTree()
     {
         Path assetsDir = Path.of("%s/assets/".formatted(packPath));
@@ -384,40 +443,6 @@ public class CTMSelector
             }
         }
         return null;
-    }
-
-    /**
-     * Searches every directory until an image file is found (.png extension only)
-     *
-     * @param propertiesFilesPaths The path to the files ArrayList
-     * @return The path to the image file (as a string)
-     */
-    private String getIconPath(@NotNull ArrayList<String> propertiesFilesPaths)
-    {
-        for (String propertiesFilePath : propertiesFilesPaths)
-        {
-            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
-            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
-            if (!Files.exists(dir))
-            {
-                continue;
-            }
-
-            File[] files = dir.toFile().listFiles();
-            if (files == null)
-            {
-                continue;
-            }
-
-            for (File file : files)
-            {
-                if (file.isFile() && file.getName().equals("0.png"))
-                {
-                    return file.toString();
-                }
-            }
-        }
-        return "";
     }
 
     private void getGroupsInZipDir(
