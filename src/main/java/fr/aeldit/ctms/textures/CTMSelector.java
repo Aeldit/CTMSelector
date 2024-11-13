@@ -136,29 +136,6 @@ public class CTMSelector
         }
     }
 
-    // OLD
-
-    public ArrayList<Group> getGroups()
-    {
-        return packGroups;
-    }
-
-    /**
-     * @param ctmBlock The {@link CTMBlock} object
-     * @return The group that contains the block | null otherwise
-     */
-    public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
-    {
-        for (Group group : packGroups)
-        {
-            if (group.getContainedBlocksList().contains(ctmBlock))
-            {
-                return group;
-            }
-        }
-        return null;
-    }
-
     private void getGroupsFromFolderTree()
     {
         Path assetsDir = Path.of("%s/assets/".formatted(packPath));
@@ -198,6 +175,8 @@ public class CTMSelector
             }
         }
 
+        System.out.println(groups);
+
         for (String group : groups.keySet())
         {
             ArrayList<String> filesPaths = new ArrayList<>();
@@ -225,7 +204,7 @@ public class CTMSelector
             {
                 String fh = fileHeader.getFileName();
                 if (!fh.startsWith("assets/")
-                    || StringUtils.countMatches(fh, "/") != 4
+                    || StringUtils.countMatches(fh, "/") != 4 // TODO -> See if this can be removed
                     || !fh.contains("/optifine/ctm/")
                 )
                 {
@@ -256,6 +235,29 @@ public class CTMSelector
                     )
             );
         }
+    }
+
+    // OLD
+
+    public ArrayList<Group> getGroups()
+    {
+        return packGroups;
+    }
+
+    /**
+     * @param ctmBlock The {@link CTMBlock} object
+     * @return The group that contains the block | null otherwise
+     */
+    public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
+    {
+        for (Group group : packGroups)
+        {
+            if (group.getContainedBlocksList().contains(ctmBlock))
+            {
+                return group;
+            }
+        }
+        return null;
     }
 
     /**
@@ -317,43 +319,109 @@ public class CTMSelector
         return "";
     }
 
+    private boolean containsPropertiesFiles(@NotNull File dir)
+    {
+        File[] files = dir.listFiles();
+        if (files == null)
+        {
+            return false;
+        }
+
+        for (File file : files)
+        {
+            if (file.isFile() && file.getName().endsWith(".properties"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param dir                 The dir we want to check
+     * @param currentGroupToAddTo The group we are adding to
+     * @return whether the dir is inside a dir that is a group
+     */
+    private boolean isInGroupDir(@NotNull File dir, String currentGroupToAddTo)
+    {
+        for (String s : dir.toString().split("/"))
+        {
+            if (s.equals(currentGroupToAddTo))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void getGroupsInDir(@NotNull File dir, HashMap<String, ArrayList<File>> groups)
     {
         Stack<File> searchingDirsStack = new Stack<>();
         searchingDirsStack.push(dir);
 
+        String currentGroupToAddTo = null;
+
         while (!searchingDirsStack.empty())
         {
             File currentDir = searchingDirsStack.pop();
-
-            File[] files = currentDir.listFiles();
-            if (files == null)
+            if (currentGroupToAddTo == null)
             {
-                return;
+                currentGroupToAddTo = currentDir.getName();
+                if (!groups.containsKey(currentGroupToAddTo))
+                {
+                    groups.put(currentGroupToAddTo, new ArrayList<>());
+                }
             }
 
-            String groupName = currentDir.toString();
+            File[] files = currentDir.listFiles();
+            // If the current directory contains only one directory, we go to the next one
+            if (files == null || (files.length == 1 && files[0].isDirectory()))
+            {
+                continue;
+            }
+
+            // If the current dir doesn't contain properties files, and if it isn't in a dir that is a group,
+            // it can be a group
+            if (!containsPropertiesFiles(currentDir) && !isInGroupDir(currentDir, currentGroupToAddTo))
+            {
+                currentGroupToAddTo = currentDir.getName();
+                if (!groups.containsKey(currentGroupToAddTo))
+                {
+                    groups.put(currentGroupToAddTo, new ArrayList<>());
+                }
+
+                for (File file : files)
+                {
+                    if (file.isDirectory())
+                    {
+                        searchingDirsStack.push(file);
+                    }
+                }
+                continue;
+            }
+
+            /*String groupName = currentDir.getName();
             if (!groups.containsKey(groupName))
             {
                 groups.put(groupName, new ArrayList<>());
-            }
+            }*/
 
             for (File file : files)
             {
                 if (file.isDirectory())
                 {
-                    if (containsPropertiesFiles(file))
+                    /*if (containsPropertiesFiles(file))
                     {
-                        getFilesInDirRec(file, groups.get(groupName));
+                        getFilesInDirRec(file, groups.get(currentGroupToAddTo));
                     }
                     else
-                    {
-                        searchingDirsStack.push(file);
-                    }
+                    {*/
+                    searchingDirsStack.push(file);
+                    //}
                 }
                 else if (file.isFile() && file.getName().endsWith(".properties"))
                 {
-                    groups.get(groupName).add(file);
+                    groups.get(currentGroupToAddTo).add(file);
                 }
             }
         }
@@ -406,24 +474,6 @@ public class CTMSelector
                 }
             }
         }
-    }
-
-    private boolean containsPropertiesFiles(@NotNull File dir)
-    {
-        File[] files = dir.listFiles();
-        if (files == null)
-        {
-            return false;
-        }
-
-        for (File file : files)
-        {
-            if (file.isFile() && file.getName().endsWith(".properties"))
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean zipDirContainsPropertiesFiles(@NotNull String dir, @NotNull List<FileHeader> fileHeaders)

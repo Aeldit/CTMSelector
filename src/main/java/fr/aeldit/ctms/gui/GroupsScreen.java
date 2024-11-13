@@ -2,6 +2,7 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.GroupsListWidget;
 import fr.aeldit.ctms.textures.CTMSelector;
+import fr.aeldit.ctms.textures.FilesHandling;
 import fr.aeldit.ctms.textures.Group;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
 import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
 
@@ -33,9 +33,9 @@ public class GroupsScreen extends Screen
     {
         super(Text.of(
                 Formatting.GOLD + ctmPack.getName()
-                        + Formatting.RESET
-                        + (ctmPack.getName().endsWith("s") ? " " : "'s ")
-                        + Text.translatable("ctms.screen.group.title").getString())
+                + Formatting.RESET
+                + (ctmPack.getName().endsWith("s") ? " " : "'s ")
+                + Text.translatable("ctms.screen.group.title").getString())
         );
         this.parent = parent;
         this.ctmPack = ctmPack;
@@ -46,7 +46,7 @@ public class GroupsScreen extends Screen
     public void close()
     {
         ctmSelector.updateGroupsStates();
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        FilesHandling.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -88,18 +88,18 @@ public class GroupsScreen extends Screen
 
         addDrawableChild(
                 ButtonWidget.builder(TEXT_RESET, button -> {
-                            ctmSelector.resetOptions();
-                            close();
-                        })
-                        .tooltip(TOOLTIP_RESET)
-                        .dimensions(10, 6, 100, 20)
-                        .build()
+                                ctmSelector.resetOptions();
+                                close();
+                            })
+                            .tooltip(TOOLTIP_RESET)
+                            .dimensions(10, 6, 100, 20)
+                            .build()
         );
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 - 100, height - 26, 200, 20)
-                        .build()
+                            .dimensions(width / 2 - 100, height - 26, 200, 20)
+                            .build()
         );
     }
 }

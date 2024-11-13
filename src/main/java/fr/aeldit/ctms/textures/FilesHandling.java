@@ -343,7 +343,7 @@ public abstract class FilesHandling
     }
 
     /**
-     * Updates the given properties object to match the options changed by the user
+     * For every block changed by the user, write the changes to the files
      *
      * @param ctmPack    The {@link CTMPack} object
      * @param properties The {@link Properties} instance to update

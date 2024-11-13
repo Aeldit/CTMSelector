@@ -11,7 +11,6 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.LoggerFactory;
 
 import static fr.aeldit.ctms.Utils.CTMS_MODID;
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 public class CTMSClientCore implements ClientModInitializer
 {
