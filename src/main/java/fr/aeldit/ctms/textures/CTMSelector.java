@@ -432,6 +432,47 @@ public class CTMSelector
         return "";
     }
 
+    private String getIconPathZip(@NotNull ArrayList<String> propertiesFilesPaths, List<FileHeader> fileHeaders)
+    {
+        for (String propertiesFilePath : propertiesFilesPaths)
+        {
+            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
+            String fhDir = propertiesFilePath.replace(fileName, "");
+
+            for (FileHeader fh : fileHeaders)
+            {
+                if (fh.toString().startsWith(fhDir) && !fh.isDirectory())
+                {
+                    String fhFileName = getLastDirForFileHeader(fh);
+                    if (fhFileName != null && fhFileName.equals("0.png"))
+                    {
+                        return fh.toString();
+                    }
+                }
+            }
+        }
+
+        // If no 0.png image was found, we search for any .png file
+        for (String propertiesFilePath : propertiesFilesPaths)
+        {
+            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
+            String fhDir = propertiesFilePath.replace(fileName, "");
+
+            for (FileHeader fh : fileHeaders)
+            {
+                if (fh.toString().startsWith(fhDir) && !fh.isDirectory())
+                {
+                    String fhFileName = getLastDirForFileHeader(fh);
+                    if (fhFileName != null && fhFileName.endsWith(".png"))
+                    {
+                        return fh.toString();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
     private void getGroupsFromFolderTree()
     {
         Path assetsDir = Path.of("%s/assets/".formatted(packPath));
@@ -476,17 +517,18 @@ public class CTMSelector
             ArrayList<String> propertiesFilesPaths = new ArrayList<>();
             groups.get(group).forEach(file -> propertiesFilesPaths.add(file.toString()));
 
-            packGroups.add(
-                    new Group(
-                            "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                            null, propertiesFilesPaths, getIconPath(propertiesFilesPaths), true,
-                            Path.of(packPath), null
-                    )
-            );
+            packGroups.add(new Group(
+                    "ctm",
+                    getPrettyString(group.split("_")),
+                    null,
+                    propertiesFilesPaths,
+                    getIconPath(propertiesFilesPaths),
+                    true,
+                    Path.of(packPath)
+            ));
         }
     }
 
-    // TODO -> Make work
     private void getGroupsFromZipTree(@NotNull ZipFile zipFile)
     {
         HashMap<String, ArrayList<FileHeader>> groups = new HashMap<>();
@@ -514,26 +556,26 @@ public class CTMSelector
                     getGroupsInZipDir(fileHeader, groups, fileHeaders);
                 }
             }
+
+            for (String group : groups.keySet())
+            {
+                ArrayList<String> filesPaths = new ArrayList<>();
+                groups.get(group).forEach(file -> filesPaths.add(file.toString()));
+
+                packGroups.add(new Group(
+                        "ctm",
+                        getPrettyString(group.split("_")),
+                        null,
+                        filesPaths,
+                        getIconPathZip(filesPaths, fileHeaders),
+                        true,
+                        zipFile
+                ));
+            }
         }
         catch (ZipException e)
         {
             throw new RuntimeException(e);
-        }
-
-        System.out.println(groups);
-
-        for (String group : groups.keySet())
-        {
-            ArrayList<String> filesPaths = new ArrayList<>();
-            groups.get(group).forEach(file -> filesPaths.add(file.toString()));
-
-            packGroups.add(
-                    new Group(
-                            "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                            null, filesPaths, getIconPath(filesPaths), true,
-                            null, packPath
-                    )
-            );
         }
     }
 
@@ -558,66 +600,6 @@ public class CTMSelector
             }
         }
         return null;
-    }
-
-    private boolean zipDirContainsPropertiesFiles(@NotNull String dir, @NotNull List<FileHeader> fileHeaders)
-    {
-        int nbSlashes = StringUtils.countMatches(dir, "/");
-
-        for (FileHeader fileHeader : fileHeaders)
-        {
-            String fhStr = fileHeader.getFileName();
-            if (StringUtils.countMatches(fhStr, "/") != nbSlashes)
-            {
-                continue;
-            }
-
-            if (!fileHeader.isDirectory()
-                && fileHeader.getFileName().startsWith(dir)
-                && fileHeader.getFileName().endsWith(".properties")
-            )
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void getFilesInZipDirRec(@NotNull String dir, ArrayList<FileHeader> blocks, List<FileHeader> fileHeaders)
-    {
-        Stack<String> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(dir);
-
-        while (!searchingDirsStack.empty())
-        {
-            String currentDir = searchingDirsStack.pop();
-
-            int nbSlashes = StringUtils.countMatches(currentDir, "/");
-
-            for (FileHeader fileHeader : fileHeaders)
-            {
-                // If the current dir doesn't have the same number of slashes as the dir popped from the stack
-                String fhStr = fileHeader.getFileName();
-                if (StringUtils.countMatches(fhStr, "/") != nbSlashes
-                    || !fhStr.startsWith(currentDir) || fhStr.equals(currentDir)
-                )
-                {
-                    continue;
-                }
-
-                if (fileHeader.isDirectory())
-                {
-                    searchingDirsStack.push(fhStr);
-                }
-                else
-                {
-                    if (fhStr.endsWith(".properties"))
-                    {
-                        blocks.add(fileHeader);
-                    }
-                }
-            }
-        }
     }
 
     //=========================================================================
@@ -649,7 +631,7 @@ public class CTMSelector
 
         Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
-        /*if (isFolder)
+        if (isFolder)
         {
             try
             {
@@ -669,7 +651,7 @@ public class CTMSelector
             byte[] b = toByteArray(serializableGroupToWrite);
             h.put("ctm_selector.json", b);
             Utils.writeBytesToZip(Path.of(packPath).toString(), h);
-        }*/
+        }
     }
 
     //=========================================================================

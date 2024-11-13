@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -49,30 +50,26 @@ public class Group
             @SerializedName("button_tooltip") @Nullable String buttonTooltip
     ) {}
 
-    //=================================
-    // Record fields
-    //=================================
+    //===============================//
+    //         Record fields         //
+    //===============================//
     private final String type, groupName, iconPath;
     private final ArrayList<String> identifierLikePropertiesPaths;
     private boolean isEnabled;
     private final Text buttonTooltip;
 
-    //=================================
-    // Non-record fields
-    //=================================
+    //===============================//
+    //      Non-record fields        //
+    //===============================//
     private final ArrayList<Path> propertiesFilesPaths; // When the pack is a folder
     private final ArrayList<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
     private final Identifier identifier;
     private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
 
-    //==================================================================
-    // Methods
-    //==================================================================
-    // Initialize from the folder tree
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
             @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
-            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
+            boolean isEnabled, @NotNull Path packPath
     )
     {
         this.type          = type;
@@ -81,89 +78,151 @@ public class Group
         this.isEnabled     = isEnabled;
 
         // Obtains the path to each block
-        if (packPath != null)
+        // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
+        ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
+        identifierLikePropertiesPaths.clear();
+        identifierLikePropertiesPaths = tmp;
+
+        this.propertiesFilesPaths       = new ArrayList<>();
+        this.propertiesFilesFileHeaders = null;
+
+        for (String propFile : identifierLikePropertiesPaths)
         {
-            // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
-            ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
-            identifierLikePropertiesPaths.clear();
-            identifierLikePropertiesPaths = tmp;
+            Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
 
-            this.propertiesFilesPaths       = new ArrayList<>();
-            this.propertiesFilesFileHeaders = null;
-
-            for (String propFile : identifierLikePropertiesPaths)
+            if (propFile.endsWith(".properties"))
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
-
-                if (propFile.endsWith(".properties"))
-                {
-                    this.propertiesFilesPaths.add(assetsInPackPath);
-                }
-                else
-                {
-                    if (Files.isDirectory(assetsInPackPath))
-                    {
-                        addPropertiesFilesRec(assetsInPackPath.toFile());
-                    }
-                }
+                this.propertiesFilesPaths.add(assetsInPackPath);
             }
-
-            // The '/' after the '%s' is to get rid of the first slash
-            iconPath = iconPath.replace("%s/".formatted(packPath), "");
-            if (iconPath.startsWith("assets/"))
+            else
             {
-                iconPath = iconPath.replaceFirst("assets/", "");
-            }
-            if (!iconPath.contains(":"))
-            {
-                iconPath = iconPath.replaceFirst("/", ":");
+                if (Files.isDirectory(assetsInPackPath))
+                {
+                    addPropertiesFilesRec(assetsInPackPath.toFile());
+                }
             }
         }
-        else
+
+        // The '/' after the '%s' is to get rid of the first slash
+        iconPath = iconPath.replace("%s/".formatted(packPath), "");
+        if (iconPath.startsWith("assets/"))
         {
-            this.propertiesFilesPaths       = null;
-            this.propertiesFilesFileHeaders = new ArrayList<>();
-
-            if (zipPackPath != null)
-            {
-                try (ZipFile zipFile = new ZipFile(zipPackPath))
-                {
-                    for (String s : identifierLikePropertiesPaths)
-                    {
-                        String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
-
-                        if (pathInZip.endsWith(".properties"))
-                        {
-                            FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                            if (fh != null)
-                            {
-                                this.propertiesFilesFileHeaders.add(fh);
-                            }
-                        }
-                        else
-                        {
-                            getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
-                        }
-                    }
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
+            iconPath = iconPath.replaceFirst("assets/", "");
+        }
+        if (!iconPath.contains(":"))
+        {
+            iconPath = iconPath.replaceFirst("/", ":");
         }
 
         this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
         this.iconPath                      = iconPath;
 
-        // If the namespace is not specified, we use the 'unknown pack' icon
         if (iconPath.contains(":"))
         {
             String[] split = iconPath.split(":");
             this.identifier = new Identifier(split[0], split[1]);
         }
+        // TODO -> Adapt to the folder packs, as this was initially made for Zip packs
+        else if (iconPath.startsWith("assets/"))
+        {
+            String[] split = iconPath.split("/");
+            if (split.length < 3)
+            {
+                this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            }
+            else
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 2; i < split.length; ++i)
+                {
+                    stringBuilder.append(split[i]);
+                    if (i < split.length - 1)
+                    {
+                        stringBuilder.append("/");
+                    }
+                }
+                this.identifier = new Identifier(split[1], stringBuilder.toString());
+            }
+        }
         else
         {
+            // If the namespace is not specified, we use the 'unknown pack' icon
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+        }
+    }
+
+    public Group(
+            @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
+            @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
+            boolean isEnabled, @NotNull ZipFile zipFile
+    )
+    {
+        this.type          = type;
+        this.groupName     = groupName;
+        this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
+        this.isEnabled     = isEnabled;
+
+
+        this.propertiesFilesPaths       = null;
+        this.propertiesFilesFileHeaders = new ArrayList<>();
+
+        try
+        {
+            for (String s : identifierLikePropertiesPaths)
+            {
+                String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
+
+                if (pathInZip.endsWith(".properties"))
+                {
+                    FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
+                    if (fh != null)
+                    {
+                        this.propertiesFilesFileHeaders.add(fh);
+                    }
+                }
+                else
+                {
+                    getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
+        this.iconPath                      = iconPath;
+
+        if (iconPath.contains(":"))
+        {
+            String[] split = iconPath.split(":");
+            this.identifier = new Identifier(split[0], split[1]);
+        }
+        else if (iconPath.startsWith("assets/"))
+        {
+            String[] split = iconPath.split("/");
+            if (split.length < 3)
+            {
+                this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            }
+            else
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 2; i < split.length; ++i)
+                {
+                    stringBuilder.append(split[i]);
+                    if (i < split.length - 1)
+                    {
+                        stringBuilder.append("/");
+                    }
+                }
+                this.identifier = new Identifier(split[1], stringBuilder.toString());
+            }
+        }
+        else
+        {
+            // If the namespace is not specified, we use the 'unknown pack' icon
             this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
     }
