@@ -11,7 +11,7 @@ import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Utils
+public abstract class Utils
 {
     public static final String CTMS_MODID = "ctms";
     public static final String CTM_PATH = "optifine/ctm/";
@@ -78,6 +78,4 @@ public class Utils
         }
         return stringBuilder.toString();
     }
-
-    //public static int ICON_INDEX = 0;
 }
