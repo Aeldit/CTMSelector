@@ -95,7 +95,7 @@ public class CTMSelector
         // Adds the groups properly initialized to the packGroups array
         for (Group.SerializableGroup cr : serializableGroups)
         {
-            packGroups.add(new Group(cr, Path.of(packPath), null));
+            packGroups.add(new Group(cr, Path.of(packPath)));
         }
     }
 
@@ -131,7 +131,7 @@ public class CTMSelector
         // Adds the groups properly initialized to the packGroups array
         for (Group.SerializableGroup group : serializableGroups)
         {
-            packGroups.add(new Group(group, null, packPath));
+            packGroups.add(new Group(group, zipFile));
         }
     }
 

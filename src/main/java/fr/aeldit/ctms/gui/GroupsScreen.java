@@ -37,14 +37,15 @@ public class GroupsScreen extends Screen
                 + (ctmPack.getName().endsWith("s") ? " " : "'s ")
                 + Text.translatable("ctms.screen.group.title").getString())
         );
-        this.parent = parent;
-        this.ctmPack = ctmPack;
+        this.parent      = parent;
+        this.ctmPack     = ctmPack;
         this.ctmSelector = ctmPack.getCtmSelector();
     }
 
     @Override
     public void close()
     {
+        // TODO -> Fix resources not reloading when toggling a group
         ctmSelector.updateGroupsStates();
         FilesHandling.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
