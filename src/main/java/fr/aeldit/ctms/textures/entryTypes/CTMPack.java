@@ -569,6 +569,17 @@ public class CTMPack
     //                                              GROUPS INITIALIZATION                                             //
     //================================================================================================================//
 
+
+    private static @NotNull ArrayList<String> removePackPathFromPath(
+            @NotNull ArrayList<String> paths, @NotNull String packPath
+    )
+    {
+        ArrayList<String> newPaths = new ArrayList<>(paths.size());
+        paths.forEach(path -> newPaths.add(path.replace(packPath, "").replaceFirst("/", "")));
+        paths.clear();
+        return newPaths;
+    }
+
     /**
      * For each group in this pack, add the {@link CTMBlock} instances of the blocks that they contain (the blocks were
      * initialized before, so we get them from the list of existing to not have duplicated {@link CTMBlock} instances)
@@ -577,13 +588,9 @@ public class CTMPack
     {
         for (Group group : ctmSelector.getGroups())
         {
-            ArrayList<Path> paths = group.getPropertiesFilesPaths();
-            if (paths == null)
-            {
-                continue;
-            }
+            ArrayList<String> paths = group.getPropertiesFilesPaths();
 
-            for (Path path : paths)
+            for (String path : paths)
             {
                 ArrayList<String> blocksNames = getCTMBlocksNamesInProperties(path);
                 if (blocksNames == null)
@@ -607,16 +614,20 @@ public class CTMPack
     {
         for (Group group : ctmSelector.getGroups())
         {
-            ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
-            System.out.println(fileHeaders);
-            if (fileHeaders == null)
-            {
-                continue;
-            }
+            ArrayList<String> fileHeaders = group.getPropertiesFilesPaths();
 
-            for (FileHeader fileHeader : fileHeaders)
+            for (String fh : fileHeaders)
             {
-                ArrayList<String> blocksNames = getCTMBlocksNamesInZipProperties(fileHeader, zipFile);
+                System.out.println(fileHeaders);
+                ArrayList<String> blocksNames;
+                try
+                {
+                    blocksNames = getCTMBlocksNamesInZipProperties(zipFile.getFileHeader(fh), zipFile);
+                }
+                catch (ZipException e)
+                {
+                    throw new RuntimeException(e);
+                }
                 if (blocksNames == null)
                 {
                     continue;

@@ -6,16 +6,14 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -55,184 +53,113 @@ public class Group
     //         Record fields         //
     //===============================//
     private final String type, groupName, iconPath;
-    private final ArrayList<String> identifierLikePropertiesPaths;
     public boolean isEnabled;
     private final Text buttonTooltip;
+    private final ArrayList<String> propertiesFilesPaths; // When the pack is a folder
 
     //===============================//
     //      Non-record fields        //
     //===============================//
-    private final ArrayList<Path> propertiesFilesPaths; // When the pack is a folder
-    private final ArrayList<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
     private final Identifier identifier;
     private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
 
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
+            @NotNull ArrayList<File> propertiesFilesPaths, @Nullable String iconPath,
             boolean isEnabled, @NotNull Path packPath
     )
     {
-        this.type          = type;
-        this.groupName     = groupName;
-        this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.isEnabled     = isEnabled;
-
-        // Obtains the path to each block
-        // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
-        ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
-        identifierLikePropertiesPaths.clear();
-        identifierLikePropertiesPaths = tmp;
-
-        this.propertiesFilesPaths       = new ArrayList<>();
-        this.propertiesFilesFileHeaders = null;
-
-        for (String propFile : identifierLikePropertiesPaths)
-        {
-            Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
-
-            if (propFile.endsWith(".properties"))
-            {
-                this.propertiesFilesPaths.add(assetsInPackPath);
-            }
-            else
-            {
-                if (Files.isDirectory(assetsInPackPath))
-                {
-                    addPropertiesFilesRec(assetsInPackPath.toFile());
-                }
-            }
-        }
-
-        this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
-        this.iconPath                      = iconPath;
-        this.identifier                    = initializeIdentifier();
+        this.type                 = type;
+        this.groupName            = groupName;
+        this.iconPath             = iconPath == null ? null : getStringInIdentifierForm(iconPath);
+        this.isEnabled            = isEnabled;
+        this.buttonTooltip        = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
+        this.propertiesFilesPaths = getPropertiesFilesAsStrings(propertiesFilesPaths);
+        this.identifier           = initializeIdentifier();
     }
 
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
+            @NotNull ArrayList<FileHeader> fileHeaders, @Nullable String iconPath,
             boolean isEnabled, @NotNull ZipFile zipFile
     )
     {
-        this.type          = type;
-        this.groupName     = groupName;
-        this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.isEnabled     = isEnabled;
-
-
-        this.propertiesFilesPaths       = null;
-        this.propertiesFilesFileHeaders = new ArrayList<>();
-
-        try
-        {
-            for (String s : identifierLikePropertiesPaths)
-            {
-                String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
-
-                if (pathInZip.endsWith(".properties"))
-                {
-                    FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                    if (fh != null)
-                    {
-                        this.propertiesFilesFileHeaders.add(fh);
-                    }
-                }
-                else
-                {
-                    getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
-        this.iconPath                      = iconPath;
-        this.identifier                    = initializeIdentifier();
+        this.type                 = type;
+        this.groupName            = groupName;
+        this.iconPath             = iconPath == null ? null : getStringInIdentifierFormZip(iconPath);
+        this.isEnabled            = isEnabled;
+        this.buttonTooltip        = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
+        this.propertiesFilesPaths = getPropertiesFileHeadersAsStrings(fileHeaders);
+        this.identifier           = initializeIdentifier();
     }
 
     // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file)
-    public Group(@NotNull SerializableGroup serializableGroup, @NotNull Path packPath)
+    public Group(@NotNull SerializableGroup serializableGroup, @NotNull String packPath)
     {
-        this.type          = serializableGroup.type;
-        this.groupName     = serializableGroup.groupName;
-        this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
-        this.isEnabled     = serializableGroup.isEnabled;
-
-        // Obtains the path to each block
-        this.propertiesFilesPaths       = new ArrayList<>();
-        this.propertiesFilesFileHeaders = null;
-
-        for (String propFile : serializableGroup.propertiesFilesPaths)
-        {
-            Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
-
-            if (propFile.endsWith(".properties"))
-            {
-                this.propertiesFilesPaths.add(assetsInPackPath);
-            }
-            else
-            {
-                if (Files.isDirectory(assetsInPackPath))
-                {
-                    addPropertiesFilesRec(assetsInPackPath.toFile());
-                }
-            }
-        }
-
-        this.identifierLikePropertiesPaths = serializableGroup.propertiesFilesPaths;
-        this.iconPath                      = serializableGroup.iconPath;
-        this.identifier                    = initializeIdentifier();
+        this.type                 = serializableGroup.type;
+        this.groupName            = serializableGroup.groupName;
+        this.iconPath             = serializableGroup.iconPath;
+        this.isEnabled            = serializableGroup.isEnabled;
+        this.buttonTooltip        = Text.of(serializableGroup.buttonTooltip);
+        this.propertiesFilesPaths = addPackPathToPath(serializableGroup.propertiesFilesPaths, packPath);
+        this.identifier           = initializeIdentifier();
     }
 
     public Group(@NotNull SerializableGroup serializableGroup, @NotNull ZipFile zipFile)
     {
-        this.type          = serializableGroup.type;
-        this.groupName     = serializableGroup.groupName;
-        this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
-        this.isEnabled     = serializableGroup.isEnabled;
+        this.type                 = serializableGroup.type;
+        this.groupName            = serializableGroup.groupName;
+        this.iconPath             = serializableGroup.iconPath;
+        this.isEnabled            = serializableGroup.isEnabled;
+        this.buttonTooltip        = Text.of(serializableGroup.buttonTooltip);
+        this.propertiesFilesPaths = serializableGroup.propertiesFilesPaths;
+        this.identifier           = initializeIdentifier();
+    }
 
-        // Obtains the path to each block
-        this.propertiesFilesPaths       = null;
-        this.propertiesFilesFileHeaders = new ArrayList<>();
+    private @NotNull ArrayList<String> getPropertiesFilesAsStrings(@NotNull ArrayList<File> files)
+    {
+        ArrayList<String> stringFiles = new ArrayList<>(files.size());
+        files.forEach(file -> stringFiles.add(file.toString()));
+        files.clear();
+        return stringFiles;
+    }
 
-        try
+    private @NotNull ArrayList<String> getPropertiesFileHeadersAsStrings(@NotNull ArrayList<FileHeader> fileHeaders)
+    {
+        ArrayList<String> stringFiles = new ArrayList<>(fileHeaders.size());
+        fileHeaders.forEach(file -> stringFiles.add(file.toString()));
+        fileHeaders.clear();
+        return stringFiles;
+    }
+
+    private static @NotNull String getStringInIdentifierForm(@NotNull String path)
+    {
+        String[] splitOnSlashes = path.split("/");
+        int assetsIndex = List.of(splitOnSlashes).lastIndexOf("assets");
+        if (assetsIndex == -1 || splitOnSlashes.length < assetsIndex + 3)
         {
-            for (String s : serializableGroup.propertiesFilesPaths)
-            {
-                String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
-
-                if (pathInZip.endsWith(".properties"))
-                {
-                    FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                    if (fh != null)
-                    {
-                        this.propertiesFilesFileHeaders.add(fh);
-                    }
-                }
-                else
-                {
-                    getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
-                }
-            }
+            return "";
         }
-        catch (IOException e)
+        return "%s:%s".formatted(
+                splitOnSlashes[assetsIndex + 1],
+                StringUtils.join(splitOnSlashes, "/", assetsIndex + 2, splitOnSlashes.length)
+        );
+    }
+
+    private static @NotNull String getStringInIdentifierFormZip(@NotNull String path)
+    {
+        String[] splitOnSlashes = path.split("/");
+        if (splitOnSlashes.length == 0 || !splitOnSlashes[0].equals("assets") || splitOnSlashes.length < 3)
         {
-            throw new RuntimeException(e);
+            return "";
         }
-
-        this.identifierLikePropertiesPaths = serializableGroup.propertiesFilesPaths;
-        this.iconPath                      = serializableGroup.iconPath;
-        this.identifier                    = initializeIdentifier();
+        return "%s:%s".formatted(splitOnSlashes[1], StringUtils.join(splitOnSlashes, "/", 2, splitOnSlashes.length));
     }
 
     @Contract(" -> new")
     private @NotNull Identifier initializeIdentifier()
     {
-        if (!iconPath.contains(":"))
+        if (iconPath == null || !iconPath.contains(":"))
         {
             return new Identifier("textures/misc/unknown_pack.png");
         }
@@ -243,26 +170,6 @@ public class Group
             return new Identifier("textures/misc/unknown_pack.png");
         }
         return new Identifier(split[0], split[1]);
-    }
-
-    private static @NotNull ArrayList<String> getIdentifierLikePaths(
-            @NotNull ArrayList<String> paths, @NotNull Path packPath
-    )
-    {
-        ArrayList<String> tmp = new ArrayList<>(paths.size());
-        for (String propFile : paths)
-        {
-            String fileNoFullPath = propFile.replace("%s/".formatted(packPath.toString()), "");
-            if (fileNoFullPath.startsWith("assets/"))
-            {
-                tmp.add(fileNoFullPath.replaceFirst("assets/", "").replaceFirst("/", ":"));
-            }
-            else
-            {
-                tmp.add(fileNoFullPath.replaceFirst("/", ":"));
-            }
-        }
-        return tmp;
     }
 
     //===============================//
@@ -283,10 +190,30 @@ public class Group
         return buttonTooltip;
     }
 
-    public SerializableGroup getAsRecord()
+    private static @NotNull ArrayList<String> addPackPathToPath(
+            @NotNull ArrayList<String> paths, @NotNull String packPath
+    )
+    {
+        ArrayList<String> newPaths = new ArrayList<>(paths.size());
+        paths.forEach(path -> newPaths.add("%s/%s".formatted(packPath, path)));
+        paths.clear();
+        return newPaths;
+    }
+
+    private static @NotNull ArrayList<String> removePackPathFromPath(
+            @NotNull ArrayList<String> paths, @NotNull String packPath
+    )
+    {
+        ArrayList<String> newPaths = new ArrayList<>(paths.size());
+        paths.forEach(path -> newPaths.add(path.replace(packPath, "").replaceFirst("/", "")));
+        paths.clear();
+        return newPaths;
+    }
+
+    public SerializableGroup getAsRecord(String packPath)
     {
         return new SerializableGroup(
-                type, groupName, identifierLikePropertiesPaths, iconPath, isEnabled,
+                type, groupName, removePackPathFromPath(propertiesFilesPaths, packPath), iconPath, isEnabled,
                 buttonTooltip.getString()
         );
     }
@@ -312,73 +239,8 @@ public class Group
     /**
      * @return The absolute path to each Properties file contained by the Group
      */
-    public @Nullable ArrayList<Path> getPropertiesFilesPaths()
+    public @NotNull ArrayList<String> getPropertiesFilesPaths()
     {
         return propertiesFilesPaths;
-    }
-
-    /**
-     * @return The fileHeaders of each properties file found in the zip pack
-     */
-    public @Nullable ArrayList<FileHeader> getPropertiesFilesFileHeaders()
-    {
-        return propertiesFilesFileHeaders;
-    }
-
-    //===============================//
-    //              Other            //
-    //===============================//
-
-    /**
-     * Searches the directory recursively to find every properties files inside it
-     *
-     * @param dir The directory
-     */
-    private void addPropertiesFilesRec(@NotNull File dir)
-    {
-        File[] files = dir.listFiles();
-        if (files != null)
-        {
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    addPropertiesFilesRec(file);
-                }
-                if (file.isFile() && file.toString().endsWith(".properties"))
-                {
-                    propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
-                }
-            }
-        }
-    }
-
-    private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, @NotNull String folder)
-    {
-        if (propertiesFilesFileHeaders != null)
-        {
-            for (FileHeader fileHeader : fileHeaders)
-            {
-                if (fileHeader.toString().startsWith(folder))
-                {
-                    if (fileHeader.toString().endsWith(".properties"))
-                    {
-                        propertiesFilesFileHeaders.add(fileHeader);
-                    }
-                }
-            }
-        }
-    }
-
-    private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
-    {
-        for (FileHeader fileHeader : fileHeaders)
-        {
-            if (fileHeader.toString().equals(name))
-            {
-                return fileHeader;
-            }
-        }
-        return null;
     }
 }
