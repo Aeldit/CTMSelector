@@ -104,7 +104,6 @@ public class Group
             }
         }
 
-        //System.out.println(iconPath);
         this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
         this.iconPath                      = iconPath;
         this.identifier                    = initializeIdentifier();
@@ -233,32 +232,17 @@ public class Group
     @Contract(" -> new")
     private @NotNull Identifier initializeIdentifier()
     {
-        if (iconPath.contains(":"))
+        if (!iconPath.contains(":"))
         {
-            String[] split = iconPath.split(":");
-            return new Identifier(split[0], split[1]);
+            return new Identifier("textures/misc/unknown_pack.png");
         }
 
-        if (iconPath.startsWith("assets/"))
+        String[] split = iconPath.split(":");
+        if (split.length != 2)
         {
-            String[] split = iconPath.split("/");
-            if (split.length < 3)
-            {
-                return new Identifier("textures/misc/unknown_pack.png");
-            }
-
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 2; i < split.length; ++i)
-            {
-                stringBuilder.append(split[i]);
-                if (i < split.length - 1)
-                {
-                    stringBuilder.append("/");
-                }
-            }
-            return new Identifier(split[1], stringBuilder.toString());
+            return new Identifier("textures/misc/unknown_pack.png");
         }
-        return new Identifier("textures/misc/unknown_pack.png");
+        return new Identifier(split[0], split[1]);
     }
 
     private static @NotNull ArrayList<String> getIdentifierLikePaths(
