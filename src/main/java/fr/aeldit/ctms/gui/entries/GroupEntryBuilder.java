@@ -20,15 +20,16 @@ public record GroupEntryBuilder(MinecraftClient client, int width)
         var layout = DirectionalLayoutWidget.horizontal().spacing(5);
         var text = new TextWidget(
                 160, 20 + 2,
-                Text.of(group.isEnabled()
+                Text.of(group.isEnabled
                         ? group.getGroupName()
                         : Formatting.RED + Text.of(Formatting.ITALIC + group.getGroupName()).getString()
                 ),
                 client.textRenderer
         );
-        var toggleButton = CyclingButtonWidget.onOffBuilder()
+        var toggleButton = CyclingButtonWidget
+                .onOffBuilder()
                 .omitKeyText()
-                .initially(group.isEnabled())
+                .initially(group.isEnabled)
                 .build(0, 0, 30, 20, Text.empty(),
                        (button, value) -> group.toggle()
                 );

@@ -62,13 +62,13 @@ public class CTMPack
      */
     public CTMPack(@NotNull File file)
     {
-        this.name = file.getName();
+        this.name     = file.getName();
         this.isFolder = true;
 
         boolean isModded = isPackModded(file);
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespacesBlocks = isModded ? new HashMap<>() : null;
+        this.namespacesBlocks     = isModded ? new HashMap<>() : null;
 
         loadBlocks(file);
 
@@ -83,13 +83,13 @@ public class CTMPack
      */
     public CTMPack(@NotNull ZipFile zipFile)
     {
-        this.name = zipFile.getFile().getName();
+        this.name     = zipFile.getFile().getName();
         this.isFolder = false;
 
         boolean isModded = isPackModded(zipFile);
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespacesBlocks = isModded ? new HashMap<>() : null;
+        this.namespacesBlocks     = isModded ? new HashMap<>() : null;
 
         loadBlocks(zipFile);
 
@@ -199,7 +199,7 @@ public class CTMPack
     public boolean isBlockDisabledFromGroup(CTMBlock ctmBlock)
     {
         Group group = ctmSelector.getGroupWithBlock(ctmBlock);
-        return group != null && !group.isEnabled();
+        return group != null && !group.isEnabled;
     }
 
     //=======================================================================//
@@ -559,8 +559,8 @@ public class CTMPack
 
             case "ctm" -> addBlocksForRange(properties, spacedTiles, tiles, pathToIdentifier, namespace, 46);
 
-            case "horizontal", "vertical", "horizontal+vertical", "vertical+horizontal" ->
-                    addBlocksForRange(properties, spacedTiles, tiles, pathToIdentifier, namespace, 3);
+            case "horizontal", "vertical", "horizontal+vertical", "vertical+horizontal" -> addBlocksForRange(
+                    properties, spacedTiles, tiles, pathToIdentifier, namespace, 3);
             }
         }
     }
@@ -608,6 +608,7 @@ public class CTMPack
         for (Group group : ctmSelector.getGroups())
         {
             ArrayList<FileHeader> fileHeaders = group.getPropertiesFilesFileHeaders();
+            System.out.println(fileHeaders);
             if (fileHeaders == null)
             {
                 continue;

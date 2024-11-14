@@ -118,6 +118,7 @@ public class CTMSelector
                                     )
                             )
                     );
+                    System.out.println(serializableGroups);
                     reader.close();
                     break;
                 }
@@ -379,12 +380,13 @@ public class CTMSelector
      * @param propertiesFilesPaths The path to the files ArrayList
      * @return The path to the image file (as a string)
      */
-    private String getIconPath(@NotNull ArrayList<String> propertiesFilesPaths)
+    private @NotNull String getIconPath(@NotNull ArrayList<File> propertiesFilesPaths)
     {
-        for (String propertiesFilePath : propertiesFilesPaths)
+        for (File propertiesFile : propertiesFilesPaths)
         {
-            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
-            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
+            String fileStr = propertiesFile.toString();
+            String fileName = fileStr.split("/")[fileStr.split("/").length - 1];
+            Path dir = Path.of(fileStr.replace(fileName, ""));
             if (!Files.exists(dir))
             {
                 continue;
@@ -400,16 +402,26 @@ public class CTMSelector
             {
                 if (file.isFile() && file.getName().equals("0.png"))
                 {
-                    return file.toString();
+                    String[] splitOnSlashes = file.toString().split("/");
+                    int assetsIndex = List.of(splitOnSlashes).lastIndexOf("assets");
+                    if (assetsIndex == -1 || splitOnSlashes.length < assetsIndex + 3)
+                    {
+                        break;
+                    }
+                    return "%s:%s".formatted(
+                            splitOnSlashes[assetsIndex + 1], // namespace is at index 'assetsIndex + 1'
+                            StringUtils.join(splitOnSlashes, "/", assetsIndex + 2, splitOnSlashes.length)
+                    );
                 }
             }
         }
 
         // If no 0.png image was found, we search for any .png file
-        for (String propertiesFilePath : propertiesFilesPaths)
+        for (File propertiesFile : propertiesFilesPaths)
         {
-            String fileName = propertiesFilePath.split("/")[propertiesFilePath.split("/").length - 1];
-            Path dir = Path.of(propertiesFilePath.replace(fileName, ""));
+            String fileStr = propertiesFile.toString();
+            String fileName = fileStr.split("/")[fileStr.split("/").length - 1];
+            Path dir = Path.of(fileStr.replace(fileName, ""));
             if (!Files.exists(dir))
             {
                 continue;
@@ -425,14 +437,25 @@ public class CTMSelector
             {
                 if (file.isFile() && file.getName().endsWith(".png"))
                 {
-                    return file.toString();
+                    String[] splitOnSlashes = file.toString().split("/");
+                    int assetsIndex = List.of(splitOnSlashes).lastIndexOf("assets");
+                    if (assetsIndex == -1 || splitOnSlashes.length < assetsIndex + 3)
+                    {
+                        break;
+                    }
+                    return "%s:%s".formatted(
+                            splitOnSlashes[assetsIndex + 1], // namespace is at index 'assetsIndex + 1'
+                            StringUtils.join(splitOnSlashes, "/", assetsIndex + 2, splitOnSlashes.length)
+                    );
                 }
             }
         }
         return "";
     }
 
-    private String getIconPathZip(@NotNull ArrayList<String> propertiesFilesPaths, List<FileHeader> fileHeaders)
+    private @NotNull String getIconPathZip(
+            @NotNull ArrayList<String> propertiesFilesPaths, List<FileHeader> fileHeaders
+    )
     {
         for (String propertiesFilePath : propertiesFilesPaths)
         {
@@ -446,7 +469,15 @@ public class CTMSelector
                     String fhFileName = getLastDirForFileHeader(fh);
                     if (fhFileName != null && fhFileName.equals("0.png"))
                     {
-                        return fh.toString();
+                        String[] splitOnSlashes = fh.toString().split("/");
+                        if (splitOnSlashes.length < 3 || !splitOnSlashes[0].equals("assets"))
+                        {
+                            break;
+                        }
+                        return "%s:%s".formatted(
+                                splitOnSlashes[1], // namespace is at index 1
+                                StringUtils.join(splitOnSlashes, "/", 2, splitOnSlashes.length - 1)
+                        );
                     }
                 }
             }
@@ -465,7 +496,15 @@ public class CTMSelector
                     String fhFileName = getLastDirForFileHeader(fh);
                     if (fhFileName != null && fhFileName.endsWith(".png"))
                     {
-                        return fh.toString();
+                        String[] splitOnSlashes = fh.toString().split("/");
+                        if (splitOnSlashes.length < 3 || !splitOnSlashes[0].equals("assets"))
+                        {
+                            break;
+                        }
+                        return "%s:%s".formatted(
+                                splitOnSlashes[1], // namespace is at index 1
+                                StringUtils.join(splitOnSlashes, "/", 2, splitOnSlashes.length - 1)
+                        );
                     }
                 }
             }
@@ -515,14 +554,34 @@ public class CTMSelector
         for (String group : groups.keySet())
         {
             ArrayList<String> propertiesFilesPaths = new ArrayList<>();
-            groups.get(group).forEach(file -> propertiesFilesPaths.add(file.toString()));
+
+            // Transform the fileHeaders to make them in the form 'namespace:path/to/file.properties'
+            for (File file : groups.get(group))
+            {
+                String[] split = file.toString().split("/");
+                int assetsIndex = List.of(split).indexOf("assets");
+                if (assetsIndex == -1)
+                {
+                    continue;
+                }
+
+                if (split.length < assetsIndex + 3)
+                {
+                    continue;
+                }
+
+                propertiesFilesPaths.add("%s:%s".formatted(
+                        split[assetsIndex + 1],
+                        StringUtils.join(split, "/", assetsIndex + 2, split.length - 1)
+                ));
+            }
 
             packGroups.add(new Group(
                     "ctm",
                     getPrettyString(group.split("_")),
                     null,
                     propertiesFilesPaths,
-                    getIconPath(propertiesFilesPaths),
+                    getIconPath(groups.get(group)),
                     true,
                     Path.of(packPath)
             ));
@@ -560,7 +619,21 @@ public class CTMSelector
             for (String group : groups.keySet())
             {
                 ArrayList<String> filesPaths = new ArrayList<>();
-                groups.get(group).forEach(file -> filesPaths.add(file.toString()));
+
+                // Transform the fileHeaders to make them in the form 'namespace:path/to/file.properties'
+                for (FileHeader fh : groups.get(group))
+                {
+                    String[] split = fh.toString().split("/");
+                    if (split.length < 3 || !split[0].equals("assets"))
+                    {
+                        continue;
+                    }
+
+                    filesPaths.add("%s:%s".formatted(
+                            split[1],
+                            StringUtils.join(split, "/", 2, split.length - 1)
+                    ));
+                }
 
                 packGroups.add(new Group(
                         "ctm",
@@ -609,12 +682,12 @@ public class CTMSelector
     {
         for (Group group : packGroups)
         {
-            group.setEnabled(true);
+            group.isEnabled = true;
         }
     }
 
     /**
-     * Updates the 'enabled' field in the groups file
+     * Looks at each group's state (enabled/disabled) and toggles all the blocks contained by each group
      */
     public void updateGroupsStates()
     {
@@ -622,17 +695,18 @@ public class CTMSelector
 
         for (Group group : packGroups)
         {
+            boolean isEnabled = group.isEnabled;
             for (CTMBlock ctmBlock : group.getContainedBlocksList())
             {
-                ctmBlock.setEnabled(group.isEnabled());
+                ctmBlock.setEnabled(isEnabled);
             }
             serializableGroupToWrite.add(group.getAsRecord());
         }
 
-        Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
         if (isFolder)
         {
+            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
             try
             {
                 Gson gsonWriter = new GsonBuilder().setPrettyPrinting().create();
@@ -675,19 +749,19 @@ public class CTMSelector
             }
             sbFiles.append("\n\t\t]");
 
-            s.add(String.format(
-                    """
-                    \t{
-                    \t\t"type": "%s",
-                    \t\t"group_name": "%s",
-                    \t\t"properties_files": %s,
-                    \t\t"icon_path": "%s",
-                    \t\t"enabled": %b,
-                    \t\t"button_tooltip": "%s"
-                    \t}""",
-                    sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
-                    sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
-            ));
+            s.add("""
+                  \t{
+                  \t\t"type": "%s",
+                  \t\t"group_name": "%s",
+                  \t\t"properties_files": %s,
+                  \t\t"icon_path": "%s",
+                  \t\t"enabled": %b,
+                  \t\t"button_tooltip": "%s"
+                  \t}""".formatted(
+                          sc.type(), sc.groupName(), sbFiles.toString(), sc.iconPath(), sc.isEnabled(),
+                          sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
+                  )
+            );
         }
 
         StringBuilder sb = new StringBuilder();

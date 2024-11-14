@@ -56,7 +56,7 @@ public class Group
     //===============================//
     private final String type, groupName, iconPath;
     private final ArrayList<String> identifierLikePropertiesPaths;
-    private boolean isEnabled;
+    public boolean isEnabled;
     private final Text buttonTooltip;
 
     //===============================//
@@ -104,17 +104,7 @@ public class Group
             }
         }
 
-        // The '/' after the '%s' is to get rid of the first slash
-        iconPath = iconPath.replace("%s/".formatted(packPath), "");
-        if (iconPath.startsWith("assets/"))
-        {
-            iconPath = iconPath.replaceFirst("assets/", "");
-        }
-        if (!iconPath.contains(":"))
-        {
-            iconPath = iconPath.replaceFirst("/", ":");
-        }
-
+        //System.out.println(iconPath);
         this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
         this.iconPath                      = iconPath;
         this.identifier                    = initializeIdentifier();
@@ -297,16 +287,6 @@ public class Group
     public String getGroupName()
     {
         return groupName;
-    }
-
-    public boolean isEnabled()
-    {
-        return isEnabled;
-    }
-
-    public void setEnabled(boolean value)
-    {
-        this.isEnabled = value;
     }
 
     public void toggle()

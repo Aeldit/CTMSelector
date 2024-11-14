@@ -43,7 +43,7 @@ public abstract class FilesHandling
             {
                 try (ZipFile zipFile = new ZipFile(file))
                 {
-                    if (zipNotACTMPack(zipFile))
+                    if (zipNotACTMPack(zipFile.getFileHeaders()))
                     {
                         zipFile.close();
                         continue;
@@ -63,9 +63,9 @@ public abstract class FilesHandling
         }
     }
 
-    private static boolean zipNotACTMPack(@NotNull ZipFile zipFile) throws ZipException
+    private static boolean zipNotACTMPack(@NotNull List<FileHeader> fileHeaders)
     {
-        for (FileHeader fileHeader : zipFile.getFileHeaders())
+        for (FileHeader fileHeader : fileHeaders)
         {
             if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(ctmPath))
             {
@@ -217,14 +217,21 @@ public abstract class FilesHandling
 
             try (ZipFile zipFile = new ZipFile(packPath))
             {
-                if (zipNotACTMPack(zipFile))
+                List<FileHeader> fileHeaders = zipFile.getFileHeaders();
+                if (zipNotACTMPack(fileHeaders))
                 {
                     zipFile.close();
                     return;
                 }
 
-                for (FileHeader fileHeader : zipFile.getFileHeaders())
+                for (FileHeader fileHeader : fileHeaders)
                 {
+                    if (!fileHeader.toString().contains(ctmPath))
+                    {
+                        continue;
+                    }
+
+
                     if (fileHeader.toString().endsWith(".properties"))
                     {
                         // We initialize then ArrayLists with a size of 1 because it is most likely that there will
@@ -237,33 +244,32 @@ public abstract class FilesHandling
                         Properties properties = new Properties();
                         properties.load(zipFile.getInputStream(fileHeader));
 
-                        if (!properties.isEmpty())
+                        if (properties.isEmpty())
                         {
-                            // Loads the enabled and disabled options from the file
-                            fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
+                            continue;
+                        }
 
-                            // Toggles the options in the file
-                            if (fileHeader.toString().contains(ctmPath))
-                            {
-                                boolean changed = updateProperties(
-                                        ctmPack, properties, enabledBlocks, enabledTiles,
-                                        disabledBlocks, disabledTiles
-                                );
+                        // Loads the enabled and disabled blocks/tiles from the file
+                        fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                                if (changed)
-                                {
-                                    removeEmptyKeys(properties);
+                        // Changes the blocks state (enabled/disabled) in the file
+                        boolean changed = updateProperties(
+                                ctmPack, properties, enabledBlocks, enabledTiles,
+                                disabledBlocks, disabledTiles
+                        );
 
-                                    // We take the properties in a byte array,
-                                    // so we can write it in the zip later
-                                    byte[] tmp = properties.toString()
-                                                           .replace("{", "")
-                                                           .replace("}", "")
-                                                           .replace(", ", "\n")
-                                                           .getBytes();
-                                    headersBytes.put(fileHeader.toString(), tmp);
-                                }
-                            }
+                        if (changed)
+                        {
+                            removeEmptyKeys(properties);
+
+                            // We take the properties in a byte array,
+                            // so we can write it in the zip later
+                            byte[] tmp = properties.toString()
+                                                   .replace("{", "")
+                                                   .replace("}", "")
+                                                   .replace(", ", "\n")
+                                                   .getBytes();
+                            headersBytes.put(fileHeader.toString(), tmp);
                         }
                     }
                 }
