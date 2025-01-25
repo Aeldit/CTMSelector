@@ -13,11 +13,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Properties;
 
 import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
-import static fr.aeldit.ctms.Utils.getPrettyString;
 
 public class CTMSelector
 {
@@ -31,14 +32,8 @@ public class CTMSelector
 
     public static boolean hasCTMSelector(@NotNull ZipFile zipFile) throws ZipException
     {
-        for (FileHeader fileHeader : zipFile.getFileHeaders())
-        {
-            if (fileHeader.toString().equals("ctm_selector.json"))
-            {
-                return true;
-            }
-        }
-        return false;
+        return zipFile.getFileHeaders().stream()
+                      .anyMatch(fileHeader -> fileHeader.toString().equals("ctm_selector.json"));
     }
 
     public static byte @NotNull [] toByteArray(@NotNull ArrayList<Group.SerializableGroup> groups)
@@ -171,23 +166,14 @@ public class CTMSelector
     // Non-static part
     //=========================================================================
     private final ArrayList<Group> packGroups = new ArrayList<>();
-    private final String packName, packPath;
+    private final String packPath;
     private final boolean isFolder;
 
-    public CTMSelector(@NotNull String packName, boolean isFolder, boolean fromFile)
+    public CTMSelector(@NotNull String packName, boolean isFolder)
     {
-        this.packName = packName;
         this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
         this.isFolder = isFolder;
-
-        if (fromFile)
-        {
-            readFile();
-        }
-        else
-        {
-            getGroupsFromFolderTree();
-        }
+        readFile();
     }
 
     public ArrayList<Group> getGroups()
@@ -207,195 +193,6 @@ public class CTMSelector
                          .orElse(null);
     }
 
-    private void getGroupsFromFolderTree()
-    {
-        Path assetsDir = Path.of("%s/assets/".formatted(packPath));
-        if (!Files.exists(assetsDir))
-        {
-            return;
-        }
-
-        File[] namespaces = assetsDir.toFile().listFiles();
-        if (namespaces == null)
-        {
-            return;
-        }
-
-        HashMap<String, ArrayList<File>> groups = new HashMap<>();
-
-        for (File namespace : namespaces)
-        {
-            Path ctmDir = Path.of("%s/optifine/ctm".formatted(namespace));
-            if (!Files.exists(ctmDir))
-            {
-                continue;
-            }
-
-            File[] ctmFiles = ctmDir.toFile().listFiles();
-            if (ctmFiles == null)
-            {
-                continue;
-            }
-
-            for (File file : ctmFiles)
-            {
-                if (file.isDirectory())
-                {
-                    getGroupsInDir(file, groups);
-                }
-            }
-        }
-
-        groups.keySet().stream().map(group -> new Group(
-                "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
-                null, groups.get(group).stream().map(File::toString)
-                            .collect(Collectors.toCollection(ArrayList::new)), getIconPath(group), true,
-                Path.of(packPath), null
-        )).forEach(packGroups::add);
-    }
-
-    private String getIconPath(String strPath)
-    {
-        Path path = Path.of(strPath);
-        if (!Files.exists(path))
-        {
-            return "";
-        }
-
-        Stack<File> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(path.toFile());
-
-        while (!searchingDirsStack.empty())
-        {
-            File currentFile = searchingDirsStack.pop();
-            if (!Files.exists(currentFile.toPath()))
-            {
-                break;
-            }
-
-            File[] groupDir = currentFile.listFiles();
-            if (groupDir == null)
-            {
-                break;
-            }
-
-            // The file 0.png is usually the block with all the borders, so we use this file if it exists
-            for (File file : groupDir)
-            {
-                if (file.isFile() && file.toString().endsWith("0.png"))
-                {
-                    searchingDirsStack.clear();
-                    return file.toString();
-                }
-            }
-
-            for (File file : groupDir)
-            {
-                if (file.isFile() && file.getName().endsWith(".png"))
-                {
-                    searchingDirsStack.clear();
-                    return file.toString();
-                }
-
-                if (file.isDirectory())
-                {
-                    searchingDirsStack.push(file);
-                }
-            }
-        }
-        searchingDirsStack.clear();
-        return "";
-    }
-
-    private void getGroupsInDir(@NotNull File dir, HashMap<String, ArrayList<File>> groups)
-    {
-        Stack<File> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(dir);
-
-        while (!searchingDirsStack.empty())
-        {
-            File currentDir = searchingDirsStack.pop();
-
-            File[] files = currentDir.listFiles();
-            if (files == null)
-            {
-                return;
-            }
-
-            String groupName = currentDir.toString();
-            if (!groups.containsKey(groupName))
-            {
-                groups.put(groupName, new ArrayList<>());
-            }
-
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    if (containsPropertiesFiles(file))
-                    {
-                        getFilesInDirRec(file, groups.get(groupName));
-                        System.out.println(groups.get(groupName));
-                    }
-                    else
-                    {
-                        searchingDirsStack.push(file);
-                    }
-                }
-                else if (file.isFile() && file.getName().endsWith(".properties"))
-                {
-                    groups.get(groupName).add(file);
-                }
-            }
-        }
-    }
-
-    private boolean containsPropertiesFiles(@NotNull File dir)
-    {
-        File[] files = dir.listFiles();
-        if (files == null)
-        {
-            return false;
-        }
-
-        for (File file : files)
-        {
-            if (file.isFile() && file.getName().endsWith(".properties"))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void getFilesInDirRec(@NotNull File dir, ArrayList<File> blocks)
-    {
-        Stack<File> searchingDirsStack = new Stack<>();
-        searchingDirsStack.push(dir);
-
-        while (!searchingDirsStack.empty())
-        {
-            File currentDir = searchingDirsStack.pop();
-            File[] files = currentDir.listFiles();
-            if (files == null)
-            {
-                return;
-            }
-
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    searchingDirsStack.push(file);
-                }
-                else if (file.isFile() && file.getName().endsWith(".properties"))
-                {
-                    blocks.add(file);
-                }
-            }
-        }
-    }
-
     private void readFile()
     {
         ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
@@ -409,12 +206,13 @@ public class CTMSelector
                 try
                 {
                     Gson gson = new Gson();
-                    Reader reader = Files.newBufferedReader(ctmSelectorPath);
-                    serializableGroups.addAll(Arrays.asList(gson.fromJson(
-                            reader,
-                            Group.SerializableGroup[].class
-                    )));
-                    reader.close();
+                    try (Reader reader = Files.newBufferedReader(ctmSelectorPath))
+                    {
+                        serializableGroups.addAll(Arrays.asList(gson.fromJson(
+                                reader,
+                                Group.SerializableGroup[].class
+                        )));
+                    }
                 }
                 catch (IOException e)
                 {
@@ -431,12 +229,13 @@ public class CTMSelector
                     if (fileHeader.toString().endsWith("ctm_selector.json"))
                     {
                         Gson gson = new Gson();
-                        Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader));
-                        serializableGroups.addAll(Arrays.asList(gson.fromJson(
-                                reader,
-                                Group.SerializableGroup[].class
-                        )));
-                        reader.close();
+                        try (Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader)))
+                        {
+                            serializableGroups.addAll(Arrays.asList(gson.fromJson(
+                                    reader,
+                                    Group.SerializableGroup[].class
+                            )));
+                        }
                         break;
                     }
                 }
@@ -466,10 +265,7 @@ public class CTMSelector
 
     public void resetOptions()
     {
-        for (Group groups : packGroups)
-        {
-            groups.setEnabled(true);
-        }
+        packGroups.forEach(groups -> groups.setEnabled(true));
     }
 
     /**
@@ -478,15 +274,10 @@ public class CTMSelector
     public void updateGroupsStates()
     {
         ArrayList<Group.SerializableGroup> serializableGroupToWrite = new ArrayList<>(packGroups.size());
-
-        for (Group cr : packGroups)
-        {
-            for (CTMBlock ctmBlock : cr.getContainedBlocksList())
-            {
-                ctmBlock.setEnabled(cr.isEnabled());
-            }
-            serializableGroupToWrite.add(cr.getAsRecord());
-        }
+        packGroups.forEach(group -> {
+            group.getContainedBlocksList().forEach(ctmBlock -> ctmBlock.setEnabled(group.isEnabled()));
+            serializableGroupToWrite.add(group.getAsRecord());
+        });
 
         Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 

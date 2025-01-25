@@ -67,109 +67,6 @@ public class Group
     private final Identifier identifier;
     private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
 
-    //==================================================================
-    // Methods
-    //==================================================================
-    // Initialize from the folder tree
-    public Group(
-            @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
-            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
-    )
-    {
-        this.type          = type;
-        this.groupName     = groupName;
-        this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.isEnabled     = isEnabled;
-
-        // Obtains the path to each block
-        if (packPath != null)
-        {
-            // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
-            ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
-            identifierLikePropertiesPaths.clear();
-            identifierLikePropertiesPaths = tmp;
-
-            this.propertiesFilesPaths       = new ArrayList<>();
-            this.propertiesFilesFileHeaders = null;
-
-            for (String propFile : identifierLikePropertiesPaths)
-            {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
-
-                if (propFile.endsWith(".properties"))
-                {
-                    this.propertiesFilesPaths.add(assetsInPackPath);
-                }
-                else
-                {
-                    if (Files.isDirectory(assetsInPackPath))
-                    {
-                        addPropertiesFilesRec(assetsInPackPath.toFile());
-                    }
-                }
-            }
-
-            // The '/' after the '%s' is to get rid of the first slash
-            iconPath = iconPath.replace("%s/".formatted(packPath), "");
-            if (iconPath.startsWith("assets/"))
-            {
-                iconPath = iconPath.replaceFirst("assets/", "");
-            }
-            if (!iconPath.contains(":"))
-            {
-                iconPath = iconPath.replaceFirst("/", ":");
-            }
-        }
-        else
-        {
-            this.propertiesFilesPaths       = null;
-            this.propertiesFilesFileHeaders = new ArrayList<>();
-
-            if (zipPackPath != null)
-            {
-                try (ZipFile zipFile = new ZipFile(zipPackPath))
-                {
-                    for (String s : identifierLikePropertiesPaths)
-                    {
-                        String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
-
-                        if (pathInZip.endsWith(".properties"))
-                        {
-                            FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                            if (fh != null)
-                            {
-                                this.propertiesFilesFileHeaders.add(fh);
-                            }
-                        }
-                        else
-                        {
-                            getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
-                        }
-                    }
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
-        this.iconPath                      = iconPath;
-
-        // If the namespace is not specified, we use the 'unknown pack' icon
-        if (iconPath.contains(":"))
-        {
-            String[] split = iconPath.split(":");
-            this.identifier = new Identifier(split[0], split[1]);
-        }
-        else
-        {
-            this.identifier = new Identifier("textures/misc/unknown_pack.png");
-        }
-    }
-
     // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
     public Group(
             @NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath
@@ -250,26 +147,6 @@ public class Group
         {
             this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
-    }
-
-    private static @NotNull ArrayList<String> getIdentifierLikePaths(
-            @NotNull ArrayList<String> paths, @NotNull Path packPath
-    )
-    {
-        ArrayList<String> tmp = new ArrayList<>(paths.size());
-        for (String propFile : paths)
-        {
-            String fileNoFullPath = propFile.replace("%s/".formatted(packPath.toString()), "");
-            if (fileNoFullPath.startsWith("assets/"))
-            {
-                tmp.add(fileNoFullPath.replaceFirst("assets/", "").replaceFirst("/", ":"));
-            }
-            else
-            {
-                tmp.add(fileNoFullPath.replaceFirst("/", ":"));
-            }
-        }
-        return tmp;
     }
 
     //=================================
@@ -374,28 +251,15 @@ public class Group
     {
         if (propertiesFilesFileHeaders != null)
         {
-            for (FileHeader fileHeader : fileHeaders)
-            {
-                if (fileHeader.toString().startsWith(folder))
-                {
-                    if (fileHeader.toString().endsWith(".properties"))
-                    {
-                        propertiesFilesFileHeaders.add(fileHeader);
-                    }
-                }
-            }
+            fileHeaders.stream()
+                       .filter(fileHeader -> fileHeader.toString().startsWith(folder))
+                       .filter(fileHeader -> fileHeader.toString().endsWith(".properties"))
+                       .forEach(propertiesFilesFileHeaders::add);
         }
     }
 
     private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
     {
-        for (FileHeader fileHeader : fileHeaders)
-        {
-            if (fileHeader.toString().equals(name))
-            {
-                return fileHeader;
-            }
-        }
-        return null;
+        return fileHeaders.stream().filter(fileHeader -> fileHeader.toString().equals(name)).findFirst().orElse(null);
     }
 }

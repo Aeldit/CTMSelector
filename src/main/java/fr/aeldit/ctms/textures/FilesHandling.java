@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.aeldit.ctms.Utils.*;
 import static fr.aeldit.ctms.textures.CTMSelector.*;
@@ -345,13 +346,7 @@ public class FilesHandling
 
         ArrayList<String> path = new ArrayList<>(Arrays.stream(tmpPath.split("/")).toList());
         String namespace = path.removeFirst();
-        StringBuilder s = new StringBuilder();
-        for (String str : path)
-        {
-            s.append(str);
-            s.append("/");
-        }
-        tmpPath = s.toString();
+        tmpPath = path.stream().map(str -> str + "/").collect(Collectors.joining());
 
         for (int i = 0; i < 4; ++i)
         {
@@ -398,16 +393,8 @@ public class FilesHandling
             }
 
             // Iterates over the namespaces
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    if (Files.exists(Path.of("%s/optifine/ctm".formatted(file))))
-                    {
-                        return true;
-                    }
-                }
-            }
+            return Arrays.stream(files).filter(File::isDirectory)
+                         .anyMatch(file -> Files.exists(Path.of("%s/optifine/ctm".formatted(file))));
         }
         return false;
     }
@@ -438,13 +425,7 @@ public class FilesHandling
             }
 
             // Iterates over the namespaces
-            for (File file : files)
-            {
-                if (file.isDirectory() && !file.getName().equals("minecraft"))
-                {
-                    return true;
-                }
-            }
+            return Arrays.stream(files).anyMatch(file -> file.isDirectory() && !file.getName().equals("minecraft"));
         }
         return false;
     }
@@ -674,16 +655,8 @@ public class FilesHandling
      */
     private void removeEmptyKeys(@NotNull Properties properties)
     {
-        for (String type : types)
-        {
-            if (properties.containsKey(type))
-            {
-                if (properties.getProperty(type).isEmpty())
-                {
-                    properties.remove(type);
-                }
-            }
-        }
+        Arrays.stream(types).filter(properties::containsKey).filter(type -> properties.getProperty(type).isEmpty())
+              .forEachOrdered(properties::remove);
     }
 
     /**

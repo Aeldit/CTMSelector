@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * Represents a CTM pack
@@ -45,14 +47,14 @@ public class CTMPack
 
     public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector, boolean isModded)
     {
-        this.name = name;
+        this.name     = name;
         this.isFolder = isFolder;
 
         this.ctmSelector = hasSelector ? new CTMSelector(this.name, isFolder) : null;
 
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespacesBlocks = isModded ? new HashMap<>() : null;
+        this.namespacesBlocks     = isModded ? new HashMap<>() : null;
     }
 
     public String getName()
@@ -72,18 +74,11 @@ public class CTMPack
 
     public ArrayList<CTMBlock> getAllCTMBlocks()
     {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            return vanillaOnlyCtmBlocks;
-        }
-
-        ArrayList<CTMBlock> blocks = new ArrayList<>();
-
-        for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
-        {
-            blocks.addAll(ctmBlocks);
-        }
-        return blocks;
+        return vanillaOnlyCtmBlocks != null
+               ? vanillaOnlyCtmBlocks
+               : namespacesBlocks.values().stream()
+                                 .flatMap(Collection::stream)
+                                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<CTMBlock> getCTMBlocksForNamespace(String namespace)
@@ -95,28 +90,19 @@ public class CTMPack
     {
         if (vanillaOnlyCtmBlocks != null)
         {
-            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
-            {
-                if (ctmBlock.getBlockName().equals(name))
-                {
-                    return ctmBlock;
-                }
-            }
+            return vanillaOnlyCtmBlocks.stream()
+                                       .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
+                                       .findFirst()
+                                       .orElse(null);
         }
         else
         {
-            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
-            {
-                for (CTMBlock ctmBlock : ctmBlocks)
-                {
-                    if (ctmBlock.getBlockName().equals(name))
-                    {
-                        return ctmBlock;
-                    }
-                }
-            }
+            return namespacesBlocks.values().stream()
+                                   .flatMap(Collection::stream)
+                                   .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
+                                   .findFirst()
+                                   .orElse(null);
         }
-        return null;
     }
 
     public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList, String namespace)
@@ -188,26 +174,16 @@ public class CTMPack
     {
         if (vanillaOnlyCtmBlocks != null)
         {
-            for (CTMBlock ctmBlock : vanillaOnlyCtmBlocks)
-            {
-                if (!isBlockDisabledFromGroup(ctmBlock))
-                {
-                    ctmBlock.setEnabled(true);
-                }
-            }
+            vanillaOnlyCtmBlocks.stream()
+                                .filter(ctmBlock -> !isBlockDisabledFromGroup(ctmBlock))
+                                .forEach(ctmBlock -> ctmBlock.setEnabled(true));
         }
         else
         {
-            for (ArrayList<CTMBlock> ctmBlocks : namespacesBlocks.values())
-            {
-                for (CTMBlock ctmBlock : ctmBlocks)
-                {
-                    if (!isBlockDisabledFromGroup(ctmBlock))
-                    {
-                        ctmBlock.setEnabled(true);
-                    }
-                }
-            }
+            namespacesBlocks.values().stream()
+                            .flatMap(Collection::stream)
+                            .filter(ctmBlock -> !isBlockDisabledFromGroup(ctmBlock))
+                            .forEach(ctmBlock -> ctmBlock.setEnabled(true));
         }
     }
 
