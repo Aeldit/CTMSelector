@@ -1,8 +1,10 @@
 package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
+import net.lingala.zip4j.ZipFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 
 import static fr.aeldit.ctms.Utils.CTM_PACKS;
@@ -32,10 +34,18 @@ public class FilesHandling
         {
             if (file.isDirectory())
             {
-                CTMPack ctmPack = new CTMPack(file);
+                CTM_PACKS.add(new CTMPack(file));
             }
             else if (file.isFile() && file.getName().endsWith(".zip"))
             {
+                try (ZipFile zipFile = new ZipFile(file))
+                {
+                    CTM_PACKS.add(new CTMPack(zipFile));
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

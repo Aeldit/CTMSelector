@@ -3,6 +3,7 @@ package fr.aeldit.ctms.textures.entryTypes;
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,10 +55,32 @@ public class CTMPack
         this.name     = file.getName();
         this.isFolder = true;
 
-        boolean hasSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file)));
-        this.ctmSelector = hasSelector ? new CTMSelector(this.name) : null;
+        this.ctmSelector = folderHasCTMSelector(file) ? new CTMSelector(this.name) : null;
 
-        boolean isModded = false;
+        boolean isModded = isFolderModded(file);
+        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
+        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+    }
+
+    public CTMPack(@NotNull ZipFile zipFile)
+    {
+        this.name     = zipFile.toString();
+        this.isFolder = false;
+
+        this.ctmSelector = zipHasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;
+
+        boolean isModded = isZipModded(zipFile);
+        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
+        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+    }
+
+    private boolean folderHasCTMSelector(File file)
+    {
+        return Files.exists(Path.of("%s/ctm_selector.json".formatted(file)));
+    }
+
+    private boolean isFolderModded(@NotNull File file)
+    {
         File[] files = file.listFiles();
         if (files != null)
         {
@@ -68,30 +91,45 @@ public class CTMPack
                     File[] assetsDirFiles = checkModdedFile.listFiles();
                     if (assetsDirFiles != null)
                     {
-                        isModded = Arrays.stream(assetsDirFiles).anyMatch(f -> !f.getName().equals("minecraft"));
+                        return Arrays.stream(assetsDirFiles).anyMatch(f -> !f.getName().equals("minecraft"));
                     }
                     break;
                 }
             }
         }
-
-        // We either use only the vanilla array, or the hashmap
-        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+        return false;
     }
 
-    public CTMPack(@NotNull String name, boolean hasSelector, boolean isModded, ZipFile zipFile)
+    private boolean zipHasCTMSelector(@NotNull ZipFile zipFile)
     {
-        this.name     = name;
-        this.isFolder = false;
-
-        this.ctmSelector = hasSelector ? new CTMSelector(this.name, zipFile) : null;
-
-        // We either use only the vanilla array, or the hashmap
-        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+        try
+        {
+            return zipFile.getFileHeaders().stream().anyMatch(fh -> "ctm_selector.json".equals(fh.toString()));
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
+    private boolean isZipModded(@NotNull ZipFile zipFile)
+    {
+        try
+        {
+            return zipFile.getFileHeaders().stream()
+                          // Gets only the fileHeaders with 2 '/', because these are the namespaces
+                          .filter(fh -> fh.toString().chars().filter(c -> c == '/').count() == 2)
+                          .anyMatch(fh -> !"assets/minecraft/".equals(fh.toString()));
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*******************************************************************************************************************
+     **                                                GETTERS & SETTERS                                              **
+     ******************************************************************************************************************/
     public String getName()
     {
         return name;
