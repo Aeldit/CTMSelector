@@ -1,31 +1,24 @@
 package fr.aeldit.ctms.gui;
 
 import com.terraformersmc.modmenu.gui.widget.LegacyTexturedButtonWidget;
-import fr.aeldit.ctms.textures.CTMPacks;
+import fr.aeldit.ctms.gui.widgets.PacksListWidget;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.*;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import org.apache.commons.compress.utils.Lists;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.Utils.*;
@@ -67,11 +60,11 @@ public class CTMSScreen extends Screen
     {
         TEXTURES_HANDLING.load();
         PacksListWidget list = new PacksListWidget(
-                //? if >=1.20.4 {
-                client, width, height - 64, 28, 32, this
-                //?} else {
-                /*client, width, height, 32, height - 32, 25, this
-                 *///?}
+                //? if <1.20.4 {
+                /*client, width, height - 64, 28, 32, this
+                 *///?} else {
+                client, width, height - 64, 32, 32, this
+                //?}
         );
         addDrawableChild(list);
 
@@ -87,10 +80,10 @@ public class CTMSScreen extends Screen
         ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
                 width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
                 //? if <1.21 {
-                /*new Identifier(CTMS_MODID, "textures/gui/options.png"),
-                 *///?} else {
-                Identifier.of(CTMS_MODID, "textures/gui/options.png"),
-                //?}
+                new Identifier(CTMS_MODID, "textures/gui/options.png"),
+                //?} else {
+                /*Identifier.of(CTMS_MODID, "textures/gui/options.png"),
+                 *///?}
                 20, 40,
                 button -> MinecraftClient.getInstance().setScreen(this),
                 Text.empty()
@@ -117,10 +110,10 @@ public class CTMSScreen extends Screen
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
                 //? if <1.21 {
-                /*new Identifier(CTMS_MODID, "textures/gui/reload.png"),
-                 *///?} else {
-                Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
-                //?}
+                new Identifier(CTMS_MODID, "textures/gui/reload.png"),
+                //?} else {
+                /*Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
+                 *///?}
                 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();
@@ -130,126 +123,5 @@ public class CTMSScreen extends Screen
         );
         reloadButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.reload.tooltip")));
         addDrawableChild(reloadButton);
-    }
-
-    /**
-     * Modified by me to fit my purpose
-     *
-     * @author dicedpixels (<a href="https://github.com/dicedpixels">...</a>)
-     */
-    private static class PacksListWidget extends ElementListWidget<PackEntry>
-    {
-        private final PackEntryBuilder builder = new PackEntryBuilder(client, width);
-        private final Screen parent;
-
-
-        //? if >=1.20.4 {
-        public PacksListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, Screen parent)
-        {
-            super(client, width, height, y, itemHeight);
-            this.parent = parent;
-        }
-        //?} else {
-        /*public PacksListWidget(
-                MinecraftClient client, int width, int height, int top, int bottom, int itemHeight,
-                Screen parent
-
-        )
-        {
-            super(client, width, height, top, bottom, itemHeight);
-            this.parent = parent;
-        }
-        *///?}
-
-        //? if <1.20.6 {
-        /*@Override
-        protected int getScrollbarPositionX()
-        {
-            return this.width / 2 + 160;
-        }
-        *///?}
-
-        @Override
-        public int getRowWidth()
-        {
-            return 280;
-        }
-
-        public void add(CTMPack ctmPack)
-        {
-            addEntry(builder.build(ctmPack, parent));
-        }
-    }
-
-    private record PackEntryBuilder(MinecraftClient client, int width)
-    {
-        @Contract("_, _ -> new")
-        public @NotNull CTMSScreen.PackEntry build(@NotNull CTMPack ctmPack, @NotNull Screen parent)
-        {
-            var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-            var text = new TextWidget(180, 24,
-                                      CTMPacks.isPackEnabled(ctmPack.getName())
-                                      // If the pack is not enabled, it is in italic and gray
-                                      ? ctmPack.getNameAsText()
-                                      : Text.of(Formatting.GRAY
-                                                + Text.of(Formatting.ITALIC
-                                                          + ctmPack.getName()).getString()
-                                      )
-                    , client.textRenderer
-            );
-            var followButton = ButtonWidget.builder(
-                                                   Text.translatable("ctms.screen.open"),
-                                                   button -> client.setScreen(new ResourcePackScreen(parent, ctmPack))
-                                           )
-                                           .dimensions(0, 0, 40, 20)
-                                           .tooltip(Tooltip.of(Text.translatable("ctms.screen.open.tooltip")))
-                                           .build();
-            text.alignCenter();
-            layout.add(text);
-            layout.add(followButton);
-            layout.refreshPositions();
-            layout.setX(width / 2 - layout.getWidth() / 2 + 22);
-            return new PackEntry(ctmPack, layout);
-        }
-    }
-
-    static class PackEntry extends ElementListWidget.Entry<PackEntry>
-    {
-        private final CTMPack pack;
-        private final LayoutWidget layout;
-        private final List<ClickableWidget> children = Lists.newArrayList();
-
-        PackEntry(CTMPack pack, LayoutWidget layout)
-        {
-            this.pack = pack;
-            this.layout = layout;
-            this.layout.forEachChild(this.children::add);
-        }
-
-        @Override
-        public List<? extends Selectable> selectableChildren()
-        {
-            return children;
-        }
-
-        @Override
-        public List<? extends Element> children()
-        {
-            return children;
-        }
-
-        @Override
-        public void render(
-                @NotNull DrawContext context, int index, int y, int x,
-                int entryWidth, int entryHeight, int mouseX, int mouseY,
-                boolean hovered, float delta
-        )
-        {
-            //context.drawTexture(pack.getIdentifier(), x, y, 0, 0, 24, 24, 24, 24);
-            layout.forEachChild(child -> {
-                child.setY(y);
-                child.render(context, mouseX, mouseY, delta);
-            });
-        }
     }
 }

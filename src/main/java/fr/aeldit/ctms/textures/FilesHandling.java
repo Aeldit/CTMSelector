@@ -355,7 +355,7 @@ public class FilesHandling
 
         for (int i = 0; i < 4; ++i)
         {
-            if (properties.containsKey(types[i]))
+            if (properties.containsKey(types[i]) && !properties.getProperty(types[i]).isEmpty())
             {
                 for (String block : properties.getProperty(types[i]).split(" "))
                 {
@@ -601,8 +601,9 @@ public class FilesHandling
                     {
                         if (path.toString().endsWith(".properties"))
                         {
-                            boolean localChanged = updateProperties(ctmPack, properties, enabledBlocks, enabledTiles,
-                                                                    disabledBlocks, disabledTiles
+                            boolean localChanged = updateProperties(
+                                    ctmPack, properties, enabledBlocks, enabledTiles,
+                                    disabledBlocks, disabledTiles
                             );
 
                             changed |= localChanged;
@@ -712,13 +713,14 @@ public class FilesHandling
                     if (properties.containsKey(types[i]))
                     {
                         changed = true;
-                        ArrayList<String> currentType =
+                        ArrayList<String> blockOrTile =
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
-                        currentType.remove(optionName);
-                        properties.put(types[i], currentType.toString()
-                                                            .replace("[", "")
-                                                            .replace("]", "")
-                                                            .replace(",", "")
+                        blockOrTile.remove(optionName);
+                        properties.put(
+                                types[i], blockOrTile.toString()
+                                                     .replace("[", "")
+                                                     .replace("]", "")
+                                                     .replace(",", "")
                         );
 
                         String opposite = types[i + 2];
@@ -751,10 +753,11 @@ public class FilesHandling
                         ArrayList<String> currentType =
                                 new ArrayList<>(List.of(properties.getProperty(types[i]).split(" ")));
                         currentType.remove(optionName);
-                        properties.put(types[i], currentType.toString()
-                                                            .replace("[", "")
-                                                            .replace("]", "")
-                                                            .replace(",", "")
+                        properties.put(
+                                types[i], currentType.toString()
+                                                     .replace("[", "")
+                                                     .replace("]", "")
+                                                     .replace(",", "")
                         );
 
                         String opposite = types[i - 2];

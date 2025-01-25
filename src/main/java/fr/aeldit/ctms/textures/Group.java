@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Contains a list of blocks that can be toggled together using only one click
  */
@@ -33,7 +34,8 @@ public class Group
      *                             points to a directory, all properties files found inside it recursively will be
      *                             included (ex: {@code "minecraft:optifine/ctm/connect/logs"}
      * @param iconPath             The path to the icon that will be displayed on the screen for this group. Must be
-     *                             formed in the same way as the {@link Group#propertiesFilesStrings}, but must be
+     *                             formed in the same way as the {@link Group#identifierLikePropertiesPaths}, but
+     *                             must be
      *                             a path to a single {@code .png} file
      * @param isEnabled            If the block is enabled, this part is changed by the user of the mod (optional)
      * @param buttonTooltip        The tooltip to display on the button of the group (optional)
@@ -53,7 +55,7 @@ public class Group
     // Record fields
     //=================================
     private final String type, groupName, iconPath;
-    private final ArrayList<String> propertiesFilesStrings;
+    private final ArrayList<String> identifierLikePropertiesPaths;
     private boolean isEnabled;
     private final Text buttonTooltip;
 
@@ -68,52 +70,67 @@ public class Group
     //==================================================================
     // Methods
     //==================================================================
+    // Initialize from the folder tree
     public Group(
             @NotNull String type, @NotNull String groupName, @Nullable String buttonTooltip,
-            @NotNull ArrayList<String> propertiesFilesStrings, @NotNull String iconPath,
-            boolean isEnabled, @NotNull Path packPath, boolean isInFolder, @Nullable String zipPackPath
+            @NotNull ArrayList<String> identifierLikePropertiesPaths, @NotNull String iconPath,
+            boolean isEnabled, @Nullable Path packPath, @Nullable String zipPackPath
     )
     {
-        this.type = type;
-        this.groupName = groupName;
+        this.type          = type;
+        this.groupName     = groupName;
         this.buttonTooltip = buttonTooltip == null ? Text.empty() : Text.of(buttonTooltip);
-        this.propertiesFilesStrings = propertiesFilesStrings;
-        this.iconPath = iconPath;
-        this.isEnabled = isEnabled;
+        this.isEnabled     = isEnabled;
 
         // Obtains the path to each block
-        if (isInFolder)
+        if (packPath != null)
         {
-            this.propertiesFilesPaths = new ArrayList<>();
+            // If the files were acquired from the folder tree, we have full paths instead of Identifier-like ones
+            ArrayList<String> tmp = getIdentifierLikePaths(identifierLikePropertiesPaths, packPath);
+            identifierLikePropertiesPaths.clear();
+            identifierLikePropertiesPaths = tmp;
+
+            this.propertiesFilesPaths       = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
 
-            for (String s : propertiesFilesStrings)
+            for (String propFile : identifierLikePropertiesPaths)
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, s.replace(":", "/")));
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
 
-                if (!s.endsWith(".properties"))
+                if (propFile.endsWith(".properties"))
+                {
+                    this.propertiesFilesPaths.add(assetsInPackPath);
+                }
+                else
                 {
                     if (Files.isDirectory(assetsInPackPath))
                     {
                         addPropertiesFilesRec(assetsInPackPath.toFile());
                     }
                 }
-                else
-                {
-                    this.propertiesFilesPaths.add(assetsInPackPath);
-                }
+            }
+
+            // The '/' after the '%s' is to get rid of the first slash
+            iconPath = iconPath.replace("%s/".formatted(packPath), "");
+            if (iconPath.startsWith("assets/"))
+            {
+                iconPath = iconPath.replaceFirst("assets/", "");
+            }
+            if (!iconPath.contains(":"))
+            {
+                iconPath = iconPath.replaceFirst("/", ":");
             }
         }
         else
         {
-            this.propertiesFilesPaths = null;
+            this.propertiesFilesPaths       = null;
             this.propertiesFilesFileHeaders = new ArrayList<>();
 
             if (zipPackPath != null)
             {
                 try (ZipFile zipFile = new ZipFile(zipPackPath))
                 {
-                    for (String s : propertiesFilesStrings)
+                    for (String s : identifierLikePropertiesPaths)
                     {
                         String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
 
@@ -138,23 +155,121 @@ public class Group
             }
         }
 
-        // Case where the namespace is not specified
-        if (!iconPath.contains(":"))
+        this.identifierLikePropertiesPaths = identifierLikePropertiesPaths;
+        this.iconPath                      = iconPath;
+
+        // If the namespace is not specified, we use the 'unknown pack' icon
+        if (iconPath.contains(":"))
         {
-            //? if <1.21 {
-            /*this.identifier = new Identifier("textures/misc/unknown_pack.png");
-             *///?} else {
-            this.identifier = Identifier.of("textures/misc/unknown_pack.png");
-            //?}
+            String[] split = iconPath.split(":");
+            this.identifier = new Identifier(split[0], split[1]);
         }
         else
         {
-            //? if <1.21 {
-            /*this.identifier = new Identifier(iconPath.split(":")[0], iconPath.split(":")[1]);
-             *///?} else {
-            this.identifier = Identifier.of(iconPath.split(":")[0], iconPath.split(":")[1]);
-            //?}
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
         }
+    }
+
+    // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
+    public Group(
+            @NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath
+    )
+    {
+        this.type          = serializableGroup.type;
+        this.groupName     = serializableGroup.groupName;
+        this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
+        this.isEnabled     = serializableGroup.isEnabled;
+
+        // Obtains the path to each block
+        if (packPath != null)
+        {
+            this.propertiesFilesPaths       = new ArrayList<>();
+            this.propertiesFilesFileHeaders = null;
+
+            for (String propFile : serializableGroup.propertiesFilesPaths)
+            {
+                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
+
+                if (propFile.endsWith(".properties"))
+                {
+                    this.propertiesFilesPaths.add(assetsInPackPath);
+                }
+                else
+                {
+                    if (Files.isDirectory(assetsInPackPath))
+                    {
+                        addPropertiesFilesRec(assetsInPackPath.toFile());
+                    }
+                }
+            }
+        }
+        else
+        {
+            this.propertiesFilesPaths       = null;
+            this.propertiesFilesFileHeaders = new ArrayList<>();
+
+            if (zipPackPath != null)
+            {
+                try (ZipFile zipFile = new ZipFile(zipPackPath))
+                {
+                    for (String s : serializableGroup.propertiesFilesPaths)
+                    {
+                        String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
+
+                        if (pathInZip.endsWith(".properties"))
+                        {
+                            FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
+                            if (fh != null)
+                            {
+                                this.propertiesFilesFileHeaders.add(fh);
+                            }
+                        }
+                        else
+                        {
+                            getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                        }
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        this.identifierLikePropertiesPaths = serializableGroup.propertiesFilesPaths;
+        this.iconPath                      = serializableGroup.iconPath;
+
+        // If the namespace is not specified, we use the 'unknown pack' icon
+        if (iconPath.contains(":"))
+        {
+            String[] split = iconPath.split(":");
+            this.identifier = new Identifier(split[0], split[1]);
+        }
+        else
+        {
+            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+        }
+    }
+
+    private static @NotNull ArrayList<String> getIdentifierLikePaths(
+            @NotNull ArrayList<String> paths, @NotNull Path packPath
+    )
+    {
+        ArrayList<String> tmp = new ArrayList<>(paths.size());
+        for (String propFile : paths)
+        {
+            String fileNoFullPath = propFile.replace("%s/".formatted(packPath.toString()), "");
+            if (fileNoFullPath.startsWith("assets/"))
+            {
+                tmp.add(fileNoFullPath.replaceFirst("assets/", "").replaceFirst("/", ":"));
+            }
+            else
+            {
+                tmp.add(fileNoFullPath.replaceFirst("/", ":"));
+            }
+        }
+        return tmp;
     }
 
     //=================================
@@ -188,7 +303,7 @@ public class Group
     public SerializableGroup getAsRecord()
     {
         return new SerializableGroup(
-                type, groupName, propertiesFilesStrings, iconPath, isEnabled,
+                type, groupName, identifierLikePropertiesPaths, iconPath, isEnabled,
                 buttonTooltip.getString()
         );
     }

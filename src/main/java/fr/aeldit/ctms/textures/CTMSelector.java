@@ -13,12 +13,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
+import static fr.aeldit.ctms.Utils.getPrettyString;
 
 public class CTMSelector
 {
@@ -61,14 +60,14 @@ public class CTMSelector
 
             s.add(String.format(
                     """
-                            \t{
-                            \t\t"type": "%s",
-                            \t\t"group_name": "%s",
-                            \t\t"properties_files": %s,
-                            \t\t"icon_path": "%s",
-                            \t\t"enabled": %b,
-                            \t\t"button_tooltip": "%s"
-                            \t}""",
+                    \t{
+                    \t\t"type": "%s",
+                    \t\t"group_name": "%s",
+                    \t\t"properties_files": %s,
+                    \t\t"icon_path": "%s",
+                    \t\t"enabled": %b,
+                    \t\t"button_tooltip": "%s"
+                    \t}""",
                     sc.type(), sc.groupName(), sbFiles, sc.iconPath(), sc.isEnabled(),
                     sc.buttonTooltip() == null ? "" : sc.buttonTooltip()
             ));
@@ -86,45 +85,6 @@ public class CTMSelector
         }
         sb.append("\n]");
         return sb.toString().getBytes();
-    }
-
-    //=========================================================================
-    // Non-static part
-    //=========================================================================
-    private final ArrayList<Group> packGroups = new ArrayList<>();
-    private final String packName;
-    private final boolean isFolder;
-
-    public CTMSelector(@NotNull String packName, boolean isFolder)
-    {
-        this.packName = packName;
-        this.isFolder = isFolder;
-
-        readFile();
-    }
-
-    public ArrayList<Group> getGroups()
-    {
-        return packGroups;
-    }
-
-    /**
-     * @param ctmBlock The {@link CTMBlock} object
-     * @return The group that contains the block | null otherwise
-     */
-    public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
-    {
-        for (Group group : packGroups)
-        {
-            for (CTMBlock block : group.getContainedBlocksList())
-            {
-                if (block == ctmBlock)
-                {
-                    return group;
-                }
-            }
-        }
-        return null;
     }
 
     public static @Nullable ArrayList<String> getCTMBlocksNamesInProperties(@NotNull Path path)
@@ -207,14 +167,242 @@ public class CTMSelector
         return ctmBlocks;
     }
 
-    public void readFile()
+    //=========================================================================
+    // Non-static part
+    //=========================================================================
+    private final ArrayList<Group> packGroups = new ArrayList<>();
+    private final String packName, packPath;
+    private final boolean isFolder;
+
+    public CTMSelector(@NotNull String packName, boolean isFolder, boolean fromFile)
+    {
+        this.packName = packName;
+        this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
+        this.isFolder = isFolder;
+
+        if (fromFile)
+        {
+            readFile();
+        }
+        else
+        {
+            getGroupsFromFolderTree();
+        }
+    }
+
+    public ArrayList<Group> getGroups()
+    {
+        return packGroups;
+    }
+
+    /**
+     * @param ctmBlock The {@link CTMBlock} object
+     * @return The group that contains the block | null otherwise
+     */
+    public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
+    {
+        return packGroups.stream()
+                         .filter(group -> group.getContainedBlocksList().contains(ctmBlock))
+                         .findFirst()
+                         .orElse(null);
+    }
+
+    private void getGroupsFromFolderTree()
+    {
+        Path assetsDir = Path.of("%s/assets/".formatted(packPath));
+        if (!Files.exists(assetsDir))
+        {
+            return;
+        }
+
+        File[] namespaces = assetsDir.toFile().listFiles();
+        if (namespaces == null)
+        {
+            return;
+        }
+
+        HashMap<String, ArrayList<File>> groups = new HashMap<>();
+
+        for (File namespace : namespaces)
+        {
+            Path ctmDir = Path.of("%s/optifine/ctm".formatted(namespace));
+            if (!Files.exists(ctmDir))
+            {
+                continue;
+            }
+
+            File[] ctmFiles = ctmDir.toFile().listFiles();
+            if (ctmFiles == null)
+            {
+                continue;
+            }
+
+            for (File file : ctmFiles)
+            {
+                if (file.isDirectory())
+                {
+                    getGroupsInDir(file, groups);
+                }
+            }
+        }
+
+        groups.keySet().stream().map(group -> new Group(
+                "ctm", getPrettyString(group.substring(group.lastIndexOf("/") + 1).split("_")),
+                null, groups.get(group).stream().map(File::toString)
+                            .collect(Collectors.toCollection(ArrayList::new)), getIconPath(group), true,
+                Path.of(packPath), null
+        )).forEach(packGroups::add);
+    }
+
+    private String getIconPath(String strPath)
+    {
+        Path path = Path.of(strPath);
+        if (!Files.exists(path))
+        {
+            return "";
+        }
+
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(path.toFile());
+
+        while (!searchingDirsStack.empty())
+        {
+            File currentFile = searchingDirsStack.pop();
+            if (!Files.exists(currentFile.toPath()))
+            {
+                break;
+            }
+
+            File[] groupDir = currentFile.listFiles();
+            if (groupDir == null)
+            {
+                break;
+            }
+
+            // The file 0.png is usually the block with all the borders, so we use this file if it exists
+            for (File file : groupDir)
+            {
+                if (file.isFile() && file.toString().endsWith("0.png"))
+                {
+                    searchingDirsStack.clear();
+                    return file.toString();
+                }
+            }
+
+            for (File file : groupDir)
+            {
+                if (file.isFile() && file.getName().endsWith(".png"))
+                {
+                    searchingDirsStack.clear();
+                    return file.toString();
+                }
+
+                if (file.isDirectory())
+                {
+                    searchingDirsStack.push(file);
+                }
+            }
+        }
+        searchingDirsStack.clear();
+        return "";
+    }
+
+    private void getGroupsInDir(@NotNull File dir, HashMap<String, ArrayList<File>> groups)
+    {
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(dir);
+
+        while (!searchingDirsStack.empty())
+        {
+            File currentDir = searchingDirsStack.pop();
+
+            File[] files = currentDir.listFiles();
+            if (files == null)
+            {
+                return;
+            }
+
+            String groupName = currentDir.toString();
+            if (!groups.containsKey(groupName))
+            {
+                groups.put(groupName, new ArrayList<>());
+            }
+
+            for (File file : files)
+            {
+                if (file.isDirectory())
+                {
+                    if (containsPropertiesFiles(file))
+                    {
+                        getFilesInDirRec(file, groups.get(groupName));
+                        System.out.println(groups.get(groupName));
+                    }
+                    else
+                    {
+                        searchingDirsStack.push(file);
+                    }
+                }
+                else if (file.isFile() && file.getName().endsWith(".properties"))
+                {
+                    groups.get(groupName).add(file);
+                }
+            }
+        }
+    }
+
+    private boolean containsPropertiesFiles(@NotNull File dir)
+    {
+        File[] files = dir.listFiles();
+        if (files == null)
+        {
+            return false;
+        }
+
+        for (File file : files)
+        {
+            if (file.isFile() && file.getName().endsWith(".properties"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void getFilesInDirRec(@NotNull File dir, ArrayList<File> blocks)
+    {
+        Stack<File> searchingDirsStack = new Stack<>();
+        searchingDirsStack.push(dir);
+
+        while (!searchingDirsStack.empty())
+        {
+            File currentDir = searchingDirsStack.pop();
+            File[] files = currentDir.listFiles();
+            if (files == null)
+            {
+                return;
+            }
+
+            for (File file : files)
+            {
+                if (file.isDirectory())
+                {
+                    searchingDirsStack.push(file);
+                }
+                else if (file.isFile() && file.getName().endsWith(".properties"))
+                {
+                    blocks.add(file);
+                }
+            }
+        }
+    }
+
+    private void readFile()
     {
         ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
-        String packPathString = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
 
         if (isFolder)
         {
-            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPathString));
+            Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
             if (Files.exists(ctmSelectorPath))
             {
@@ -236,7 +424,7 @@ public class CTMSelector
         }
         else
         {
-            try (ZipFile zipFile = new ZipFile(packPathString))
+            try (ZipFile zipFile = new ZipFile(packPath))
             {
                 for (FileHeader fileHeader : zipFile.getFileHeaders())
                 {
@@ -260,16 +448,9 @@ public class CTMSelector
         }
 
         // Adds the groups properly initialized to the packGroups array
-        for (Group.SerializableGroup cr : serializableGroups)
-        {
-            packGroups.add(new Group(
-                                   cr.type(), cr.groupName(), cr.buttonTooltip(),
-                                   cr.propertiesFilesPaths(), cr.iconPath(), cr.isEnabled(),
-                                   Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)),
-                                   isFolder, isFolder ? null : packPathString
-                           )
-            );
-        }
+        serializableGroups.stream()
+                          .map(cr -> new Group(cr, isFolder ? Path.of(packPath) : null, isFolder ? null : packPath))
+                          .forEach(packGroups::add);
     }
 
     //=========================================================================
@@ -307,7 +488,7 @@ public class CTMSelector
             serializableGroupToWrite.add(cr.getAsRecord());
         }
 
-        Path ctmSelectorPath = Path.of("%s/%s/ctm_selector.json".formatted(RESOURCE_PACKS_DIR, packName));
+        Path ctmSelectorPath = Path.of("%s/ctm_selector.json".formatted(packPath));
 
         if (isFolder)
         {
@@ -328,7 +509,7 @@ public class CTMSelector
             HashMap<String, byte[]> h = new HashMap<>(1);
             byte[] b = toByteArray(serializableGroupToWrite);
             h.put("ctm_selector.json", b);
-            Utils.writeBytesToZip(Path.of("%s/%s".formatted(RESOURCE_PACKS_DIR, packName)).toString(), h);
+            Utils.writeBytesToZip(Path.of(packPath).toString(), h);
         }
     }
 }

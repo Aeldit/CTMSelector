@@ -29,14 +29,15 @@ public class NamespaceBlocksScreen extends Screen
     public NamespaceBlocksScreen(Screen parent, @NotNull CTMPack ctmPack, String namespace)
     {
         super(Text.of(namespace));
-        this.parent = parent;
-        this.ctmPack = ctmPack;
+        this.parent    = parent;
+        this.ctmPack   = ctmPack;
         this.namespace = namespace;
     }
 
     @Override
     public void close()
     {
+        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -53,9 +54,9 @@ public class NamespaceBlocksScreen extends Screen
         BlocksListWidget list = new BlocksListWidget(
                 //? if <1.20.4 {
                 /*client, width, height, 32, height - 32, 25,
-                *///?} else {
+                 *///?} else {
                 client, width, height - 64, 28, 24,
-                 //?}
+                //?}
                 ctmPack
         );
         addDrawableChild(list);
@@ -70,23 +71,21 @@ public class NamespaceBlocksScreen extends Screen
         }
 
         addDrawableChild(
-                ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                            ctmPack.resetOptions();
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
-                        .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                        .dimensions(10, 6, 100, 20)
-                        .build()
+                ButtonWidget.builder(
+                                    Text.translatable("ctms.screen.config.reset"), button -> {
+                                        ctmPack.resetOptions();
+                                        close();
+                                    }
+                            )
+                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                            .dimensions(10, 6, 100, 20)
+                            .build()
         );
 
         addDrawableChild(
-                ButtonWidget.builder(ScreenTexts.DONE, button -> {
-                            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
-                            close();
-                        })
-                        .dimensions(width / 2 - 100, height - 28, 200, 20)
-                        .build()
+                ButtonWidget.builder(ScreenTexts.DONE, button -> close())
+                            .dimensions(width / 2 - 100, height - 28, 200, 20)
+                            .build()
         );
     }
 }
