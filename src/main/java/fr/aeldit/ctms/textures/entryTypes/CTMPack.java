@@ -47,9 +47,9 @@ public class CTMPack
     private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
     private final HashMap<String, ArrayList<CTMBlock>> namespaceBlocks;
 
-    /*******************************************************************************************************************
-     **                                                  CONSTRUCTION                                                 **
-     ******************************************************************************************************************/
+    //******************************************************************************************************************
+    //**                                                 CONSTRUCTION                                                 **
+    //******************************************************************************************************************
     public CTMPack(@NotNull File file)
     {
         this.name     = file.getName();
@@ -127,9 +127,9 @@ public class CTMPack
         }
     }
 
-    /*******************************************************************************************************************
-     **                                                GETTERS & SETTERS                                              **
-     ******************************************************************************************************************/
+    //******************************************************************************************************************
+    //**                                                GETTERS & SETTERS                                             **
+    //******************************************************************************************************************
     public String getName()
     {
         return name;
@@ -176,6 +176,33 @@ public class CTMPack
                                   .findFirst()
                                   .orElse(null);
         }
+    }
+
+    public List<Path> getPropertiesFilesPaths()
+    {
+        if (vanillaOnlyCtmBlocks != null)
+        {
+            return vanillaOnlyCtmBlocks.stream().map(CTMBlock::getPropertiesPath).toList();
+        }
+        return namespaceBlocks.values().stream()
+                              .flatMap(ctmBlocks -> ctmBlocks.stream().map(CTMBlock::getPropertiesPath))
+                              .toList();
+    }
+
+    public CTMBlock getCTMBlockByPath(Path path)
+    {
+        if (vanillaOnlyCtmBlocks != null)
+        {
+            return vanillaOnlyCtmBlocks.stream()
+                                       .filter(ctmBlock -> ctmBlock.getPropertiesPath().equals(path))
+                                       .findFirst()
+                                       .orElse(null);
+        }
+        return namespaceBlocks.values().stream()
+                              .flatMap(ctmBlocks -> ctmBlocks.stream()
+                                                             .filter(block -> block.getPropertiesPath().equals(path))
+                              )
+                              .filter(ctmBlock -> ctmBlock.getPropertiesPath().equals(path)).findFirst().orElse(null);
     }
 
     public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList, String namespace)

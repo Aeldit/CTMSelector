@@ -2,15 +2,19 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
+import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.Utils.CTM_PACKS;
@@ -61,6 +65,9 @@ public class FilesHandling
         }
     }
 
+    //******************************************************************************************************************
+    //**                                             BLOCKS INITIALISATION                                            **
+    //******************************************************************************************************************
     private @NotNull HashMap<String, List<CTMBlock>> getAllBlocks(@NotNull File file)
     {
         File[] rootFiles = file.listFiles();
@@ -136,7 +143,7 @@ public class FilesHandling
                         continue;
                     }
 
-                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace));
+                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, file.toPath()));
                 }
             }
         }
@@ -144,26 +151,26 @@ public class FilesHandling
     }
 
     private @Nullable CTMBlock getCTMBlockFrom(
-            @NotNull Properties properties, @NotNull File parentFile, String namespace
+            @NotNull Properties properties, @NotNull File parentFile, String namespace, Path filePath
     )
     {
         Identifier identifier = getIdentifierFor(properties, parentFile, namespace);
 
         if (properties.containsKey(types[0]))
         {
-            return new CTMBlock(properties.get(types[0]).toString(), identifier, true);
+            return new CTMBlock(properties.get(types[0]).toString(), identifier, true, false, filePath);
         }
         if (properties.containsKey(types[1]))
         {
-            return new CTMBlock(properties.get(types[1]).toString(), identifier, true);
+            return new CTMBlock(properties.get(types[1]).toString(), identifier, true, true, filePath);
         }
         if (properties.containsKey(types[2]))
         {
-            return new CTMBlock(properties.get(types[2]).toString(), identifier, false);
+            return new CTMBlock(properties.get(types[2]).toString(), identifier, false, false, filePath);
         }
         if (properties.containsKey(types[3]))
         {
-            return new CTMBlock(properties.get(types[3]).toString(), identifier, false);
+            return new CTMBlock(properties.get(types[3]).toString(), identifier, false, true, filePath);
         }
         return null;
     }
@@ -205,5 +212,100 @@ public class FilesHandling
             }
         }
         return sb.toString();
+    }
+
+    //******************************************************************************************************************
+    //**                                                    UPDATES                                                   **
+    //******************************************************************************************************************
+    public void updatePropertiesFiles(@NotNull CTMPack ctmPack)
+    {
+        Path packPath = Path.of(
+                "%s/resourcepacks/%s".formatted(FabricLoader.getInstance().getGameDir(), ctmPack.getName()));
+        if (!Files.exists(packPath))
+        {
+            return;
+        }
+
+        boolean changed = false;
+
+        for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
+        {
+            Properties properties = new Properties();
+            try (FileInputStream fis = new FileInputStream(ctmBlock.getPropertiesPath().toFile()))
+            {
+                properties.load(fis);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            // If the state of the block in the file is not the same as in the memory, we write the state of the one
+            // in memory to the file
+            if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.getBlockName()))
+            {
+                changed = true;
+                setBlockInPropertiesToAppropriateState(properties, ctmBlock);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(ctmBlock.getPropertiesPath().toFile()))
+            {
+                removeEmptyKeys(properties);
+                properties.store(fos, null);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (changed)
+        {
+            MinecraftClient.getInstance().reloadResources();
+        }
+    }
+
+    private boolean isBlockEnabled(@NotNull Properties properties, String blockName)
+    {
+        return properties.containsKey(types[0]) && properties.get(types[0]).toString().equals(blockName)
+               || properties.containsKey(types[1]) && properties.get(types[1]).toString().equals(blockName);
+    }
+
+    private void setBlockInPropertiesToAppropriateState(Properties properties, @NotNull CTMBlock ctmBlock)
+    {
+        if (ctmBlock.isEnabled())
+        {
+            if (ctmBlock.isTile())
+            {
+                properties.put(types[1], ctmBlock.getBlockName());
+                properties.remove(types[3]);
+            }
+            else
+            {
+                properties.put(types[0], ctmBlock.getBlockName());
+                properties.remove(types[2]);
+            }
+        }
+        else
+        {
+            if (ctmBlock.isTile())
+            {
+                properties.put(types[3], ctmBlock.getBlockName());
+                properties.remove(types[1]);
+            }
+            else
+            {
+                properties.put(types[2], ctmBlock.getBlockName());
+                properties.remove(types[0]);
+            }
+        }
+    }
+
+    private void removeEmptyKeys(@NotNull Properties properties)
+    {
+        Arrays.stream(types)
+              .filter(properties::containsKey)
+              .filter(type -> properties.getProperty(type).isEmpty())
+              .forEachOrdered(properties::remove);
     }
 }

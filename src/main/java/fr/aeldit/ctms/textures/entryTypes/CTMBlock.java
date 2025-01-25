@@ -5,6 +5,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
+
 import static fr.aeldit.ctms.Utils.getPrettyString;
 
 /**
@@ -29,12 +31,18 @@ public class CTMBlock
     private final Text prettyName;
     private final Identifier identifier;
     private boolean enabled;
+    private final boolean isTile;
+    private final Path propertiesPath;
 
-    public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
+    public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled, boolean isTile,
+                    Path propertiesPath
+    )
     {
-        this.blockName  = blockName;
-        this.identifier = identifier;
-        this.enabled    = enabled;
+        this.blockName      = blockName;
+        this.identifier     = identifier;
+        this.enabled        = enabled;
+        this.isTile         = isTile;
+        this.propertiesPath = propertiesPath;
 
         if (blockName.split(":").length > 1)
         {
@@ -74,5 +82,15 @@ public class CTMBlock
     public void toggle()
     {
         this.enabled = !this.enabled;
+    }
+
+    public boolean isTile()
+    {
+        return isTile;
+    }
+
+    public Path getPropertiesPath()
+    {
+        return propertiesPath;
     }
 }

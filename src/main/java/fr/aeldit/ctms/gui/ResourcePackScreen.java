@@ -2,7 +2,6 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.BlocksListWidget;
 import fr.aeldit.ctms.textures.CTMPacks;
-import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,9 +14,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+
+import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class ResourcePackScreen extends Screen
@@ -44,7 +44,7 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            //TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+            TEXTURES_HANDLING.updatePropertiesFiles(ctmPack);
         }
         Objects.requireNonNull(client).setScreen(parent);
     }
@@ -71,14 +71,9 @@ public class ResourcePackScreen extends Screen
             );
             addDrawableChild(list);
 
-            // Sorts the blocks alphabetically
-            ArrayList<CTMBlock> toSort = new ArrayList<>(ctmPack.getCTMBlocks());
-            toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
-
-            for (CTMBlock block : toSort)
-            {
-                list.add(block);
-            }
+            ctmPack.getCTMBlocks().stream()
+                   .sorted(Comparator.comparing(ctmBlock -> ctmBlock.getPrettyName().getString()))
+                   .forEachOrdered(list::add);
 
             addDrawableChild(
                     ButtonWidget.builder(
