@@ -17,7 +17,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -68,14 +67,18 @@ public class CTMSScreen extends Screen
         );
         addDrawableChild(list);
 
-        ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
+        /*ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
         // Sorts the blocks alphabetically
         toSort.sort(Comparator.comparing(CTMPack::getName));
 
         for (CTMPack ctmPack : toSort)
         {
             list.add(ctmPack);
-        }
+        }*/
+
+        CTM_PACKS.getAvailableCTMPacks().stream()
+                 .sorted(Comparator.comparing(CTMPack::getName))
+                 .forEachOrdered(list::add);
 
         ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
                 width / 2 + 160, height - 28, 20, 20, 0, 0, 20,

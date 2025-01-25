@@ -64,7 +64,7 @@ public class CTMPack
 
     public CTMPack(@NotNull ZipFile zipFile)
     {
-        this.name     = zipFile.toString();
+        this.name     = zipFile.getFile().getName();
         this.isFolder = false;
 
         this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;

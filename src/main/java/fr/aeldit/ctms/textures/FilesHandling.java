@@ -46,7 +46,6 @@ public class FilesHandling
                 {
                     ctmPack.addAllBlocks(new ArrayList<>(entry.getValue()), entry.getKey());
                 }
-                System.out.println(ctmPack.getCTMBlocks());
             }
             else if (file.isFile() && file.getName().endsWith(".zip"))
             {
