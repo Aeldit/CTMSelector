@@ -258,7 +258,6 @@ public abstract class FilesHandling
                                 ctmPack, properties, enabledBlocks, enabledTiles,
                                 disabledBlocks, disabledTiles
                         );
-                        System.out.println(changed);
 
                         if (changed)
                         {

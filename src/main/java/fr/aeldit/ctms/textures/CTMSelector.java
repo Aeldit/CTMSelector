@@ -555,6 +555,7 @@ public class CTMSelector
                 }
 
                 ArrayList<FileHeader> fileHeadersInNamespace = getCTMFileHeadersInDir(namespaceFileHeader, fileHeaders);
+                System.out.println("fileHeadersInNamespace = " + fileHeadersInNamespace);
                 for (FileHeader fileHeader : fileHeadersInNamespace)
                 {
                     getGroupsInZipDir(fileHeader, groups, fileHeaders);
@@ -623,7 +624,6 @@ public class CTMSelector
 
         for (Group group : packGroups)
         {
-            System.out.println(group);
             boolean isEnabled = group.isEnabled;
             for (CTMBlock ctmBlock : group.getContainedBlocksList())
             {
