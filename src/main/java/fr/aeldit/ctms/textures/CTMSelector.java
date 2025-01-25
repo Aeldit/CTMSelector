@@ -532,6 +532,7 @@ public class CTMSelector
         }
     }
 
+    // TODO -> Fix paths not acquired properly (assetsversercraftoptifine/.../...)
     private void getGroupsFromZipTree(@NotNull ZipFile zipFile)
     {
         HashMap<String, ArrayList<FileHeader>> groups = new HashMap<>();
@@ -622,6 +623,7 @@ public class CTMSelector
 
         for (Group group : packGroups)
         {
+            System.out.println(group);
             boolean isEnabled = group.isEnabled;
             for (CTMBlock ctmBlock : group.getContainedBlocksList())
             {
@@ -751,9 +753,14 @@ public class CTMSelector
      * @return a list of all the CTMBlocks contained in the given properties file
      */
     public static @Nullable ArrayList<String> getCTMBlocksNamesInZipProperties(
-            @NotNull FileHeader fileHeader, @NotNull ZipFile zipFile
+            FileHeader fileHeader, ZipFile zipFile
     )
     {
+        if (fileHeader == null || zipFile == null)
+        {
+            return null;
+        }
+
         Properties properties = new Properties();
         try
         {

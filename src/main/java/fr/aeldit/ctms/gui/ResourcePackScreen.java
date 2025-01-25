@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Objects;
 
 import static fr.aeldit.ctms.gui.ScreenUtils.TEXT_RESET;
 import static fr.aeldit.ctms.gui.ScreenUtils.TOOLTIP_RESET;
@@ -44,7 +43,7 @@ public class ResourcePackScreen extends Screen
                       + Text.translatable("ctms.screen.packDisabledTitle").getString()
               )
         );
-        this.parent = parent;
+        this.parent  = parent;
         this.ctmPack = ctmPack;
         this.enabled = CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName());
     }
@@ -52,11 +51,16 @@ public class ResourcePackScreen extends Screen
     @Override
     public void close()
     {
+        if (client == null)
+        {
+            return;
+        }
+
         if (enabled)
         {
             FilesHandling.updateUsedTextures(ctmPack);
         }
-        Objects.requireNonNull(client).setScreen(parent);
+        client.setScreen(parent);
     }
 
     @Override
@@ -69,6 +73,11 @@ public class ResourcePackScreen extends Screen
     @Override
     protected void init()
     {
+        if (client == null)
+        {
+            return;
+        }
+
         if (enabled)
         {
             BlocksListWidget list = new BlocksListWidget(
@@ -81,6 +90,7 @@ public class ResourcePackScreen extends Screen
             );
             addDrawableChild(list);
 
+            // TODO -> Use streams
             // Sorts the blocks alphabetically
             ArrayList<CTMBlock> toSort = new ArrayList<>(ctmPack.getAllCTMBlocks());
             toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
@@ -91,18 +101,24 @@ public class ResourcePackScreen extends Screen
             }
 
             addDrawableChild(
-                    ButtonWidget.builder(TEXT_RESET, button -> {
-                                    ctmPack.resetOptions();
-                                    close();
-                                })
+                    ButtonWidget.builder(
+                                        TEXT_RESET, button -> {
+                                            ctmPack.resetOptions();
+                                            close();
+                                        }
+                                )
                                 .tooltip(TOOLTIP_RESET)
                                 .dimensions(10, 6, 100, 20)
                                 .build()
             );
 
             addDrawableChild(
-                    ButtonWidget.builder(TEXT_GROUPS, button ->
-                                        Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
+                    ButtonWidget.builder(
+                                        TEXT_GROUPS, button ->
+                                                client.setScreen(new GroupsScreen(
+                                                        this,
+                                                        ctmPack
+                                                ))
                                 )
                                 .tooltip(TOOLTIP_GROUPS)
                                 .dimensions(width - 110, 6, 100, 20)
@@ -112,11 +128,12 @@ public class ResourcePackScreen extends Screen
             if (ctmPack.isModded())
             {
                 addDrawableChild(
-                        ButtonWidget.builder(TEXT_MODS, button ->
-                                            Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
-                                                    this,
-                                                    ctmPack
-                                            ))
+                        ButtonWidget.builder(
+                                            TEXT_MODS, button ->
+                                                    client.setScreen(new NamespacesListScreen(
+                                                            this,
+                                                            ctmPack
+                                                    ))
                                     )
                                     .tooltip(TOOLTIP_MODS)
                                     .dimensions(width - 110, height - 28, 100, 20)

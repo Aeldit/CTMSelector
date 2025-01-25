@@ -2,7 +2,6 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.NotNull;
@@ -13,13 +12,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 import static fr.aeldit.ctms.Utils.*;
 
 public abstract class FilesHandling
 {
-    private static final String ctmPath = "optifine/ctm/";
+    private static final String CTM_PATH = "optifine/ctm/";
     private static final String[] TYPES = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
 
     public static void loadCTMPacks()
@@ -67,7 +69,7 @@ public abstract class FilesHandling
     {
         for (FileHeader fileHeader : fileHeaders)
         {
-            if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(ctmPath))
+            if (fileHeader.toString().startsWith("assets") && fileHeader.toString().contains(CTM_PATH))
             {
                 return false;
             }
@@ -175,7 +177,7 @@ public abstract class FilesHandling
                 // Loads the enabled and disabled blocks from the properties
                 fillBlocksLists(properties, enabledBlocks, enabledTiles, disabledBlocks, disabledTiles);
 
-                if (!path.toString().replace("\\", "/").contains(ctmPath))
+                if (!path.toString().replace("\\", "/").contains(CTM_PATH))
                 {
                     continue;
                 }
@@ -226,11 +228,10 @@ public abstract class FilesHandling
 
                 for (FileHeader fileHeader : fileHeaders)
                 {
-                    if (!fileHeader.toString().contains(ctmPath))
+                    if (!fileHeader.toString().contains(CTM_PATH))
                     {
                         continue;
                     }
-
 
                     if (fileHeader.toString().endsWith(".properties"))
                     {
@@ -257,6 +258,7 @@ public abstract class FilesHandling
                                 ctmPack, properties, enabledBlocks, enabledTiles,
                                 disabledBlocks, disabledTiles
                         );
+                        System.out.println(changed);
 
                         if (changed)
                         {
@@ -393,10 +395,11 @@ public abstract class FilesHandling
                 blocksOrTiles.remove(blockOrTile);
 
                 // And we write the modified property
-                properties.put(TYPES[i], blocksOrTiles.toString()
-                                                      .replace("[", "")
-                                                      .replace("]", "")
-                                                      .replace(",", "")
+                properties.put(
+                        TYPES[i], blocksOrTiles.toString()
+                                               .replace("[", "")
+                                               .replace("]", "")
+                                               .replace(",", "")
                 );
 
                 // We add the removed block to the opposite property type
@@ -444,10 +447,11 @@ public abstract class FilesHandling
                 ArrayList<String> currentType = new ArrayList<>(List.of(property.split(" ")));
                 currentType.remove(optionName);
 
-                properties.put(TYPES[i], currentType.toString()
-                                                    .replace("[", "")
-                                                    .replace("]", "")
-                                                    .replace(",", "")
+                properties.put(
+                        TYPES[i], currentType.toString()
+                                             .replace("[", "")
+                                             .replace("]", "")
+                                             .replace(",", "")
                 );
 
                 // We add the removed block to the opposite property type
