@@ -2,11 +2,16 @@ package fr.aeldit.ctms.textures.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
+import net.lingala.zip4j.ZipFile;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
  * <p>
  * {@link #vanillaOnlyCtmBlocks} contains the blocks when we only have vanilla blocks. Otherwise, this is null
  * <p>
- * {@link #namespacesBlocks} contains for each namespace an ArrayList containing all {@link CTMBlock}
+ * {@link #namespaceBlocks} contains for each namespace an ArrayList containing all {@link CTMBlock}
  * object found in the pack. If there are no modded blocks, this is null
  * <p>
  * The second part contains methods to handle the activation /
@@ -42,19 +47,49 @@ public class CTMPack
     private final boolean isFolder;
     private final CTMSelector ctmSelector;
     private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
-    // HashMap<namespace, blocks in the namespace>
-    private final HashMap<String, ArrayList<CTMBlock>> namespacesBlocks;
+    private final HashMap<String, ArrayList<CTMBlock>> namespaceBlocks;
 
-    public CTMPack(@NotNull String name, boolean isFolder, boolean hasSelector, boolean isModded)
+    public CTMPack(@NotNull File file)
     {
-        this.name     = name;
-        this.isFolder = isFolder;
+        this.name     = file.getName();
+        this.isFolder = true;
 
-        this.ctmSelector = hasSelector ? new CTMSelector(this.name, isFolder) : null;
+        boolean hasSelector = Files.exists(Path.of("%s/ctm_selector.json".formatted(file)));
+        this.ctmSelector = hasSelector ? new CTMSelector(this.name) : null;
+
+        boolean isModded = false;
+        File[] files = file.listFiles();
+        if (files != null)
+        {
+            for (File checkModdedFile : files)
+            {
+                if (checkModdedFile.toString().endsWith("assets"))
+                {
+                    File[] assetsDirFiles = checkModdedFile.listFiles();
+                    if (assetsDirFiles != null)
+                    {
+                        isModded = Arrays.stream(assetsDirFiles).anyMatch(f -> !f.getName().equals("minecraft"));
+                    }
+                    break;
+                }
+            }
+        }
 
         // We either use only the vanilla array, or the hashmap
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespacesBlocks     = isModded ? new HashMap<>() : null;
+        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+    }
+
+    public CTMPack(@NotNull String name, boolean hasSelector, boolean isModded, ZipFile zipFile)
+    {
+        this.name     = name;
+        this.isFolder = false;
+
+        this.ctmSelector = hasSelector ? new CTMSelector(this.name, zipFile) : null;
+
+        // We either use only the vanilla array, or the hashmap
+        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
+        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
     }
 
     public String getName()
@@ -72,18 +107,18 @@ public class CTMPack
         return isFolder;
     }
 
-    public ArrayList<CTMBlock> getAllCTMBlocks()
+    public ArrayList<CTMBlock> getCTMBlocks()
     {
         return vanillaOnlyCtmBlocks != null
                ? vanillaOnlyCtmBlocks
-               : namespacesBlocks.values().stream()
-                                 .flatMap(Collection::stream)
-                                 .collect(Collectors.toCollection(ArrayList::new));
+               : namespaceBlocks.values().stream()
+                                .flatMap(Collection::stream)
+                                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<CTMBlock> getCTMBlocksForNamespace(String namespace)
     {
-        return namespacesBlocks.containsKey(namespace) ? namespacesBlocks.get(namespace) : new ArrayList<>(0);
+        return namespaceBlocks.containsKey(namespace) ? namespaceBlocks.get(namespace) : new ArrayList<>(0);
     }
 
     public @Nullable CTMBlock getCTMBlockByName(String name)
@@ -97,11 +132,11 @@ public class CTMPack
         }
         else
         {
-            return namespacesBlocks.values().stream()
-                                   .flatMap(Collection::stream)
-                                   .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
-                                   .findFirst()
-                                   .orElse(null);
+            return namespaceBlocks.values().stream()
+                                  .flatMap(Collection::stream)
+                                  .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
+                                  .findFirst()
+                                  .orElse(null);
         }
     }
 
@@ -113,18 +148,18 @@ public class CTMPack
         }
         else
         {
-            if (!namespacesBlocks.containsKey(namespace))
+            if (!namespaceBlocks.containsKey(namespace))
             {
-                namespacesBlocks.put(namespace, new ArrayList<>(ctmBlockList.size()));
+                namespaceBlocks.put(namespace, new ArrayList<>(ctmBlockList.size()));
             }
 
-            namespacesBlocks.get(namespace).addAll(ctmBlockList);
+            namespaceBlocks.get(namespace).addAll(ctmBlockList);
         }
     }
 
     public ArrayList<String> getNamespaces()
     {
-        return new ArrayList<>(namespacesBlocks.keySet());
+        return new ArrayList<>(namespaceBlocks.keySet());
     }
 
     //=========================================================================
@@ -180,10 +215,10 @@ public class CTMPack
         }
         else
         {
-            namespacesBlocks.values().stream()
-                            .flatMap(Collection::stream)
-                            .filter(ctmBlock -> !isBlockDisabledFromGroup(ctmBlock))
-                            .forEach(ctmBlock -> ctmBlock.setEnabled(true));
+            namespaceBlocks.values().stream()
+                           .flatMap(Collection::stream)
+                           .filter(ctmBlock -> !isBlockDisabledFromGroup(ctmBlock))
+                           .forEach(ctmBlock -> ctmBlock.setEnabled(true));
         }
     }
 

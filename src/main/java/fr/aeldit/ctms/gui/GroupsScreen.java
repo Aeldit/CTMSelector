@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
-
 @Environment(EnvType.CLIENT)
 public class GroupsScreen extends Screen
 {
@@ -46,7 +44,7 @@ public class GroupsScreen extends Screen
     public void close()
     {
         ctmSelector.updateGroupsStates();
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        //TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 

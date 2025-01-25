@@ -169,11 +169,18 @@ public class CTMSelector
     private final String packPath;
     private final boolean isFolder;
 
-    public CTMSelector(@NotNull String packName, boolean isFolder)
+    public CTMSelector(@NotNull String packName)
     {
         this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
-        this.isFolder = isFolder;
+        this.isFolder = true;
         readFile();
+    }
+
+    public CTMSelector(@NotNull String packName, ZipFile zipFile)
+    {
+        this.packPath = "%s/%s".formatted(RESOURCE_PACKS_DIR, packName);
+        this.isFolder = false;
+        readZipFile(zipFile);
     }
 
     public ArrayList<Group> getGroups()
@@ -250,6 +257,40 @@ public class CTMSelector
         serializableGroups.stream()
                           .map(cr -> new Group(cr, isFolder ? Path.of(packPath) : null, isFolder ? null : packPath))
                           .forEach(packGroups::add);
+    }
+
+    private void readZipFile(@NotNull ZipFile zipFile)
+    {
+        ArrayList<Group.SerializableGroup> serializableGroups = new ArrayList<>();
+
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                if (fileHeader.getFileName().endsWith("ctm_selector.json"))
+                {
+                    Gson gson = new Gson();
+                    try (Reader reader = new InputStreamReader(zipFile.getInputStream(fileHeader)))
+                    {
+                        serializableGroups.addAll(Arrays.asList(gson.fromJson(
+                                reader,
+                                Group.SerializableGroup[].class
+                        )));
+                    }
+                    break;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Adds the groups properly initialized to the packGroups array
+        for (Group.SerializableGroup group : serializableGroups)
+        {
+            packGroups.add(new Group(group, null, packPath));
+        }
     }
 
     //=========================================================================
