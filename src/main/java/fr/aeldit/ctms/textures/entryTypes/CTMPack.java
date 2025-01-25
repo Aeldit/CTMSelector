@@ -11,10 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,14 +47,17 @@ public class CTMPack
     private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
     private final HashMap<String, ArrayList<CTMBlock>> namespaceBlocks;
 
+    /*******************************************************************************************************************
+     **                                                  CONSTRUCTION                                                 **
+     ******************************************************************************************************************/
     public CTMPack(@NotNull File file)
     {
         this.name     = file.getName();
         this.isFolder = true;
 
-        this.ctmSelector = folderHasCTMSelector(file) ? new CTMSelector(this.name) : null;
+        this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name) : null;
 
-        boolean isModded = isFolderModded(file);
+        boolean isModded = isModded(file);
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespaceBlocks      = isModded ? new HashMap<>() : null;
     }
@@ -67,19 +67,19 @@ public class CTMPack
         this.name     = zipFile.toString();
         this.isFolder = false;
 
-        this.ctmSelector = zipHasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;
+        this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;
 
-        boolean isModded = isZipModded(zipFile);
+        boolean isModded = isModded(zipFile);
         this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
         this.namespaceBlocks      = isModded ? new HashMap<>() : null;
     }
 
-    private boolean folderHasCTMSelector(File file)
+    private boolean hasCTMSelector(File file)
     {
         return Files.exists(Path.of("%s/ctm_selector.json".formatted(file)));
     }
 
-    private boolean isFolderModded(@NotNull File file)
+    private boolean isModded(@NotNull File file)
     {
         File[] files = file.listFiles();
         if (files != null)
@@ -100,7 +100,7 @@ public class CTMPack
         return false;
     }
 
-    private boolean zipHasCTMSelector(@NotNull ZipFile zipFile)
+    private boolean hasCTMSelector(@NotNull ZipFile zipFile)
     {
         try
         {
@@ -112,7 +112,7 @@ public class CTMPack
         }
     }
 
-    private boolean isZipModded(@NotNull ZipFile zipFile)
+    private boolean isModded(@NotNull ZipFile zipFile)
     {
         try
         {
@@ -197,7 +197,8 @@ public class CTMPack
 
     public ArrayList<String> getNamespaces()
     {
-        return new ArrayList<>(namespaceBlocks.keySet());
+        return vanillaOnlyCtmBlocks == null ? new ArrayList<>(namespaceBlocks.keySet())
+                                            : new ArrayList<>(List.of("minecraft"));
     }
 
     //=========================================================================
