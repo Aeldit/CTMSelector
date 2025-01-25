@@ -5,8 +5,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
-
 import static fr.aeldit.ctms.Utils.getPrettyString;
 
 /**
@@ -32,10 +30,10 @@ public class CTMBlock
     private final Identifier identifier;
     private boolean enabled;
     private final boolean isTile;
-    private final Path propertiesPath;
+    private final String propertiesPath;
 
     public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled, boolean isTile,
-                    Path propertiesPath
+                    String propertiesPath
     )
     {
         this.blockName      = blockName;
@@ -89,7 +87,7 @@ public class CTMBlock
         return isTile;
     }
 
-    public Path getPropertiesPath()
+    public String getPropertiesPath()
     {
         return propertiesPath;
     }

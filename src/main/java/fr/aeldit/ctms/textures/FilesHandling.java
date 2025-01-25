@@ -4,8 +4,11 @@ import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +58,12 @@ public class FilesHandling
             {
                 try (ZipFile zipFile = new ZipFile(file))
                 {
-                    CTM_PACKS.add(new CTMPack(zipFile));
+                    CTMPack ctmPack = new CTMPack(zipFile);
+                    CTM_PACKS.add(ctmPack);
+                    for (Map.Entry<String, List<CTMBlock>> entry : getAllBlocks(zipFile).entrySet())
+                    {
+                        ctmPack.addAllBlocks(new ArrayList<>(entry.getValue()), entry.getKey());
+                    }
                 }
                 catch (IOException e)
                 {
@@ -143,7 +151,7 @@ public class FilesHandling
                         continue;
                     }
 
-                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, file.toPath()));
+                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, file.toString()));
                 }
             }
         }
@@ -151,7 +159,7 @@ public class FilesHandling
     }
 
     private @Nullable CTMBlock getCTMBlockFrom(
-            @NotNull Properties properties, @NotNull File parentFile, String namespace, Path filePath
+            @NotNull Properties properties, @NotNull File parentFile, String namespace, String filePath
     )
     {
         Identifier identifier = getIdentifierFor(properties, parentFile, namespace);
@@ -214,6 +222,107 @@ public class FilesHandling
         return sb.toString();
     }
 
+    private @NotNull HashMap<String, List<CTMBlock>> getAllBlocks(@NotNull ZipFile zipFile)
+    {
+        HashMap<String, List<CTMBlock>> namespaceBlocks = new HashMap<>();
+        try
+        {
+            for (FileHeader fileHeader : zipFile.getFileHeaders())
+            {
+                String fhStr = fileHeader.toString();
+                if (!fhStr.contains(ctmPath))
+                {
+                    continue;
+                }
+
+                if (fhStr.chars().filter(c -> c == '/').count() > 2) // ex: assets/minecraft/block_dir
+                {
+                    String namespace = fhStr.split("/")[1];
+                    if (!namespaceBlocks.containsKey(namespace))
+                    {
+                        namespaceBlocks.put(namespace, new ArrayList<>()); // Puts an empty list for
+                    }
+
+                    if (!fhStr.endsWith(".properties"))
+                    {
+                        continue;
+                    }
+
+                    Properties props = new Properties();
+                    props.load(zipFile.getInputStream(fileHeader));
+
+                    if (props.isEmpty())
+                    {
+                        continue;
+                    }
+
+                    List<CTMBlock> ctmBlocks = namespaceBlocks.get(namespace);
+                    Identifier identifier = getIdentifierFor(props, zipFile, getParentFileHeader(fhStr), namespace);
+                    if (props.containsKey(types[0]))
+                    {
+                        ctmBlocks.add(new CTMBlock(props.get(types[0]).toString(), identifier, true, false, fhStr));
+                    }
+                    else if (props.containsKey(types[1]))
+                    {
+                        ctmBlocks.add(new CTMBlock(props.get(types[1]).toString(), identifier, true, true, fhStr));
+                    }
+                    else if (props.containsKey(types[2]))
+                    {
+                        ctmBlocks.add(new CTMBlock(props.get(types[2]).toString(), identifier, false, false, fhStr));
+                    }
+                    else if (props.containsKey(types[3]))
+                    {
+                        ctmBlocks.add(new CTMBlock(props.get(types[3]).toString(), identifier, false, true, fhStr));
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return namespaceBlocks;
+    }
+
+    private @NotNull String getParentFileHeader(@NotNull String fhStr)
+    {
+        StringBuilder sb = new StringBuilder();
+        String[] split = fhStr.split("/");
+        if (split.length < 2)
+        {
+            return "";
+        }
+
+        for (int i = 2; i < split.length - 1; i++)
+        {
+            sb.append(split[i]).append("/");
+        }
+        return sb.toString();
+    }
+
+    @Contract("_, _, _, _ -> new")
+    private @NotNull Identifier getIdentifierFor(
+            @NotNull Properties properties, @NotNull ZipFile zipFile, String parentFh, String namespace
+    )
+    {
+        try
+        {
+            int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
+            String pngFile = "%d.png".formatted(firstImage);
+
+            if (zipFile.getFileHeaders().stream().map(FileHeader::toString).toList()
+                       .contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+            {
+                return new Identifier(namespace, "%s%s".formatted(parentFh, pngFile));
+            }
+        }
+        catch (ZipException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return new Identifier("unknown");
+    }
+
     //******************************************************************************************************************
     //**                                                    UPDATES                                                   **
     //******************************************************************************************************************
@@ -228,10 +337,11 @@ public class FilesHandling
 
         boolean changed = false;
 
+        // TODO -> Support zip updating
         for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
         {
             Properties properties = new Properties();
-            try (FileInputStream fis = new FileInputStream(ctmBlock.getPropertiesPath().toFile()))
+            try (FileInputStream fis = new FileInputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
             {
                 properties.load(fis);
             }
@@ -248,7 +358,7 @@ public class FilesHandling
                 setBlockInPropertiesToAppropriateState(properties, ctmBlock);
             }
 
-            try (FileOutputStream fos = new FileOutputStream(ctmBlock.getPropertiesPath().toFile()))
+            try (FileOutputStream fos = new FileOutputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
             {
                 removeEmptyKeys(properties);
                 properties.store(fos, null);

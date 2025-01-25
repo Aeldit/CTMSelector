@@ -178,7 +178,7 @@ public class CTMPack
         }
     }
 
-    public List<Path> getPropertiesFilesPaths()
+    public List<String> getPropertiesFilesPaths()
     {
         if (vanillaOnlyCtmBlocks != null)
         {
@@ -189,7 +189,7 @@ public class CTMPack
                               .toList();
     }
 
-    public CTMBlock getCTMBlockByPath(Path path)
+    public CTMBlock getCTMBlockByPath(String path)
     {
         if (vanillaOnlyCtmBlocks != null)
         {
