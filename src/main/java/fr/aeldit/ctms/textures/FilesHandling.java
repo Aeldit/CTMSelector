@@ -240,7 +240,7 @@ public class FilesHandling
                     String namespace = fhStr.split("/")[1];
                     if (!namespaceBlocks.containsKey(namespace))
                     {
-                        namespaceBlocks.put(namespace, new ArrayList<>()); // Puts an empty list for
+                        namespaceBlocks.put(namespace, new ArrayList<>());
                     }
 
                     if (!fhStr.endsWith(".properties"))
@@ -338,40 +338,43 @@ public class FilesHandling
         boolean changed = false;
 
         // TODO -> Support zip updating
-        for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
+        if (ctmPack.isFolder())
         {
-            Properties properties = new Properties();
-            try (FileInputStream fis = new FileInputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
+            for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
             {
-                properties.load(fis);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
+                Properties properties = new Properties();
+                try (FileInputStream fis = new FileInputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
+                {
+                    properties.load(fis);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+                // If the state of the block in the file is not the same as in the memory, we write the state of the one
+                // in memory to the file
+                if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.getBlockName()))
+                {
+                    changed = true;
+                    setBlockInPropertiesToAppropriateState(properties, ctmBlock);
+                }
+
+                try (FileOutputStream fos = new FileOutputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
+                {
+                    removeEmptyKeys(properties);
+                    properties.store(fos, null);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
             }
 
-            // If the state of the block in the file is not the same as in the memory, we write the state of the one
-            // in memory to the file
-            if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.getBlockName()))
+            if (changed)
             {
-                changed = true;
-                setBlockInPropertiesToAppropriateState(properties, ctmBlock);
+                MinecraftClient.getInstance().reloadResources();
             }
-
-            try (FileOutputStream fos = new FileOutputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
-            {
-                removeEmptyKeys(properties);
-                properties.store(fos, null);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        if (changed)
-        {
-            MinecraftClient.getInstance().reloadResources();
         }
     }
 
