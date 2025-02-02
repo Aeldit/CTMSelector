@@ -26,8 +26,6 @@ public class Group
      * Holds the data of 1 group that needs to be written to the {@code "ctm_selector.json"} file (which contains a
      * list of groups)
      *
-     * @param type                 The type of texture property that will be toggled. For now, this can only be set
-     *                             to {@code "ctm"}
      * @param groupName            The name of the group that will be display on the screen
      * @param propertiesFilesPaths The path to each directory or properties files that will be included in the group.
      *                             These paths start from the namespace and go to the properties file. If the path
@@ -41,7 +39,6 @@ public class Group
      * @param buttonTooltip        The tooltip to display on the button of the group (optional)
      */
     public record SerializableGroup(
-            @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
             @SerializedName("icon_path") @NotNull String iconPath,
