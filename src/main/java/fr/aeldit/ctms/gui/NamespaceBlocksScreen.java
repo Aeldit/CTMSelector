@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
-
 @Environment(EnvType.CLIENT)
 public class NamespaceBlocksScreen extends Screen
 {
@@ -37,7 +35,7 @@ public class NamespaceBlocksScreen extends Screen
     @Override
     public void close()
     {
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        //TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
