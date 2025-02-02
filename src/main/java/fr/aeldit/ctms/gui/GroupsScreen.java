@@ -15,9 +15,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+
+import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class GroupsScreen extends Screen
@@ -44,7 +45,7 @@ public class GroupsScreen extends Screen
     public void close()
     {
         ctmSelector.updateGroupsStates();
-        //TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        TEXTURES_HANDLING.updatePropertiesFiles(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -77,14 +78,9 @@ public class GroupsScreen extends Screen
         );
         addDrawableChild(list);
 
-        // Sorts the blocks alphabetically
-        ArrayList<Group> toSort = new ArrayList<>(ctmSelector.getGroups());
-        toSort.sort(Comparator.comparing(Group::getGroupName));
-
-        for (Group group : toSort)
-        {
-            list.add(group);
-        }
+        ctmSelector.getGroups().stream()
+                   .sorted(Comparator.comparing(Group::getGroupName))
+                   .forEachOrdered(list::add);
 
         addDrawableChild(
                 ButtonWidget.builder(

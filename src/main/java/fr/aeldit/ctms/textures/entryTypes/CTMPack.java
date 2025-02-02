@@ -57,11 +57,11 @@ public class CTMPack
         this.name     = file.getName();
         this.isFolder = true;
 
-        this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name) : null;
-
         boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
         this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
+
+        this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name, this) : null;
     }
 
     public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
@@ -69,11 +69,11 @@ public class CTMPack
         this.name     = zipFile.getFile().getName();
         this.isFolder = false;
 
-        this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;
-
         boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
         this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
+
+        this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile, this) : null;
     }
 
     private boolean hasCTMSelector(File file)
