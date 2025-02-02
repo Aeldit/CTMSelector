@@ -11,8 +11,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a CTM pack
@@ -44,34 +46,34 @@ public class CTMPack
     private final String name;
     private final boolean isFolder;
     private final CTMSelector ctmSelector;
-    private final ArrayList<CTMBlock> vanillaOnlyCtmBlocks;
-    private final HashMap<String, ArrayList<CTMBlock>> namespaceBlocks;
+    private final List<CTMBlock> vanillaOnlyCtmBlocks;
+    private final Map<String, List<CTMBlock>> namespaceBlocks;
 
     //******************************************************************************************************************
     //**                                                 CONSTRUCTION                                                 **
     //******************************************************************************************************************
-    public CTMPack(@NotNull File file)
+    public CTMPack(@NotNull File file, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
         this.name     = file.getName();
         this.isFolder = true;
 
         this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name) : null;
 
-        boolean isModded = isModded(file);
-        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+        boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
+        this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
+        this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
     }
 
-    public CTMPack(@NotNull ZipFile zipFile)
+    public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
         this.name     = zipFile.getFile().getName();
         this.isFolder = false;
 
         this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile) : null;
 
-        boolean isModded = isModded(zipFile);
-        this.vanillaOnlyCtmBlocks = isModded ? null : new ArrayList<>();
-        this.namespaceBlocks      = isModded ? new HashMap<>() : null;
+        boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
+        this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
+        this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
     }
 
     private boolean hasCTMSelector(File file)
@@ -79,47 +81,11 @@ public class CTMPack
         return Files.exists(Path.of("%s/ctm_selector.json".formatted(file)));
     }
 
-    private boolean isModded(@NotNull File file)
-    {
-        File[] files = file.listFiles();
-        if (files != null)
-        {
-            for (File checkModdedFile : files)
-            {
-                if (checkModdedFile.toString().endsWith("assets"))
-                {
-                    File[] assetsDirFiles = checkModdedFile.listFiles();
-                    if (assetsDirFiles != null)
-                    {
-                        return Arrays.stream(assetsDirFiles).anyMatch(f -> !f.getName().equals("minecraft"));
-                    }
-                    break;
-                }
-            }
-        }
-        return false;
-    }
-
     private boolean hasCTMSelector(@NotNull ZipFile zipFile)
     {
         try
         {
             return zipFile.getFileHeaders().stream().anyMatch(fh -> "ctm_selector.json".equals(fh.toString()));
-        }
-        catch (ZipException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean isModded(@NotNull ZipFile zipFile)
-    {
-        try
-        {
-            return zipFile.getFileHeaders().stream()
-                          // Gets only the fileHeaders with 2 '/', because these are the namespaces
-                          .filter(fh -> fh.toString().chars().filter(c -> c == '/').count() == 2)
-                          .anyMatch(fh -> !"assets/minecraft/".equals(fh.toString()));
         }
         catch (ZipException e)
         {
@@ -145,16 +111,16 @@ public class CTMPack
         return isFolder;
     }
 
-    public ArrayList<CTMBlock> getCTMBlocks()
+    public List<CTMBlock> getCTMBlocks()
     {
         return vanillaOnlyCtmBlocks != null
                ? vanillaOnlyCtmBlocks
                : namespaceBlocks.values().stream()
                                 .flatMap(Collection::stream)
-                                .collect(Collectors.toCollection(ArrayList::new));
+                                .toList();
     }
 
-    public ArrayList<CTMBlock> getCTMBlocksForNamespace(String namespace)
+    public List<CTMBlock> getCTMBlocksForNamespace(String namespace)
     {
         return namespaceBlocks.containsKey(namespace) ? namespaceBlocks.get(namespace) : new ArrayList<>(0);
     }

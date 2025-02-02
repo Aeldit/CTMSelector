@@ -9,27 +9,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Utils
 {
     public static final String CTMS_MODID = "ctms";
-
-    public static final List<String> BLOCK_STATES = List.of(
-            "age", "attached", "attachment", "axis", "berries", "bites", "bloom", "bottom",
-            "can_summon", "candles", "charges", "conditional", "cracked", "crafting", "delay",
-            "disarmed", "distance", "down", "drag", "dusted", "east", "eggs", "enabled", "extended",
-            "eye", "face", "facing", "falling", "flower_amount", "half", "hanging", "has_book",
-            "has_bottle_0", "has_bottle_1", "has_bottle_2", "has_record", "hatch", "hinge", "honey_level",
-            "in_wall", "instrument", "inverted", "layers", "leaves", "level", "lit", "locked", "mode",
-            "moisture", "north", "note", "occupied", "ominous", "open", "orientation", "part",
-            "persistent", "pickles", "power", "powered", "rotation", "sculk_sensor_phase", "shape",
-            "short", "shrieking", "signal_fire", "slot_0_occupied", "slot_1_occupied", "slot_2_occupied",
-            "slot_3_occupied", "slot_4_occupied", "slot_5_occupied", "snowy", "south", "stage",
-            "thickness", "tilt", "trial_spawner_state", "triggered", "type", "unstable", "up",
-            "vault_state", "vertical_direction", "waterlogged", "west"
-    );
 
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;

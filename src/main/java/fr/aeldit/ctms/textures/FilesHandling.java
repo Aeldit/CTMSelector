@@ -47,23 +47,15 @@ public class FilesHandling
         {
             if (file.isDirectory())
             {
-                CTMPack ctmPack = new CTMPack(file);
+                CTMPack ctmPack = new CTMPack(file, getAllBlocks(file));
                 CTM_PACKS.add(ctmPack);
-                for (Map.Entry<String, List<CTMBlock>> entry : getAllBlocks(file).entrySet())
-                {
-                    ctmPack.addAllBlocks(new ArrayList<>(entry.getValue()), entry.getKey());
-                }
             }
             else if (file.isFile() && file.getName().endsWith(".zip"))
             {
                 try (ZipFile zipFile = new ZipFile(file))
                 {
-                    CTMPack ctmPack = new CTMPack(zipFile);
+                    CTMPack ctmPack = new CTMPack(zipFile, getAllBlocks(zipFile));
                     CTM_PACKS.add(ctmPack);
-                    for (Map.Entry<String, List<CTMBlock>> entry : getAllBlocks(zipFile).entrySet())
-                    {
-                        ctmPack.addAllBlocks(new ArrayList<>(entry.getValue()), entry.getKey());
-                    }
                 }
                 catch (IOException e)
                 {
