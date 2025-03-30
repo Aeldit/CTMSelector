@@ -173,7 +173,6 @@ public class Group
                 }
             }
         }
-        System.out.println(this.propertiesFilesPaths);
     }
 
     //=================================
