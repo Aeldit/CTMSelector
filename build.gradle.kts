@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("maven-publish")
-    id("fabric-loom") version "1.9-SNAPSHOT"
+    id("fabric-loom") version "1.10-SNAPSHOT"
     id("com.modrinth.minotaur") version "2.+"
     id("me.modmuss50.mod-publish-plugin") version "0.5.+"
 }
@@ -59,16 +59,15 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${mod.fabricVersion}")
 
     // Fabric API
-    for (name in listOf(
+    setOf(
         // ModMenu dependencies
         "fabric-resource-loader-v0",
         "fabric-key-binding-api-v1",
         // CyanLib dependencies
         "fabric-lifecycle-events-v1",
         "fabric-screen-api-v1"
-    )) {
-        val module = fabricApi.module(name, mod.fabricVersion)
-        modImplementation(module)
+    ).forEach {
+        modImplementation(fabricApi.module(it, mod.fabricVersion))
     }
 
     // ModMenu

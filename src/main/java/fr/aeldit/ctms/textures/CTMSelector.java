@@ -6,14 +6,19 @@ import fr.aeldit.ctms.Utils;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
 
@@ -99,17 +104,6 @@ public class CTMSelector
         }
     }
 
-    //=========================================================================
-    // Options handling
-    //=========================================================================
-    public void toggle(@NotNull Group group)
-    {
-        if (packGroups.contains(group))
-        {
-            group.toggle();
-        }
-    }
-
     public void resetOptions()
     {
         packGroups.forEach(groups -> groups.setEnabled(true));
@@ -143,7 +137,6 @@ public class CTMSelector
         }
     }
 
-    //eriseru
     public static byte @NotNull [] toByteArray(@NotNull List<Group.SerializableGroup> groups)
     {
         ArrayList<String> s = new ArrayList<>(groups.size());
@@ -189,83 +182,4 @@ public class CTMSelector
         return sb.toString().getBytes();
     }
 
-    public static @Nullable ArrayList<String> getCTMBlocksNamesInProperties(@NotNull Path path)
-    {
-        Properties properties = new Properties();
-        try
-        {
-            properties.load(new FileInputStream(String.valueOf(path)));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        if (properties.isEmpty())
-        {
-            return null;
-        }
-
-        ArrayList<String> ctmBlocks = new ArrayList<>(1);
-
-        if (properties.containsKey("matchBlocks"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
-        }
-        else if (properties.containsKey("matchTiles"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
-        }
-
-        if (properties.containsKey("ctmDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
-        }
-        else if (properties.containsKey("ctmTilesDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
-        }
-        return ctmBlocks;
-    }
-
-    public static @Nullable ArrayList<String> getCTMBlocksNamesInZipProperties(
-            @NotNull FileHeader fileHeader, @NotNull ZipFile zipFile
-    )
-    {
-        Properties properties = new Properties();
-        try
-        {
-            properties.load(zipFile.getInputStream(fileHeader));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        if (properties.isEmpty())
-        {
-            return null;
-        }
-
-        ArrayList<String> ctmBlocks = new ArrayList<>(1);
-
-        if (properties.containsKey("matchBlocks"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchBlocks").split(" ")));
-        }
-        else if (properties.containsKey("matchTiles"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("matchTiles").split(" ")));
-        }
-
-        if (properties.containsKey("ctmDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmDisabled").split(" ")));
-        }
-        else if (properties.containsKey("ctmTilesDisabled"))
-        {
-            ctmBlocks.addAll(Arrays.asList(properties.getProperty("ctmTilesDisabled").split(" ")));
-        }
-        return ctmBlocks;
-    }
 }

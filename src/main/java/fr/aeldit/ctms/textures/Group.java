@@ -241,49 +241,9 @@ public class Group
         }
     }
 
-    /**
-     * @return The absolute path to each Properties file contained by the Group
-     */
-    public @Nullable List<Path> getPropertiesFilesPaths()
-    {
-        return propertiesFilesPaths;
-    }
-
-    /**
-     * @return The fileHeaders of each properties file found in the zip pack
-     */
-    public @Nullable List<FileHeader> getPropertiesFilesFileHeaders()
-    {
-        return propertiesFilesFileHeaders;
-    }
-
     //=================================
     // Other
     //=================================
-
-    /**
-     * Searches the directory recursively to find every properties files inside it
-     *
-     * @param dir The directory
-     */
-    private void addPropertiesFilesRec(@NotNull File dir)
-    {
-        File[] files = dir.listFiles();
-        if (files != null)
-        {
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    addPropertiesFilesRec(file);
-                }
-                if (file.isFile() && file.toString().endsWith(".properties"))
-                {
-                    propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
-                }
-            }
-        }
-    }
 
     private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, @NotNull String folder)
     {

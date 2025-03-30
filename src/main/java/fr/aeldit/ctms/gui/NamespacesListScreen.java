@@ -79,6 +79,7 @@ public class NamespacesListScreen extends Screen
                             .build()
         );
 
+        // TODO -> Button to disabled mod's textures entirely
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                             .dimensions(width / 2 - 100, height - 28, 200, 20)

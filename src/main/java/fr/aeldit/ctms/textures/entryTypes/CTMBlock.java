@@ -44,8 +44,6 @@ public class CTMBlock
 
         if (blockName.contains(":"))
         {
-            Text tmp_name = Text.of(getPrettyString(blockName.split("_")));
-
             String[] split = blockName.split(":");
             // If the namespace is specified
             if (split.length == 2 && !split[1].contains("="))

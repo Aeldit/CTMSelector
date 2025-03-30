@@ -6,7 +6,6 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -64,6 +63,7 @@ public class CTMPack
         this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name, this) : null;
     }
 
+    // TODO -> Handle zip packs
     public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
         this.name     = zipFile.getFile().getName();
@@ -123,69 +123,6 @@ public class CTMPack
     public List<CTMBlock> getCTMBlocksForNamespace(String namespace)
     {
         return namespaceBlocks.containsKey(namespace) ? namespaceBlocks.get(namespace) : new ArrayList<>(0);
-    }
-
-    public @Nullable CTMBlock getCTMBlockByName(String name)
-    {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            return vanillaOnlyCtmBlocks.stream()
-                                       .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
-                                       .findFirst()
-                                       .orElse(null);
-        }
-        else
-        {
-            return namespaceBlocks.values().stream()
-                                  .flatMap(Collection::stream)
-                                  .filter(ctmBlock -> ctmBlock.getBlockName().equals(name))
-                                  .findFirst()
-                                  .orElse(null);
-        }
-    }
-
-    public List<String> getPropertiesFilesPaths()
-    {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            return vanillaOnlyCtmBlocks.stream().map(CTMBlock::getPropertiesPath).toList();
-        }
-        return namespaceBlocks.values().stream()
-                              .flatMap(ctmBlocks -> ctmBlocks.stream().map(CTMBlock::getPropertiesPath))
-                              .toList();
-    }
-
-    public CTMBlock getCTMBlockByPath(String path)
-    {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            return vanillaOnlyCtmBlocks.stream()
-                                       .filter(ctmBlock -> ctmBlock.getPropertiesPath().equals(path))
-                                       .findFirst()
-                                       .orElse(null);
-        }
-        return namespaceBlocks.values().stream()
-                              .flatMap(ctmBlocks -> ctmBlocks.stream()
-                                                             .filter(block -> block.getPropertiesPath().equals(path))
-                              )
-                              .filter(ctmBlock -> ctmBlock.getPropertiesPath().equals(path)).findFirst().orElse(null);
-    }
-
-    public void addAllBlocks(@NotNull ArrayList<CTMBlock> ctmBlockList, String namespace)
-    {
-        if (vanillaOnlyCtmBlocks != null)
-        {
-            vanillaOnlyCtmBlocks.addAll(ctmBlockList);
-        }
-        else
-        {
-            if (!namespaceBlocks.containsKey(namespace))
-            {
-                namespaceBlocks.put(namespace, new ArrayList<>(ctmBlockList.size()));
-            }
-
-            namespaceBlocks.get(namespace).addAll(ctmBlockList);
-        }
     }
 
     public ArrayList<String> getNamespaces()
@@ -252,20 +189,5 @@ public class CTMPack
                            .filter(ctmBlock -> !isBlockDisabledFromGroup(ctmBlock))
                            .forEach(ctmBlock -> ctmBlock.setEnabled(true));
         }
-    }
-
-    public boolean isBlockEnabled(String blockName)
-    {
-        CTMBlock ctmBlock = getCTMBlockByName(blockName);
-        if (ctmBlock == null)
-        {
-            return true;
-        }
-
-        if (!isBlockDisabledFromGroup(ctmBlock))
-        {
-            return ctmBlock.isEnabled();
-        }
-        return false;
     }
 }
