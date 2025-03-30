@@ -58,7 +58,7 @@ public class CTMSelector
     public @Nullable Group getGroupWithBlock(@NotNull CTMBlock ctmBlock)
     {
         return packGroups.stream()
-                         .filter(group -> group.getContainedBlocksList().contains(ctmBlock))
+                         .filter(group -> group.containedBlocks.contains(ctmBlock))
                          .findFirst()
                          .orElse(null);
     }
@@ -106,7 +106,7 @@ public class CTMSelector
 
     public void resetOptions()
     {
-        packGroups.forEach(groups -> groups.setEnabled(true));
+        packGroups.forEach(Group::enable);
     }
 
     /**
@@ -114,7 +114,7 @@ public class CTMSelector
      */
     public void updateGroupsStates()
     {
-        packGroups.forEach(grp -> grp.getContainedBlocksList().forEach(block -> block.setEnabled(grp.isEnabled())));
+        packGroups.forEach(grp -> grp.containedBlocks.forEach(block -> block.setEnabled(grp.isEnabled())));
         List<Group.SerializableGroup> serializableGroupToWrite = packGroups.stream().map(Group::getAsRecord).toList();
 
         if (isFolder)

@@ -72,7 +72,7 @@ public class ResourcePackScreen extends Screen
             addDrawableChild(list);
 
             ctmPack.getCTMBlocks().stream()
-                   .sorted(Comparator.comparing(ctmBlock -> ctmBlock.getPrettyName().getString()))
+                   .sorted(Comparator.comparing(ctmBlock -> ctmBlock.prettyName.getString()))
                    .forEachOrdered(list::add);
 
             addDrawableChild(

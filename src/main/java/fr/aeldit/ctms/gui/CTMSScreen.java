@@ -67,22 +67,9 @@ public class CTMSScreen extends Screen
         );
         addDrawableChild(list);
 
-        CTM_PACKS.getAvailableCTMPacks().stream()
-                 .sorted(Comparator.comparing(CTMPack::getName))
-                 .forEachOrdered(list::add);
-
-        ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
-                width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
-                //? if <1.21 {
-                new Identifier(CTMS_MODID, "textures/gui/options.png"),
-                //?} else {
-                /*Identifier.of(CTMS_MODID, "textures/gui/options.png"),
-                 *///?}
-                20, 40,
-                button -> MinecraftClient.getInstance().setScreen(this),
-                Text.empty()
-        );
-        addDrawableChild(optionsButton);
+        CTM_PACKS.availableCTMPacks.stream()
+                                   .sorted(Comparator.comparing(CTMPack::getName))
+                                   .forEachOrdered(list::add);
 
         addDrawableChild(
                 ButtonWidget.builder(

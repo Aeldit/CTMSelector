@@ -20,12 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static fr.aeldit.ctms.Utils.CTM_PACKS;
-import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
+import static fr.aeldit.ctms.Utils.*;
 
 public class FilesHandling
 {
-    private final String ctmPath = "optifine/ctm/";
     private final String[] types = {"matchBlocks", "matchTiles", "ctmDisabled", "ctmTilesDisabled"};
 
     public void load()
@@ -47,14 +45,14 @@ public class FilesHandling
         {
             if (file.isDirectory())
             {
-                CTMPack ctmPack = new CTMPack(file, getAllBlocks(file));
+                CTMPack ctmPack = new CTMPack(file, getAllBlocksInPack(file));
                 CTM_PACKS.add(ctmPack);
             }
             else if (file.isFile() && file.getName().endsWith(".zip"))
             {
                 try (ZipFile zipFile = new ZipFile(file))
                 {
-                    CTMPack ctmPack = new CTMPack(zipFile, getAllBlocks(zipFile));
+                    CTMPack ctmPack = new CTMPack(zipFile, getAllBlocksInPack(zipFile));
                     CTM_PACKS.add(ctmPack);
                 }
                 catch (IOException e)
@@ -65,10 +63,10 @@ public class FilesHandling
         }
     }
 
-    //******************************************************************************************************************
-    //**                                             BLOCKS INITIALISATION                                            **
-    //******************************************************************************************************************
-    private @NotNull HashMap<String, List<CTMBlock>> getAllBlocks(@NotNull File file)
+    //****************************************************************************************************************//
+    //**                                             BLOCKS INITIALISATION                                          **//
+    //****************************************************************************************************************//
+    private @NotNull HashMap<String, List<CTMBlock>> getAllBlocksInPack(@NotNull File file)
     {
         File[] rootFiles = file.listFiles();
         if (rootFiles == null)
@@ -100,6 +98,61 @@ public class FilesHandling
             return allBlocks;
         }
         return new HashMap<>();
+    }
+
+    private @NotNull HashMap<String, List<CTMBlock>> getAllBlocksInPack(@NotNull ZipFile zipFile) throws IOException
+    {
+        HashMap<String, List<CTMBlock>> namespaceBlocks = new HashMap<>();
+        for (FileHeader fileHeader : zipFile.getFileHeaders())
+        {
+            String fhStr = fileHeader.toString();
+            if (!fhStr.contains("optifine/ctm/"))
+            {
+                continue;
+            }
+
+            if (fhStr.chars().filter(c -> c == '/').count() > 2) // ex: assets/minecraft/block_dir
+            {
+                String namespace = fhStr.split("/")[1];
+                if (!namespaceBlocks.containsKey(namespace))
+                {
+                    namespaceBlocks.put(namespace, new ArrayList<>());
+                }
+
+                if (!fhStr.endsWith(".properties"))
+                {
+                    continue;
+                }
+
+                Properties props = new Properties();
+                props.load(zipFile.getInputStream(fileHeader));
+
+                if (props.isEmpty())
+                {
+                    continue;
+                }
+
+                List<CTMBlock> ctmBlocks = namespaceBlocks.get(namespace);
+                Identifier identifier = getIdentifierFor(props, zipFile, getParentFileHeader(fhStr), namespace);
+                if (props.containsKey(types[0]))
+                {
+                    ctmBlocks.add(new CTMBlock(props.get(types[0]).toString(), identifier, true, false, fhStr));
+                }
+                else if (props.containsKey(types[1]))
+                {
+                    ctmBlocks.add(new CTMBlock(props.get(types[1]).toString(), identifier, true, true, fhStr));
+                }
+                else if (props.containsKey(types[2]))
+                {
+                    ctmBlocks.add(new CTMBlock(props.get(types[2]).toString(), identifier, false, false, fhStr));
+                }
+                else if (props.containsKey(types[3]))
+                {
+                    ctmBlocks.add(new CTMBlock(props.get(types[3]).toString(), identifier, false, true, fhStr));
+                }
+            }
+        }
+        return namespaceBlocks;
     }
 
     private @NotNull List<CTMBlock> getCTMBlocksForNamespace(File namespaceDir)
@@ -198,6 +251,24 @@ public class FilesHandling
         return identifier;
     }
 
+    @Contract("_, _, _, _ -> new")
+    private @NotNull Identifier getIdentifierFor(
+            @NotNull Properties properties, @NotNull ZipFile zipFile, String parentFh, String namespace
+    ) throws ZipException
+    {
+        int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
+        String pngFile = "%d.png".formatted(firstImage);
+
+        if (zipFile.getFileHeaders().stream()
+                   .map(FileHeader::toString)
+                   .toList()
+                   .contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+        {
+            return new Identifier(namespace, "%s%s".formatted(parentFh, pngFile));
+        }
+        return new Identifier("unknown");
+    }
+
     private @NotNull String getIdentifierLikePathFrom(String namespace, @NotNull String path)
     {
         List<String> split = new ArrayList<>(List.of(path.split("/")));
@@ -212,68 +283,6 @@ public class FilesHandling
             }
         }
         return sb.toString();
-    }
-
-    private @NotNull HashMap<String, List<CTMBlock>> getAllBlocks(@NotNull ZipFile zipFile)
-    {
-        HashMap<String, List<CTMBlock>> namespaceBlocks = new HashMap<>();
-        try
-        {
-            for (FileHeader fileHeader : zipFile.getFileHeaders())
-            {
-                String fhStr = fileHeader.toString();
-                if (!fhStr.contains(ctmPath))
-                {
-                    continue;
-                }
-
-                if (fhStr.chars().filter(c -> c == '/').count() > 2) // ex: assets/minecraft/block_dir
-                {
-                    String namespace = fhStr.split("/")[1];
-                    if (!namespaceBlocks.containsKey(namespace))
-                    {
-                        namespaceBlocks.put(namespace, new ArrayList<>());
-                    }
-
-                    if (!fhStr.endsWith(".properties"))
-                    {
-                        continue;
-                    }
-
-                    Properties props = new Properties();
-                    props.load(zipFile.getInputStream(fileHeader));
-
-                    if (props.isEmpty())
-                    {
-                        continue;
-                    }
-
-                    List<CTMBlock> ctmBlocks = namespaceBlocks.get(namespace);
-                    Identifier identifier = getIdentifierFor(props, zipFile, getParentFileHeader(fhStr), namespace);
-                    if (props.containsKey(types[0]))
-                    {
-                        ctmBlocks.add(new CTMBlock(props.get(types[0]).toString(), identifier, true, false, fhStr));
-                    }
-                    else if (props.containsKey(types[1]))
-                    {
-                        ctmBlocks.add(new CTMBlock(props.get(types[1]).toString(), identifier, true, true, fhStr));
-                    }
-                    else if (props.containsKey(types[2]))
-                    {
-                        ctmBlocks.add(new CTMBlock(props.get(types[2]).toString(), identifier, false, false, fhStr));
-                    }
-                    else if (props.containsKey(types[3]))
-                    {
-                        ctmBlocks.add(new CTMBlock(props.get(types[3]).toString(), identifier, false, true, fhStr));
-                    }
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return namespaceBlocks;
     }
 
     private @NotNull String getParentFileHeader(@NotNull String fhStr)
@@ -292,32 +301,9 @@ public class FilesHandling
         return sb.toString();
     }
 
-    @Contract("_, _, _, _ -> new")
-    private @NotNull Identifier getIdentifierFor(
-            @NotNull Properties properties, @NotNull ZipFile zipFile, String parentFh, String namespace
-    )
-    {
-        try
-        {
-            int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
-            String pngFile = "%d.png".formatted(firstImage);
-
-            if (zipFile.getFileHeaders().stream().map(FileHeader::toString).toList()
-                       .contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
-            {
-                return new Identifier(namespace, "%s%s".formatted(parentFh, pngFile));
-            }
-        }
-        catch (ZipException e)
-        {
-            throw new RuntimeException(e);
-        }
-        return new Identifier("unknown");
-    }
-
-    //******************************************************************************************************************
-    //**                                                    UPDATES                                                   **
-    //******************************************************************************************************************
+    //****************************************************************************************************************//
+    //**                                                    UPDATES                                                 **//
+    //****************************************************************************************************************//
     public void updatePropertiesFiles(@NotNull CTMPack ctmPack)
     {
         Path packPath = Path.of(
@@ -329,13 +315,13 @@ public class FilesHandling
 
         boolean changed = false;
 
-        // TODO -> Support zip updating
-        if (ctmPack.isFolder())
+        if (ctmPack.isFolder)
         {
             for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
             {
                 Properties properties = new Properties();
-                try (FileInputStream fis = new FileInputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
+                File file = Path.of(ctmBlock.propertiesPath).toFile();
+                try (FileInputStream fis = new FileInputStream(file))
                 {
                     properties.load(fis);
                 }
@@ -346,13 +332,13 @@ public class FilesHandling
 
                 // If the state of the block in the file is not the same as in the memory, we write the state of the one
                 // in memory to the file
-                if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.getBlockName()))
+                if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.blockName))
                 {
                     changed = true;
                     setBlockInPropertiesToAppropriateState(properties, ctmBlock);
                 }
 
-                try (FileOutputStream fos = new FileOutputStream(Path.of(ctmBlock.getPropertiesPath()).toFile()))
+                try (FileOutputStream fos = new FileOutputStream(file))
                 {
                     removeEmptyKeys(properties);
                     properties.store(fos, null);
@@ -368,6 +354,56 @@ public class FilesHandling
                 MinecraftClient.getInstance().reloadResources();
             }
         }
+        else
+        {
+            HashMap<String, byte[]> headersBytes = new HashMap<>();
+
+            try (ZipFile zipFile = new ZipFile(packPath.toString()))
+            {
+                for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
+                {
+                    FileHeader fileHeader = zipFile.getFileHeader(ctmBlock.propertiesPath);
+
+                    Properties properties = new Properties();
+                    properties.load(zipFile.getInputStream(fileHeader));
+
+                    // If the state of the block in the file is not the same as in the memory, we write the state of
+                    // the one in memory to the file
+                    if (ctmBlock.isEnabled() != isBlockEnabled(properties, ctmBlock.blockName))
+                    {
+                        changed = true;
+                        setBlockInPropertiesToAppropriateState(properties, ctmBlock);
+                    }
+
+                    if (changed)
+                    {
+                        removeEmptyKeys(properties);
+                        // We take the properties in a byte array, so we can write it in the zip later
+                        byte[] tmp = properties.toString()
+                                               .replace("{", "")
+                                               .replace("}", "")
+                                               .replace(", ", "\n")
+                                               .getBytes();
+                        headersBytes.put(fileHeader.toString(), tmp);
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            if (!headersBytes.isEmpty())
+            {
+                MinecraftClient.getInstance().getResourcePackManager().disable("file/%s".formatted(ctmPack.getName()));
+                MinecraftClient.getInstance().reloadResources();
+
+                writeBytesToZip(packPath.toString(), headersBytes);
+
+                MinecraftClient.getInstance().getResourcePackManager().enable("file/%s".formatted(ctmPack.getName()));
+                MinecraftClient.getInstance().reloadResources();
+            }
+        }
     }
 
     private boolean isBlockEnabled(@NotNull Properties properties, String blockName)
@@ -380,27 +416,27 @@ public class FilesHandling
     {
         if (ctmBlock.isEnabled())
         {
-            if (ctmBlock.isTile())
+            if (ctmBlock.isTile)
             {
-                properties.put(types[1], ctmBlock.getBlockName());
+                properties.put(types[1], ctmBlock.blockName);
                 properties.remove(types[3]);
             }
             else
             {
-                properties.put(types[0], ctmBlock.getBlockName());
+                properties.put(types[0], ctmBlock.blockName);
                 properties.remove(types[2]);
             }
         }
         else
         {
-            if (ctmBlock.isTile())
+            if (ctmBlock.isTile)
             {
-                properties.put(types[3], ctmBlock.getBlockName());
+                properties.put(types[3], ctmBlock.blockName);
                 properties.remove(types[1]);
             }
             else
             {
-                properties.put(types[2], ctmBlock.getBlockName());
+                properties.put(types[2], ctmBlock.blockName);
                 properties.remove(types[0]);
             }
         }

@@ -25,15 +25,15 @@ import static fr.aeldit.ctms.Utils.getPrettyString;
  */
 public class CTMBlock
 {
-    private final String blockName;
-    private final Text prettyName;
-    private final Identifier identifier;
+    public final String blockName;
+    public final Text prettyName;
+    public final Identifier identifier;
     private boolean enabled;
-    private final boolean isTile;
-    private final String propertiesPath;
+    public final boolean isTile;
+    public final String propertiesPath;
 
-    public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled, boolean isTile,
-                    String propertiesPath
+    public CTMBlock(
+            @NotNull String blockName, Identifier identifier, boolean enabled, boolean isTile, String propertiesPath
     )
     {
         this.blockName      = blockName;
@@ -73,21 +73,6 @@ public class CTMBlock
         }
     }
 
-    public String getBlockName()
-    {
-        return blockName;
-    }
-
-    public Text getPrettyName()
-    {
-        return prettyName;
-    }
-
-    public Identifier getIdentifier()
-    {
-        return identifier;
-    }
-
     public boolean isEnabled()
     {
         return enabled;
@@ -101,15 +86,5 @@ public class CTMBlock
     public void toggle()
     {
         this.enabled = !this.enabled;
-    }
-
-    public boolean isTile()
-    {
-        return isTile;
-    }
-
-    public String getPropertiesPath()
-    {
-        return propertiesPath;
     }
 }

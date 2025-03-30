@@ -7,9 +7,9 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.LayoutWidget;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +21,11 @@ public class BlockEntry extends ElementListWidget.Entry<BlockEntry>
 {
     private final CTMBlock block;
     private final LayoutWidget layout;
-    private final List<ClickableWidget> children = Lists.newArrayList();
+    private final List<ClickableWidget> children = new ArrayList<>();
 
     BlockEntry(CTMBlock block, LayoutWidget layout)
     {
-        this.block = block;
+        this.block  = block;
         this.layout = layout;
         this.layout.forEachChild(this.children::add);
     }
@@ -49,7 +49,7 @@ public class BlockEntry extends ElementListWidget.Entry<BlockEntry>
             boolean hovered, float delta
     )
     {
-        context.drawTexture(block.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
+        context.drawTexture(block.identifier, x, y + 2, 0, 0, 16, 16, 16, 16);
         layout.forEachChild(child -> {
             child.setY(y);
             child.render(context, mouseX, mouseY, delta);

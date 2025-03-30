@@ -43,8 +43,8 @@ import java.util.Map;
 public class CTMPack
 {
     private final String name;
-    private final boolean isFolder;
-    private final CTMSelector ctmSelector;
+    public final boolean isFolder;
+    public final CTMSelector ctmSelector;
     private final List<CTMBlock> vanillaOnlyCtmBlocks;
     private final Map<String, List<CTMBlock>> namespaceBlocks;
 
@@ -56,20 +56,19 @@ public class CTMPack
         this.name     = file.getName();
         this.isFolder = true;
 
-        boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
+        boolean isVanilla = namespacesBLocks.size() == 1 && namespacesBLocks.containsKey("minecraft");
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
         this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
 
         this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name, this) : null;
     }
 
-    // TODO -> Handle zip packs
     public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
         this.name     = zipFile.getFile().getName();
         this.isFolder = false;
 
-        boolean isVanilla = namespacesBLocks.containsKey("minecraft") && namespacesBLocks.size() == 1;
+        boolean isVanilla = namespacesBLocks.size() == 1 && namespacesBLocks.containsKey("minecraft");
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
         this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
 
@@ -106,11 +105,6 @@ public class CTMPack
         return isFolder ? Text.of(name + " (folder)") : Text.of(name);
     }
 
-    public boolean isFolder()
-    {
-        return isFolder;
-    }
-
     public List<CTMBlock> getCTMBlocks()
     {
         return vanillaOnlyCtmBlocks != null
@@ -134,11 +128,6 @@ public class CTMPack
     //=========================================================================
     // Selectors
     //=========================================================================
-    public CTMSelector getCtmSelector()
-    {
-        return ctmSelector;
-    }
-
     public boolean hasCtmSelector()
     {
         return ctmSelector != null;

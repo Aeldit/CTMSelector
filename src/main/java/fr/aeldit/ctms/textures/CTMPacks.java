@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class CTMPacks
 {
-    private final ArrayList<CTMPack> availableCTMPacks = new ArrayList<>();
+    public final ArrayList<CTMPack> availableCTMPacks = new ArrayList<>();
 
     public static @NotNull ArrayList<String> getEnabledPacks()
     {
@@ -32,10 +32,5 @@ public class CTMPacks
         {
             availableCTMPacks.add(ctmPack);
         }
-    }
-
-    public ArrayList<CTMPack> getAvailableCTMPacks()
-    {
-        return availableCTMPacks;
     }
 }

@@ -52,18 +52,19 @@ public class Group
     //=================================
     // Record fields
     //=================================
-    private final String groupName, iconPath;
+    public final String groupName;
+    private final String iconPath;
     private final ArrayList<String> identifierLikePropertiesPaths;
     private boolean isEnabled;
-    private final Text buttonTooltip;
+    public final Text buttonTooltip;
 
     //=================================
     // Non-record fields
     //=================================
     private final List<Path> propertiesFilesPaths; // When the pack is a folder
     private final List<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
-    private final Identifier identifier;
-    private final List<CTMBlock> containedBlocks = new ArrayList<>();
+    public final Identifier identifier;
+    public final List<CTMBlock> containedBlocks = new ArrayList<>();
 
     // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
     public Group(@NotNull SerializableGroup serializableGroup, boolean isFolder, String packPath)
@@ -178,29 +179,20 @@ public class Group
     //=================================
     // Record
     //=================================
-    public String getGroupName()
-    {
-        return groupName;
-    }
 
     public boolean isEnabled()
     {
         return isEnabled;
     }
 
-    public void setEnabled(boolean value)
+    public void enable()
     {
-        this.isEnabled = value;
+        this.isEnabled = true;
     }
 
     public void toggle()
     {
         this.isEnabled = !this.isEnabled;
-    }
-
-    public Text getButtonTooltip()
-    {
-        return buttonTooltip;
     }
 
     public SerializableGroup getAsRecord()
@@ -213,19 +205,10 @@ public class Group
     //=================================
     // Non-record
     //=================================
-    public Identifier getIdentifier()
-    {
-        return identifier;
-    }
-
-    public List<CTMBlock> getContainedBlocksList()
-    {
-        return containedBlocks;
-    }
 
     public void addContainedBlock(CTMBlock ctmBlock)
     {
-        if (propertiesFilesPaths != null && propertiesFilesPaths.contains(Path.of(ctmBlock.getPropertiesPath())))
+        if (propertiesFilesPaths != null && propertiesFilesPaths.contains(Path.of(ctmBlock.propertiesPath)))
         {
             containedBlocks.add(ctmBlock);
         }
@@ -234,7 +217,7 @@ public class Group
                 && propertiesFilesFileHeaders.stream()
                                              .map(FileHeader::toString)
                                              .toList()
-                                             .contains(ctmBlock.getPropertiesPath())
+                                             .contains(ctmBlock.propertiesPath)
         )
         {
             containedBlocks.add(ctmBlock);
@@ -258,6 +241,9 @@ public class Group
 
     private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
     {
-        return fileHeaders.stream().filter(fileHeader -> fileHeader.toString().equals(name)).findFirst().orElse(null);
+        return fileHeaders.stream()
+                          .filter(fileHeader -> fileHeader.toString().equals(name))
+                          .findFirst()
+                          .orElse(null);
     }
 }

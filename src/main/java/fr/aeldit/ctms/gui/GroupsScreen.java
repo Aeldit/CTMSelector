@@ -2,7 +2,6 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.GroupsListWidget;
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.Group;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -38,7 +37,7 @@ public class GroupsScreen extends Screen
         );
         this.parent      = parent;
         this.ctmPack     = ctmPack;
-        this.ctmSelector = ctmPack.getCtmSelector();
+        this.ctmSelector = ctmPack.ctmSelector;
     }
 
     @Override
@@ -67,7 +66,7 @@ public class GroupsScreen extends Screen
     @Override
     protected void init()
     {
-        CTMSelector ctmSelector = ctmPack.getCtmSelector();
+        CTMSelector ctmSelector = ctmPack.ctmSelector;
 
         GroupsListWidget list = new GroupsListWidget(
                 //? if <1.20.4 {
@@ -79,9 +78,10 @@ public class GroupsScreen extends Screen
         addDrawableChild(list);
 
         ctmSelector.getGroups().stream()
-                   .sorted(Comparator.comparing(Group::getGroupName))
+                   .sorted(Comparator.comparing(group -> group.groupName))
                    .forEachOrdered(list::add);
 
+        // TODO -> Make this reset only the blocks in the groups
         addDrawableChild(
                 ButtonWidget.builder(
                                     TEXT_RESET, button -> {
