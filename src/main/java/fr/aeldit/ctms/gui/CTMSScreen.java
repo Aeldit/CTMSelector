@@ -90,7 +90,7 @@ public class CTMSScreen extends Screen
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
-                //? if <1.21 {
+                //? if <1.21.0 {
                 new Identifier(CTMS_MODID, "textures/gui/reload.png"),
                 //?} else {
                 /*Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
