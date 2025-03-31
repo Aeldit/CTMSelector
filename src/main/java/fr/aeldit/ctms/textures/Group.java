@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import static fr.aeldit.ctms.VersionUtils.getIdentifier;
+
 
 /**
  * Contains a list of blocks that can be toggled together using only one click
@@ -134,11 +136,11 @@ public class Group
         if (iconPath.contains(":"))
         {
             String[] split = iconPath.split(":");
-            this.identifier = new Identifier(split[0], split[1]);
+            this.identifier = getIdentifier(split[0], split[1]);
         }
         else
         {
-            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            this.identifier = getIdentifier("textures/misc/unknown_pack.png");
         }
     }
 

@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static fr.aeldit.ctms.Utils.*;
+import static fr.aeldit.ctms.VersionUtils.getIdentifier;
 
 public class FilesHandling
 {
@@ -231,7 +232,7 @@ public class FilesHandling
     private Identifier getIdentifierFor(Properties properties, @NotNull File parentFile, String namespace)
     {
         File[] neighborFiles = parentFile.listFiles();
-        Identifier identifier = new Identifier("unknown");
+        Identifier identifier = getIdentifier("unknown");
         if (neighborFiles != null)
         {
             int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
@@ -241,7 +242,7 @@ public class FilesHandling
                 identifier = Arrays.stream(neighborFiles)
                                    .filter(file -> pngFile.equals(file.getName()))
                                    .findFirst()
-                                   .map(file -> new Identifier(
+                                   .map(file -> getIdentifier(
                                            namespace,
                                            getIdentifierLikePathFrom(namespace, file.getPath())
                                    ))
@@ -264,9 +265,9 @@ public class FilesHandling
                    .toList()
                    .contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
         {
-            return new Identifier(namespace, "%s%s".formatted(parentFh, pngFile));
+            return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
         }
-        return new Identifier("unknown");
+        return getIdentifier("unknown");
     }
 
     private @NotNull String getIdentifierLikePathFrom(String namespace, @NotNull String path)

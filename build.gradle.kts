@@ -16,7 +16,6 @@ repositories {
 }
 
 object Constants {
-    const val ARCHIVES_BASE_NAME: String = "ctm-selector"
     const val MOD_VERSION: String = "0.3.0"
     const val LOADER_VERSION: String = "0.16.10"
 }
@@ -47,7 +46,7 @@ val mod = ModData()
 
 // Sets the name of the output jar files
 base {
-    archivesName = "${Constants.ARCHIVES_BASE_NAME}-${mod.fullVersion}"
+    archivesName = "${rootProject.name}-${mod.fullVersion}"
     group = "fr.aeldit.ctms"
 }
 
@@ -96,7 +95,7 @@ java {
 val buildAndCollect = tasks.register<Copy>("buildAndCollect") {
     group = "build"
     from(tasks.remapJar.get().archiveFile)
-    into(rootProject.layout.buildDirectory.file("libs/${Constants.ARCHIVES_BASE_NAME}-${mod.fullVersion}"))
+    into(rootProject.layout.buildDirectory.file("libs/${rootProject.name}-${mod.fullVersion}"))
     dependsOn("build")
 }
 
@@ -170,7 +169,7 @@ publishMods {
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
 
-    projectId.set(Constants.ARCHIVES_BASE_NAME)
+    projectId.set(rootProject.name)
     if (rootProject.file("README.md").exists()) {
         syncBodyFrom.set(rootProject.file("README.md").readText())
     }
