@@ -7,16 +7,17 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.LayoutWidget;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PackEntry extends ElementListWidget.Entry<PackEntry>
 {
+    // TODO -> Get each pack's icon identifier
     private final CTMPack pack;
     private final LayoutWidget layout;
-    private final List<ClickableWidget> children = Lists.newArrayList();
+    private final List<ClickableWidget> children = new ArrayList<>();
 
     PackEntry(CTMPack pack, LayoutWidget layout)
     {

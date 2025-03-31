@@ -2,7 +2,6 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.GroupsListWidget;
 import fr.aeldit.ctms.textures.CTMSelector;
-import fr.aeldit.ctms.textures.Group;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,7 +14,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -39,14 +37,14 @@ public class GroupsScreen extends Screen
         );
         this.parent      = parent;
         this.ctmPack     = ctmPack;
-        this.ctmSelector = ctmPack.getCtmSelector();
+        this.ctmSelector = ctmPack.ctmSelector;
     }
 
     @Override
     public void close()
     {
         ctmSelector.updateGroupsStates();
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        TEXTURES_HANDLING.updatePropertiesFiles(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -68,7 +66,7 @@ public class GroupsScreen extends Screen
     @Override
     protected void init()
     {
-        CTMSelector ctmSelector = ctmPack.getCtmSelector();
+        CTMSelector ctmSelector = ctmPack.ctmSelector;
 
         GroupsListWidget list = new GroupsListWidget(
                 //? if <1.20.4 {
@@ -79,15 +77,11 @@ public class GroupsScreen extends Screen
         );
         addDrawableChild(list);
 
-        // Sorts the blocks alphabetically
-        ArrayList<Group> toSort = new ArrayList<>(ctmSelector.getGroups());
-        toSort.sort(Comparator.comparing(Group::getGroupName));
+        ctmSelector.getGroups().stream()
+                   .sorted(Comparator.comparing(group -> group.groupName))
+                   .forEachOrdered(list::add);
 
-        for (Group group : toSort)
-        {
-            list.add(group);
-        }
-
+        // TODO -> Make this reset only the blocks in the groups
         addDrawableChild(
                 ButtonWidget.builder(
                                     TEXT_RESET, button -> {

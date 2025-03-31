@@ -19,7 +19,6 @@ public class GroupsListWidget extends ElementListWidget<GroupEntry>
     /*public GroupsListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight)
     {
         super(client, width, height, top, bottom, itemHeight);
-        this.ctmSelector = ctmSelector;
     }
     *///?} else {
     public GroupsListWidget(MinecraftClient client, int width, int height, int y, int itemHeight)

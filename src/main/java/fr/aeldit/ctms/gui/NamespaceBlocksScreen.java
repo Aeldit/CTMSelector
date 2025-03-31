@@ -1,7 +1,6 @@
 package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.BlocksListWidget;
-import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -13,7 +12,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -37,7 +35,7 @@ public class NamespaceBlocksScreen extends Screen
     @Override
     public void close()
     {
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+        TEXTURES_HANDLING.updatePropertiesFiles(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -61,15 +59,11 @@ public class NamespaceBlocksScreen extends Screen
         );
         addDrawableChild(list);
 
-        // Sorts the blocks alphabetically
-        ArrayList<CTMBlock> toSort = new ArrayList<>(ctmPack.getCTMBlocksForNamespace(namespace));
-        toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
+        ctmPack.getCTMBlocksForNamespace(namespace).stream()
+               .sorted(Comparator.comparing(ctmBlock -> ctmBlock.prettyName.getString()))
+               .forEachOrdered(list::add);
 
-        for (CTMBlock block : toSort)
-        {
-            list.add(block);
-        }
-
+        // TODO -> Make this reset only the current namespace's blocks
         addDrawableChild(
                 ButtonWidget.builder(
                                     Text.translatable("ctms.screen.config.reset"), button -> {

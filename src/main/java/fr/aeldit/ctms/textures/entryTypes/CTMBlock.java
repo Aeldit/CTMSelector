@@ -25,40 +25,52 @@ import static fr.aeldit.ctms.Utils.getPrettyString;
  */
 public class CTMBlock
 {
-    private final String blockName;
-    private final Text prettyName;
-    private final Identifier identifier;
+    public final String blockName;
+    public final Text prettyName;
+    public final Identifier identifier;
     private boolean enabled;
+    public final boolean isTile;
+    public final String propertiesPath;
 
-    public CTMBlock(@NotNull String blockName, Identifier identifier, boolean enabled)
+    public CTMBlock(
+            @NotNull String blockName, Identifier identifier, boolean enabled, boolean isTile, String propertiesPath
+    )
     {
-        this.blockName  = blockName;
-        this.identifier = identifier;
-        this.enabled    = enabled;
+        this.blockName      = blockName;
+        this.identifier     = identifier;
+        this.enabled        = enabled;
+        this.isTile         = isTile;
+        this.propertiesPath = propertiesPath;
 
-        if (blockName.split(":").length > 1)
+        if (blockName.contains(":"))
         {
-            this.prettyName = Text.of(getPrettyString(blockName.split(":")[1].split("_")));
+            String[] split = blockName.split(":");
+            // If the namespace is specified
+            if (split.length == 2 && !split[1].contains("="))
+            {
+                this.prettyName = Text.of(getPrettyString(split[1].split("_")));
+            }
+            else // we have block states
+            {
+                StringBuilder sb = new StringBuilder();
+                for (String text : blockName.split(":"))
+                {
+                    if (!text.contains("="))
+                    {
+                        sb.append(text);
+                        continue;
+                    }
+
+                    String[] state = text.split("=");
+                    sb.append(state[0]).append("_").append(state[1]);
+                }
+                this.prettyName = Text.of(getPrettyString((blockName + "_" + sb).split("_")));
+            }
         }
         else
         {
             this.prettyName = Text.of(getPrettyString(blockName.split("_")));
         }
-    }
-
-    public String getBlockName()
-    {
-        return blockName;
-    }
-
-    public Text getPrettyName()
-    {
-        return prettyName;
-    }
-
-    public Identifier getIdentifier()
-    {
-        return identifier;
     }
 
     public boolean isEnabled()

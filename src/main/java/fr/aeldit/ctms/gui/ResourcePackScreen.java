@@ -2,7 +2,6 @@ package fr.aeldit.ctms.gui;
 
 import fr.aeldit.ctms.gui.widgets.BlocksListWidget;
 import fr.aeldit.ctms.textures.CTMPacks;
-import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,7 +14,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -33,9 +31,10 @@ public class ResourcePackScreen extends Screen
         super(CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName())
               ? Text.of(ctmPack.getName().replace(".zip", ""))
               : Text.of(Formatting.ITALIC + ctmPack.getName().replace(".zip", "") + Text.translatable("ctms.screen" +
-                                                                                                              ".packDisabledTitle").getString())
+                                                                                                      ".packDisabledTitle")
+                                                                                        .getString())
         );
-        this.parent = parent;
+        this.parent  = parent;
         this.ctmPack = ctmPack;
         this.enabled = CTMPacks.getEnabledPacks().contains("file/" + ctmPack.getName());
     }
@@ -45,7 +44,7 @@ public class ResourcePackScreen extends Screen
     {
         if (enabled)
         {
-            TEXTURES_HANDLING.updateUsedTextures(ctmPack);
+            TEXTURES_HANDLING.updatePropertiesFiles(ctmPack);
         }
         Objects.requireNonNull(client).setScreen(parent);
     }
@@ -72,57 +71,59 @@ public class ResourcePackScreen extends Screen
             );
             addDrawableChild(list);
 
-            // Sorts the blocks alphabetically
-            ArrayList<CTMBlock> toSort = new ArrayList<>(ctmPack.getAllCTMBlocks());
-            toSort.sort(Comparator.comparing(block -> block.getPrettyName().getString()));
-
-            for (CTMBlock block : toSort)
-            {
-                list.add(block);
-            }
+            ctmPack.getCTMBlocks().stream()
+                   .sorted(Comparator.comparing(ctmBlock -> ctmBlock.prettyName.getString()))
+                   .forEachOrdered(list::add);
 
             addDrawableChild(
-                    ButtonWidget.builder(Text.translatable("ctms.screen.config.reset"), button -> {
-                                ctmPack.resetOptions();
-                                close();
-                            })
-                            .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
-                            .dimensions(10, 6, 100, 20)
-                            .build()
+                    ButtonWidget.builder(
+                                        Text.translatable("ctms.screen.config.reset"), button -> {
+                                            ctmPack.resetOptions();
+                                            close();
+                                        }
+                                )
+                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.reset.tooltip")))
+                                .dimensions(10, 6, 100, 20)
+                                .build()
             );
 
             if (ctmPack.hasCtmSelector())
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable("ctms.screen.config.controls"), button ->
-                                        Objects.requireNonNull(client).setScreen(new GroupsScreen(this, ctmPack))
-                                )
-                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
-                                .dimensions(width - 110, 6, 100, 20)
-                                .build()
+                        ButtonWidget.builder(
+                                            Text.translatable("ctms.screen.config.controls"), button ->
+                                                    Objects.requireNonNull(client).setScreen(new GroupsScreen(
+                                                            this,
+                                                            ctmPack
+                                                    ))
+                                    )
+                                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.controls.tooltip")))
+                                    .dimensions(width - 110, 6, 100, 20)
+                                    .build()
                 );
             }
 
             if (ctmPack.isModded())
             {
                 addDrawableChild(
-                        ButtonWidget.builder(Text.translatable("ctms.screen.config.mods"), button ->
-                                        Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
-                                                this,
-                                                ctmPack
-                                        ))
-                                )
-                                .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.mods.tooltip")))
-                                .dimensions(width - 110, height - 28, 100, 20)
-                                .build()
+                        ButtonWidget.builder(
+                                            Text.translatable("ctms.screen.config.mods"), button ->
+                                                    Objects.requireNonNull(client).setScreen(new NamespacesListScreen(
+                                                            this,
+                                                            ctmPack
+                                                    ))
+                                    )
+                                    .tooltip(Tooltip.of(Text.translatable("ctms.screen.config.mods.tooltip")))
+                                    .dimensions(width - 110, height - 28, 100, 20)
+                                    .build()
                 );
             }
         }
 
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                        .dimensions(width / 2 - 100, height - 28, 200, 20)
-                        .build()
+                            .dimensions(width / 2 - 100, height - 28, 200, 20)
+                            .build()
         );
     }
 }

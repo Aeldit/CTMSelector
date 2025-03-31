@@ -13,11 +13,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
-
-import static fr.aeldit.ctms.Utils.TEXTURES_HANDLING;
 
 @Environment(EnvType.CLIENT)
 public class NamespacesListScreen extends Screen
@@ -37,7 +34,6 @@ public class NamespacesListScreen extends Screen
     @Override
     public void close()
     {
-        TEXTURES_HANDLING.updateUsedTextures(ctmPack);
         Objects.requireNonNull(client).setScreen(parent);
     }
 
@@ -60,14 +56,9 @@ public class NamespacesListScreen extends Screen
         );
         addDrawableChild(list);
 
-        // Sorts the namespaces alphabetically
-        ArrayList<String> toSort = ctmPack.getNamespaces();
-        toSort.sort(Comparator.comparing(s -> s));
-
-        for (String namespace : toSort)
-        {
-            list.add(ctmPack, namespace);
-        }
+        ctmPack.getNamespaces().stream()
+               .sorted(Comparator.comparing(namespace -> namespace))
+               .forEachOrdered(namespace -> list.add(ctmPack, namespace));
 
         addDrawableChild(
                 ButtonWidget.builder(
@@ -81,6 +72,7 @@ public class NamespacesListScreen extends Screen
                             .build()
         );
 
+        // TODO -> Button to disabled mod's textures entirely
         addDrawableChild(
                 ButtonWidget.builder(ScreenTexts.DONE, button -> close())
                             .dimensions(width / 2 - 100, height - 28, 200, 20)

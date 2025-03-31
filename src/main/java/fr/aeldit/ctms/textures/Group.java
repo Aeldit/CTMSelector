@@ -15,6 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+
+import static fr.aeldit.ctms.VersionUtils.getIdentifier;
 
 
 /**
@@ -26,8 +29,6 @@ public class Group
      * Holds the data of 1 group that needs to be written to the {@code "ctm_selector.json"} file (which contains a
      * list of groups)
      *
-     * @param type                 The type of texture property that will be toggled. For now, this can only be set
-     *                             to {@code "ctm"}
      * @param groupName            The name of the group that will be display on the screen
      * @param propertiesFilesPaths The path to each directory or properties files that will be included in the group.
      *                             These paths start from the namespace and go to the properties file. If the path
@@ -41,7 +42,6 @@ public class Group
      * @param buttonTooltip        The tooltip to display on the button of the group (optional)
      */
     public record SerializableGroup(
-            @SerializedName("type") @NotNull String type,
             @SerializedName("group_name") @NotNull String groupName,
             @SerializedName("properties_files") @NotNull ArrayList<String> propertiesFilesPaths,
             @SerializedName("icon_path") @NotNull String iconPath,
@@ -54,83 +54,78 @@ public class Group
     //=================================
     // Record fields
     //=================================
-    private final String type, groupName, iconPath;
+    public final String groupName;
+    private final String iconPath;
     private final ArrayList<String> identifierLikePropertiesPaths;
     private boolean isEnabled;
-    private final Text buttonTooltip;
+    public final Text buttonTooltip;
 
     //=================================
     // Non-record fields
     //=================================
-    private final ArrayList<Path> propertiesFilesPaths; // When the pack is a folder
-    private final ArrayList<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
-    private final Identifier identifier;
-    private final ArrayList<CTMBlock> containedBlocks = new ArrayList<>();
+    private final List<Path> propertiesFilesPaths; // When the pack is a folder
+    private final List<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
+    public final Identifier identifier;
+    public final List<CTMBlock> containedBlocks = new ArrayList<>();
 
     // Initialize from a SerializableGroup record (which was read from a ctm_selector.json file
-    public Group(
-            @NotNull SerializableGroup serializableGroup, @Nullable Path packPath, @Nullable String zipPackPath
-    )
+    public Group(@NotNull SerializableGroup serializableGroup, boolean isFolder, String packPath)
     {
-        this.type          = serializableGroup.type;
         this.groupName     = serializableGroup.groupName;
         this.buttonTooltip = Text.of(serializableGroup.buttonTooltip);
         this.isEnabled     = serializableGroup.isEnabled;
 
         // Obtains the path to each block
-        if (packPath != null)
+        if (isFolder)
         {
             this.propertiesFilesPaths       = new ArrayList<>();
             this.propertiesFilesFileHeaders = null;
 
-            for (String propFile : serializableGroup.propertiesFilesPaths)
+            for (String path : serializableGroup.propertiesFilesPaths)
             {
-                Path assetsInPackPath = Path.of("%s/assets/%s".formatted(packPath, propFile.replace(":", "/")));
-
-                if (propFile.endsWith(".properties"))
+                Path path1 = Path.of("%s/assets/%s".formatted(packPath, path.replace(":", "/")));
+                if (Files.exists(path1) && path1.toFile().isDirectory())
                 {
-                    this.propertiesFilesPaths.add(assetsInPackPath);
+                    getPropertiesFilesPathsInDir(path1.toFile());
                 }
                 else
                 {
-                    if (Files.isDirectory(assetsInPackPath))
+                    if (path.endsWith(".properties"))
                     {
-                        addPropertiesFilesRec(assetsInPackPath.toFile());
+                        this.propertiesFilesPaths.add(path1);
                     }
                 }
             }
+
         }
         else
         {
             this.propertiesFilesPaths       = null;
             this.propertiesFilesFileHeaders = new ArrayList<>();
 
-            if (zipPackPath != null)
+            try (ZipFile zipFile = new ZipFile(packPath))
             {
-                try (ZipFile zipFile = new ZipFile(zipPackPath))
+                for (String s : serializableGroup.propertiesFilesPaths)
                 {
-                    for (String s : serializableGroup.propertiesFilesPaths)
-                    {
-                        String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
+                    String pathInZip = "assets/%s".formatted(s.replace(":", "/"));
 
-                        if (pathInZip.endsWith(".properties"))
+                    if (pathInZip.endsWith(".properties"))
+                    {
+                        FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
+                        if (fh != null)
                         {
-                            FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                            if (fh != null)
-                            {
-                                this.propertiesFilesFileHeaders.add(fh);
-                            }
-                        }
-                        else
-                        {
-                            getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                            this.propertiesFilesFileHeaders.add(fh);
                         }
                     }
+                    else
+                    {
+                        getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                    }
                 }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
             }
         }
 
@@ -141,30 +136,59 @@ public class Group
         if (iconPath.contains(":"))
         {
             String[] split = iconPath.split(":");
-            this.identifier = new Identifier(split[0], split[1]);
+            this.identifier = getIdentifier(split[0], split[1]);
         }
         else
         {
-            this.identifier = new Identifier("textures/misc/unknown_pack.png");
+            this.identifier = getIdentifier("textures/misc/unknown_pack.png");
+        }
+    }
+
+    private void getPropertiesFilesPathsInDir(File dir)
+    {
+        Stack<File> fileStack = new Stack<>();
+        fileStack.push(dir);
+
+        while (!fileStack.empty())
+        {
+            File currentFile = fileStack.pop();
+            if (!currentFile.isDirectory())
+            {
+                continue;
+            }
+
+            File[] files = currentFile.listFiles();
+            if (files == null)
+            {
+                continue;
+            }
+
+            for (File file : files)
+            {
+                if (file.isDirectory())
+                {
+                    fileStack.push(file);
+                }
+                else if (file.isFile() && file.toString().endsWith(".properties"))
+                {
+                    this.propertiesFilesPaths.add(Path.of(file.toString()));
+                }
+            }
         }
     }
 
     //=================================
     // Record
     //=================================
-    public String getGroupName()
-    {
-        return groupName;
-    }
 
     public boolean isEnabled()
     {
         return isEnabled;
     }
 
-    public void setEnabled(boolean value)
+    public void enable()
     {
-        this.isEnabled = value;
+        this.isEnabled = true;
     }
 
     public void toggle()
@@ -172,80 +196,38 @@ public class Group
         this.isEnabled = !this.isEnabled;
     }
 
-    public Text getButtonTooltip()
-    {
-        return buttonTooltip;
-    }
-
     public SerializableGroup getAsRecord()
     {
         return new SerializableGroup(
-                type, groupName, identifierLikePropertiesPaths, iconPath, isEnabled,
-                buttonTooltip.getString()
+                groupName, identifierLikePropertiesPaths, iconPath, isEnabled, buttonTooltip.getString()
         );
     }
 
     //=================================
     // Non-record
     //=================================
-    public Identifier getIdentifier()
-    {
-        return identifier;
-    }
-
-    public ArrayList<CTMBlock> getContainedBlocksList()
-    {
-        return containedBlocks;
-    }
 
     public void addContainedBlock(CTMBlock ctmBlock)
     {
-        containedBlocks.add(ctmBlock);
-    }
-
-    /**
-     * @return The absolute path to each Properties file contained by the Group
-     */
-    public @Nullable ArrayList<Path> getPropertiesFilesPaths()
-    {
-        return propertiesFilesPaths;
-    }
-
-    /**
-     * @return The fileHeaders of each properties file found in the zip pack
-     */
-    public @Nullable ArrayList<FileHeader> getPropertiesFilesFileHeaders()
-    {
-        return propertiesFilesFileHeaders;
+        if (propertiesFilesPaths != null && propertiesFilesPaths.contains(Path.of(ctmBlock.propertiesPath)))
+        {
+            containedBlocks.add(ctmBlock);
+        }
+        else if (
+                propertiesFilesFileHeaders != null
+                && propertiesFilesFileHeaders.stream()
+                                             .map(FileHeader::toString)
+                                             .toList()
+                                             .contains(ctmBlock.propertiesPath)
+        )
+        {
+            containedBlocks.add(ctmBlock);
+        }
     }
 
     //=================================
     // Other
     //=================================
-
-    /**
-     * Searches the directory recursively to find every properties files inside it
-     *
-     * @param dir The directory
-     */
-    private void addPropertiesFilesRec(@NotNull File dir)
-    {
-        File[] files = dir.listFiles();
-        if (files != null)
-        {
-            for (File file : files)
-            {
-                if (file.isDirectory())
-                {
-                    addPropertiesFilesRec(file);
-                }
-                if (file.isFile() && file.toString().endsWith(".properties"))
-                {
-                    propertiesFilesPaths.add(Path.of(file.getAbsolutePath()));
-                }
-            }
-        }
-    }
 
     private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, @NotNull String folder)
     {
@@ -260,6 +242,9 @@ public class Group
 
     private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
     {
-        return fileHeaders.stream().filter(fileHeader -> fileHeader.toString().equals(name)).findFirst().orElse(null);
+        return fileHeaders.stream()
+                          .filter(fileHeader -> fileHeader.toString().equals(name))
+                          .findFirst()
+                          .orElse(null);
     }
 }

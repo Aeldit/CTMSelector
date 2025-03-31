@@ -27,9 +27,9 @@ public record BlockEntryBuilder(MinecraftClient client, int width)
                 20 + 2, ctmPack.isBlockDisabledFromGroup(block)
                         ?
                         Text.of(Formatting.RED
-                                + Text.of(Formatting.ITALIC + block.getPrettyName().getString()).getString()
+                                + Text.of(Formatting.ITALIC + block.prettyName.getString()).getString()
                         )
-                        : block.getPrettyName(),
+                        : block.prettyName,
                 client.textRenderer
         );
 
@@ -40,19 +40,20 @@ public record BlockEntryBuilder(MinecraftClient client, int width)
         if (ctmPack.isBlockDisabledFromGroup(block))
         {
             var toggleButton = ButtonWidget.builder(ScreenTexts.OFF, button -> {})
-                    .dimensions(0, 0, 30, 20)
-                    .build();
+                                           .dimensions(0, 0, 30, 20)
+                                           .build();
             toggleButton.setTooltip(Tooltip.of(Text.translatable("ctms.screen.block.parentControlIsDisabled")));
             layout.add(toggleButton);
         }
         else
         {
             var toggleButton = CyclingButtonWidget.onOffBuilder()
-                    .omitKeyText()
-                    .initially(block.isEnabled())
-                    .build(0, 0, 30, 20, Text.empty(),
-                            (button, value) -> ctmPack.toggle(block)
-                    );
+                                                  .omitKeyText()
+                                                  .initially(block.isEnabled())
+                                                  .build(
+                                                          0, 0, 30, 20, Text.empty(),
+                                                          (button, value) -> ctmPack.toggle(block)
+                                                  );
             toggleButton.setTooltip(Tooltip.of(Text.empty()));
             layout.add(toggleButton);
         }

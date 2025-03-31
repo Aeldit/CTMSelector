@@ -2,24 +2,22 @@ package fr.aeldit.ctms.textures;
 
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.minecraft.client.MinecraftClient;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
 public class CTMPacks
 {
-    private final ArrayList<CTMPack> availableCTMPacks = new ArrayList<>();
+    public final ArrayList<CTMPack> availableCTMPacks = new ArrayList<>();
 
-    @Contract(" -> new")
     public static @NotNull ArrayList<String> getEnabledPacks()
     {
         return new ArrayList<>(MinecraftClient.getInstance().getResourcePackManager()
-                //? if <1.20.6 {
-                /*.getEnabledNames()
-                *///?} else {
-                .getEnabledIds()
-                 //?}
+                                              //? if <1.20.6 {
+                                              /*.getEnabledNames()
+                                               *///?} else {
+                                              .getEnabledIds()
+                               //?}
         );
     }
 
@@ -34,10 +32,5 @@ public class CTMPacks
         {
             availableCTMPacks.add(ctmPack);
         }
-    }
-
-    public ArrayList<CTMPack> getAvailableCTMPacks()
-    {
-        return availableCTMPacks;
     }
 }

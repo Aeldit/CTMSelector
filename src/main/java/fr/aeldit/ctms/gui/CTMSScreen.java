@@ -13,15 +13,14 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
 import static fr.aeldit.ctms.Utils.*;
+import static fr.aeldit.ctms.VersionUtils.getIdentifier;
 
 @Environment(EnvType.CLIENT)
 public class CTMSScreen extends Screen
@@ -60,35 +59,19 @@ public class CTMSScreen extends Screen
     {
         TEXTURES_HANDLING.load();
         PacksListWidget list = new PacksListWidget(
-                //? if <1.20.4 {
+                //? if =1.20.2 {
+                /*client, width, height - 64, 28, height - 32, 32, this
+                *///?} elif =1.20.4 {
                 /*client, width, height - 64, 28, 32, this
                  *///?} else {
                 client, width, height - 64, 32, 32, this
-                //?}
+                 //?}
         );
         addDrawableChild(list);
 
-        ArrayList<CTMPack> toSort = new ArrayList<>(CTM_PACKS.getAvailableCTMPacks());
-        // Sorts the blocks alphabetically
-        toSort.sort(Comparator.comparing(CTMPack::getName));
-
-        for (CTMPack ctmPack : toSort)
-        {
-            list.add(ctmPack);
-        }
-
-        ButtonWidget optionsButton = new LegacyTexturedButtonWidget(
-                width / 2 + 160, height - 28, 20, 20, 0, 0, 20,
-                //? if <1.21 {
-                new Identifier(CTMS_MODID, "textures/gui/options.png"),
-                //?} else {
-                /*Identifier.of(CTMS_MODID, "textures/gui/options.png"),
-                 *///?}
-                20, 40,
-                button -> MinecraftClient.getInstance().setScreen(this),
-                Text.empty()
-        );
-        addDrawableChild(optionsButton);
+        CTM_PACKS.availableCTMPacks.stream()
+                                   .sorted(Comparator.comparing(CTMPack::getName))
+                                   .forEachOrdered(list::add);
 
         addDrawableChild(
                 ButtonWidget.builder(
@@ -109,11 +92,7 @@ public class CTMSScreen extends Screen
 
         ButtonWidget reloadButton = new LegacyTexturedButtonWidget(
                 width / 2 - 180, height - 28, 20, 20, 0, 0, 20,
-                //? if <1.21 {
-                new Identifier(CTMS_MODID, "textures/gui/reload.png"),
-                //?} else {
-                /*Identifier.of(CTMS_MODID, "textures/gui/reload.png"),
-                 *///?}
+                getIdentifier(CTMS_MODID, "textures/gui/reload.png"),
                 20, 40,
                 button -> {
                     TEXTURES_HANDLING.load();

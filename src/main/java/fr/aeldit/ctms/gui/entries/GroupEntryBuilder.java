@@ -15,7 +15,7 @@ public record GroupEntryBuilder(MinecraftClient client, int width)
     public @NotNull GroupEntry build(@NotNull Group group)
     {
         var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-        var text = new TextWidget(160, 20 + 2, Text.of(group.getGroupName()), client.textRenderer);
+        var text = new TextWidget(160, 20 + 2, Text.of(group.groupName), client.textRenderer);
         var toggleButton = CyclingButtonWidget.onOffBuilder()
                                               .omitKeyText()
                                               .initially(group.isEnabled())
@@ -23,7 +23,7 @@ public record GroupEntryBuilder(MinecraftClient client, int width)
                                                       0, 0, 30, 20, Text.empty(),
                                                       (button, value) -> group.toggle()
                                               );
-        toggleButton.setTooltip(Tooltip.of(group.getButtonTooltip()));
+        toggleButton.setTooltip(Tooltip.of(group.buttonTooltip));
         text.alignLeft();
         layout.add(EmptyWidget.ofWidth(15));
         layout.add(text);

@@ -7,16 +7,17 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.LayoutWidget;
-import org.apache.commons.compress.utils.Lists;
+import net.minecraft.client.render.RenderLayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GroupEntry extends ElementListWidget.Entry<GroupEntry>
 {
     private final Group group;
     private final LayoutWidget layout;
-    private final List<ClickableWidget> children = Lists.newArrayList();
+    private final List<ClickableWidget> children = new ArrayList<>();
 
     GroupEntry(Group group, LayoutWidget layout)
     {
@@ -44,7 +45,11 @@ public class GroupEntry extends ElementListWidget.Entry<GroupEntry>
             boolean hovered, float delta
     )
     {
-        context.drawTexture(group.getIdentifier(), x, y + 2, 0, 0, 16, 16, 16, 16);
+        //? if <1.21.2-1.21.3 {
+        /*context.drawTexture(group.identifier, x, y + 2, 0, 0, 16, 16, 16, 16);
+         *///?} else {
+        context.drawTexture(RenderLayer::getGuiTextured, group.identifier, x, y + 2, 0, 0, 16, 16, 16, 16);
+        //?}
         layout.forEachChild(child -> {
             child.setY(y);
             child.render(context, mouseX, mouseY, delta);
