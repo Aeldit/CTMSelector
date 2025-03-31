@@ -363,6 +363,10 @@ public class FilesHandling
                 for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
                 {
                     FileHeader fileHeader = zipFile.getFileHeader(ctmBlock.propertiesPath);
+                    if (fileHeader == null)
+                    {
+                        continue;
+                    }
 
                     Properties properties = new Properties();
                     properties.load(zipFile.getInputStream(fileHeader));
