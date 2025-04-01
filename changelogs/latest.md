@@ -1,1 +1,3 @@
-Update to 1.20.6
+- Rewrite the internals of the mod
+- Add support for 1.21-1.21.1, 1.21.2-1.21.3 and 1.21.4
+- Fix blocks names being wrong when blockstates were present

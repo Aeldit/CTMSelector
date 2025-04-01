@@ -16,7 +16,7 @@ repositories {
 }
 
 object Constants {
-    const val MOD_VERSION: String = "0.3.0"
+    const val MOD_VERSION: String = "0.4.0"
     const val LOADER_VERSION: String = "0.16.10"
 }
 
