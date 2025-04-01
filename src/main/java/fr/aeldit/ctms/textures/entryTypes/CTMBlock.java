@@ -45,26 +45,36 @@ public class CTMBlock
         if (blockName.contains(":"))
         {
             String[] split = blockName.split(":");
-            // If the namespace is specified
+            // If the namespace is specified (namespace:block)
             if (split.length == 2 && !split[1].contains("="))
             {
                 this.prettyName = Text.of(getPrettyString(split[1].split("_")));
             }
-            else // we have block states
+            else // If there are block states
             {
                 StringBuilder sb = new StringBuilder();
-                for (String text : blockName.split(":"))
+                if (!split[1].contains("="))
                 {
-                    if (!text.contains("="))
-                    {
-                        sb.append(text);
-                        continue;
-                    }
-
-                    String[] state = text.split("=");
-                    sb.append(state[0]).append("_").append(state[1]);
+                    sb.append(split[1]);
+                    sb.append("_");
                 }
-                this.prettyName = Text.of(getPrettyString((blockName + "_" + sb).split("_")));
+                else if (!split[0].contains("="))
+                {
+                    sb.append(split[0]);
+                    sb.append("_");
+                }
+                for (String text : split)
+                {
+                    if (text.contains("="))
+                    {
+                        if (text.split("=")[1].equals("true"))
+                        {
+                            sb.append(text.split("=")[0]);
+                            sb.append("_");
+                        }
+                    }
+                }
+                this.prettyName = Text.of(getPrettyString(sb.toString().split("_")));
             }
         }
         else
