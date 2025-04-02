@@ -15,10 +15,13 @@ import org.jetbrains.annotations.NotNull;
 public record ModEntryBuilder(MinecraftClient client, int width)
 {
     @Contract("_, _, _ -> new")
-    public @NotNull ModEntry build(CTMPack ctmPack, String namespace, @NotNull Screen parent)
+    public @NotNull ModEntry build(CTMPack ctmPack, @NotNull String namespace, @NotNull Screen parent)
     {
         var layout = DirectionalLayoutWidget.horizontal().spacing(10);
-        var text = new TextWidget(180, 24, Text.of(namespace), client.textRenderer);
+        var text = new TextWidget(
+                180, 24, Text.of(namespace.substring(0, 1).toUpperCase() + namespace.substring(1)),
+                client.textRenderer
+        );
         var followButton = ButtonWidget.builder(
                                                Text.translatable("ctms.screen.open"),
                                                button -> client.setScreen(new NamespaceBlocksScreen(

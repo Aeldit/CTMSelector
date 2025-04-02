@@ -8,6 +8,7 @@ import net.minecraft.client.gui.widget.DirectionalLayoutWidget;
 import net.minecraft.client.gui.widget.EmptyWidget;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
 public record GroupEntryBuilder(MinecraftClient client, int width)
@@ -15,7 +16,14 @@ public record GroupEntryBuilder(MinecraftClient client, int width)
     public @NotNull GroupEntry build(@NotNull Group group)
     {
         var layout = DirectionalLayoutWidget.horizontal().spacing(5);
-        var text = new TextWidget(160, 20 + 2, Text.of(group.groupName), client.textRenderer);
+        var text = new TextWidget(
+                160,
+                20 + 2,
+                group.isEnabled()
+                ? Text.of(group.groupName)
+                : Text.of(Formatting.RED + Text.of(Formatting.ITALIC + group.groupName).getString()),
+                client.textRenderer
+        );
         var toggleButton = CyclingButtonWidget.onOffBuilder()
                                               .omitKeyText()
                                               .initially(group.isEnabled())

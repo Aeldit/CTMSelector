@@ -24,12 +24,10 @@ public record BlockEntryBuilder(MinecraftClient client, int width)
         var layout = DirectionalLayoutWidget.horizontal().spacing(5);
         var text = new TextWidget(
                 160,
-                20 + 2, ctmPack.isBlockDisabledFromGroup(block)
-                        ?
-                        Text.of(Formatting.RED
-                                + Text.of(Formatting.ITALIC + block.prettyName.getString()).getString()
-                        )
-                        : block.prettyName,
+                20 + 2,
+                ctmPack.isBlockDisabledFromGroup(block) || !block.isEnabled()
+                ? Text.of(Formatting.RED + Text.of(Formatting.ITALIC + block.prettyName.getString()).getString())
+                : block.prettyName,
                 client.textRenderer
         );
 
