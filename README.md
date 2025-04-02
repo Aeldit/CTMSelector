@@ -25,6 +25,8 @@ or
 |        1.20.x        |     ❌      |    0.1.2     |
 |        1.20.2        |     ✅      |    latest    |
 |        1.20.4        |     ✅      |    latest    |
+|        1.20.6        |     ✅      |    latest    |
+|     1.21-1.21.4      |     ✅      |    latest    |
 
 </details>
 
@@ -64,7 +66,7 @@ key or ModMenu, and you will have access to all the options
 ### For pack developers
 
 If you want to make your resource pack compatible with this mod, read the documentation
-here : https://github.com/Aeldit/CTMSelector/blob/1.20.4/docs/CONTROLS.md
+here : https://github.com/Aeldit/CTMSelector/blob/main/docs/GROUPS.md
 
 ***
 
