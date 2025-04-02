@@ -63,11 +63,10 @@ public class NamespaceBlocksScreen extends Screen
                .sorted(Comparator.comparing(ctmBlock -> ctmBlock.prettyName.getString()))
                .forEachOrdered(list::add);
 
-        // TODO -> Make this reset only the current namespace's blocks
         addDrawableChild(
                 ButtonWidget.builder(
                                     Text.translatable("ctms.screen.config.reset"), button -> {
-                                        ctmPack.resetOptions();
+                                        ctmPack.resetNamespace(namespace);
                                         close();
                                     }
                             )

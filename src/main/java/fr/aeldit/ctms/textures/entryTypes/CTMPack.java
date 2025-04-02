@@ -179,4 +179,12 @@ public class CTMPack
                            .forEach(ctmBlock -> ctmBlock.setEnabled(true));
         }
     }
+
+    public void resetNamespace(String namespace)
+    {
+        if (namespaceBlocks != null && namespaceBlocks.containsKey(namespace))
+        {
+            namespaceBlocks.get(namespace).forEach(ctmBlock -> ctmBlock.setEnabled(true));
+        }
+    }
 }

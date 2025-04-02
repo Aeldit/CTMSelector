@@ -81,7 +81,6 @@ public class GroupsScreen extends Screen
                    .sorted(Comparator.comparing(group -> group.groupName))
                    .forEachOrdered(list::add);
 
-        // TODO -> Make this reset only the blocks in the groups
         addDrawableChild(
                 ButtonWidget.builder(
                                     TEXT_RESET, button -> {
