@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import fr.aeldit.ctms.Utils;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
-import net.lingala.zip4j.ZipFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.zip.ZipFile;
 
 import static fr.aeldit.ctms.Utils.RESOURCE_PACKS_DIR;
 
@@ -88,7 +88,7 @@ public class CTMSelector
     {
         try (
                 Reader reader = new InputStreamReader(
-                        zipFile.getInputStream(zipFile.getFileHeader("ctm_selector.json")))
+                        zipFile.getInputStream(zipFile.getEntry("ctm_selector.json")))
         ) // Throws if the fileHeader doesn't exist
         {
             // Adds the groups properly initialized to the packGroups array
