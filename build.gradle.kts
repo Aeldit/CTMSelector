@@ -16,7 +16,7 @@ repositories {
 }
 
 object C {
-    const val MOD_VERSION: String = "0.4.1"
+    const val MOD_VERSION: String = "0.4.2"
     const val LOADER_VERSION: String = "0.16.10"
     val YARN_MAPPINGS: HashMap<String, String> = hashMapOf(
         "1.20.2" to "1.20.2+build.4",
@@ -113,10 +113,6 @@ dependencies {
 
     // Continuity
     modLocalRuntime("maven.modrinth:continuity:${mod.continuityVersion}")
-
-    // zip4j
-    implementation("net.lingala.zip4j:zip4j:2.11.5")
-    include("net.lingala.zip4j:zip4j:2.11.5")
 }
 
 loom {

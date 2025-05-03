@@ -2,8 +2,6 @@ package fr.aeldit.ctms.textures;
 
 import com.google.gson.annotations.SerializedName;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -14,8 +12,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Stack;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static fr.aeldit.ctms.VersionUtils.getIdentifier;
 
@@ -64,7 +65,7 @@ public class Group
     // Non-record fields
     //=================================
     private final List<Path> propertiesFilesPaths; // When the pack is a folder
-    private final List<FileHeader> propertiesFilesFileHeaders; // When the pack is a zip file
+    private final List<ZipEntry> propertiesFilesZipEntries; // When the pack is a zip file
     public final Identifier identifier;
     public final List<CTMBlock> containedBlocks = new ArrayList<>();
 
@@ -78,8 +79,8 @@ public class Group
         // Obtains the path to each block
         if (isFolder)
         {
-            this.propertiesFilesPaths       = new ArrayList<>();
-            this.propertiesFilesFileHeaders = null;
+            this.propertiesFilesPaths      = new ArrayList<>();
+            this.propertiesFilesZipEntries = null;
 
             for (String path : serializableGroup.propertiesFilesPaths)
             {
@@ -100,8 +101,8 @@ public class Group
         }
         else
         {
-            this.propertiesFilesPaths       = null;
-            this.propertiesFilesFileHeaders = new ArrayList<>();
+            this.propertiesFilesPaths      = null;
+            this.propertiesFilesZipEntries = new ArrayList<>();
 
             try (ZipFile zipFile = new ZipFile(packPath))
             {
@@ -111,15 +112,15 @@ public class Group
 
                     if (pathInZip.endsWith(".properties"))
                     {
-                        FileHeader fh = getFileHeaderByName(zipFile.getFileHeaders(), pathInZip);
-                        if (fh != null)
+                        ZipEntry entry = getZipEntryByName(zipFile.entries(), pathInZip);
+                        if (entry != null)
                         {
-                            this.propertiesFilesFileHeaders.add(fh);
+                            this.propertiesFilesZipEntries.add(entry);
                         }
                     }
                     else
                     {
-                        getPropertiesFilesInZipFolder(zipFile.getFileHeaders(), pathInZip);
+                        getPropertiesFilesInZipFolder(zipFile.entries(), pathInZip);
                     }
                 }
             }
@@ -214,11 +215,11 @@ public class Group
             containedBlocks.add(ctmBlock);
         }
         else if (
-                propertiesFilesFileHeaders != null
-                && propertiesFilesFileHeaders.stream()
-                                             .map(FileHeader::toString)
-                                             .toList()
-                                             .contains(ctmBlock.propertiesPath)
+                propertiesFilesZipEntries != null
+                && propertiesFilesZipEntries.stream()
+                                            .map(ZipEntry::getName)
+                                            .toList()
+                                            .contains(ctmBlock.propertiesPath)
         )
         {
             containedBlocks.add(ctmBlock);
@@ -229,22 +230,33 @@ public class Group
     // Other
     //=================================
 
-    private void getPropertiesFilesInZipFolder(@NotNull List<FileHeader> fileHeaders, @NotNull String folder)
+    private void getPropertiesFilesInZipFolder(@NotNull Enumeration<? extends ZipEntry> entries, @NotNull String folder)
     {
-        if (propertiesFilesFileHeaders != null)
+        if (propertiesFilesZipEntries != null)
         {
-            fileHeaders.stream()
-                       .filter(fileHeader -> fileHeader.toString().startsWith(folder))
-                       .filter(fileHeader -> fileHeader.toString().endsWith(".properties"))
-                       .forEach(propertiesFilesFileHeaders::add);
+            while (entries.hasMoreElements())
+            {
+                ZipEntry entry = entries.nextElement();
+                if (entry.getName().startsWith(folder) && entry.getName().endsWith(".properties"))
+                {
+                    propertiesFilesZipEntries.add(entry);
+                }
+            }
         }
     }
 
-    private @Nullable FileHeader getFileHeaderByName(@NotNull List<FileHeader> fileHeaders, @NotNull String name)
+    private @Nullable ZipEntry getZipEntryByName(
+            @NotNull Enumeration<? extends ZipEntry> entries, @NotNull String name
+    )
     {
-        return fileHeaders.stream()
-                          .filter(fileHeader -> fileHeader.toString().equals(name))
-                          .findFirst()
-                          .orElse(null);
+        while (entries.hasMoreElements())
+        {
+            ZipEntry entry = entries.nextElement();
+            if (name.equals(entry.getName()))
+            {
+                return entry;
+            }
+        }
+        return null;
     }
 }

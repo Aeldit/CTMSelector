@@ -3,9 +3,6 @@ package fr.aeldit.ctms.textures;
 import fr.aeldit.ctms.textures.entryTypes.CTMBlock;
 import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.loader.api.FabricLoader;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Contract;
@@ -19,6 +16,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static fr.aeldit.ctms.Utils.*;
 import static fr.aeldit.ctms.VersionUtils.getIdentifier;
@@ -104,9 +103,12 @@ public class FilesHandling
     private @NotNull HashMap<String, List<CTMBlock>> getAllBlocksInPack(@NotNull ZipFile zipFile) throws IOException
     {
         HashMap<String, List<CTMBlock>> namespaceBlocks = new HashMap<>();
-        for (FileHeader fileHeader : zipFile.getFileHeaders())
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements())
         {
-            String fhStr = fileHeader.toString();
+            ZipEntry entry = entries.nextElement();
+
+            String fhStr = entry.toString();
             if (!fhStr.contains("optifine/ctm/"))
             {
                 continue;
@@ -126,7 +128,7 @@ public class FilesHandling
                 }
 
                 Properties props = new Properties();
-                props.load(zipFile.getInputStream(fileHeader));
+                props.load(zipFile.getInputStream(entry));
 
                 if (props.isEmpty())
                 {
@@ -255,17 +257,19 @@ public class FilesHandling
     @Contract("_, _, _, _ -> new")
     private @NotNull Identifier getIdentifierFor(
             @NotNull Properties properties, @NotNull ZipFile zipFile, String parentFh, String namespace
-    ) throws ZipException
+    )
     {
         int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
         String pngFile = "%d.png".formatted(firstImage);
 
-        if (zipFile.getFileHeaders().stream()
-                   .map(FileHeader::toString)
-                   .toList()
-                   .contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements())
         {
-            return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
+            ZipEntry entry = entries.nextElement();
+            if (entry.toString().contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+            {
+                return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
+            }
         }
         return getIdentifier("unknown");
     }
@@ -363,14 +367,14 @@ public class FilesHandling
             {
                 for (CTMBlock ctmBlock : ctmPack.getCTMBlocks())
                 {
-                    FileHeader fileHeader = zipFile.getFileHeader(ctmBlock.propertiesPath);
-                    if (fileHeader == null)
+                    ZipEntry entry = zipFile.getEntry(ctmBlock.propertiesPath);
+                    if (entry == null)
                     {
                         continue;
                     }
 
                     Properties properties = new Properties();
-                    properties.load(zipFile.getInputStream(fileHeader));
+                    properties.load(zipFile.getInputStream(entry));
 
                     // If the state of the block in the file is not the same as in the memory, we write the state of
                     // the one in memory to the file
@@ -389,7 +393,7 @@ public class FilesHandling
                                                .replace("}", "")
                                                .replace(", ", "\n")
                                                .getBytes();
-                        headersBytes.put(fileHeader.toString(), tmp);
+                        headersBytes.put(entry.toString(), tmp);
                     }
                 }
             }

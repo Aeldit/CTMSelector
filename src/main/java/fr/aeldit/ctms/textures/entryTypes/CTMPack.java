@@ -2,18 +2,15 @@ package fr.aeldit.ctms.textures.entryTypes;
 
 import fr.aeldit.ctms.textures.CTMSelector;
 import fr.aeldit.ctms.textures.Group;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Represents a CTM pack
@@ -65,7 +62,7 @@ public class CTMPack
 
     public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
-        this.name     = zipFile.getFile().getName();
+        this.name     = zipFile.getName().split("/")[zipFile.getName().split("/").length - 1];
         this.isFolder = false;
 
         boolean isVanilla = namespacesBLocks.size() == 1 && namespacesBLocks.containsKey("minecraft");
@@ -82,14 +79,15 @@ public class CTMPack
 
     private boolean hasCTMSelector(@NotNull ZipFile zipFile)
     {
-        try
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements())
         {
-            return zipFile.getFileHeaders().stream().anyMatch(fh -> "ctm_selector.json".equals(fh.toString()));
+            if (entries.nextElement().getName().equals("ctm_selector.json"))
+            {
+                return true;
+            }
         }
-        catch (ZipException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return false;
     }
 
     //******************************************************************************************************************
