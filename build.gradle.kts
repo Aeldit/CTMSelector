@@ -10,9 +10,6 @@ repositories {
     maven("https://api.modrinth.com/maven") {
         name = "Modrinth"
     }
-    maven("https://maven.terraformersmc.com/releases/") {
-        name = "TerraformersMC"
-    }
 }
 
 object C {
@@ -93,23 +90,10 @@ dependencies {
     minecraft("com.mojang:minecraft:${mod.mcVersion}")
     mappings("net.fabricmc:yarn:${mod.yarnMappings}:v2")
     modImplementation("net.fabricmc:fabric-loader:${C.LOADER_VERSION}")
-
     modImplementation("net.fabricmc.fabric-api:fabric-api:${mod.fabricVersion}")
 
-    // Fabric API
-    setOf(
-        // ModMenu dependencies
-        "fabric-resource-loader-v0",
-        "fabric-key-binding-api-v1",
-        // CyanLib dependencies
-        "fabric-lifecycle-events-v1",
-        "fabric-screen-api-v1"
-    ).forEach {
-        modImplementation(fabricApi.module(it, mod.fabricVersion))
-    }
-
     // ModMenu
-    modImplementation("com.terraformersmc:modmenu:${mod.modmenuVersion}")
+    modImplementation("maven.modrinth:modmenu:${mod.modmenuVersion}")
 
     // Continuity
     modLocalRuntime("maven.modrinth:continuity:${mod.continuityVersion}")
