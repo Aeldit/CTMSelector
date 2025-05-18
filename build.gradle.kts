@@ -182,7 +182,7 @@ publishMods {
 
         requires("fabric-api", "modmenu", "continuity")
 
-        changelog = rootProject.file("changelogs/latest.md")
+        changelog = rootProject.file("changelog.md")
             .takeIf { it.exists() }
             ?.readText()
             ?: "No changelog provided."
