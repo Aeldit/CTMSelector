@@ -108,7 +108,7 @@ public class FilesHandling
         {
             ZipEntry entry = entries.nextElement();
 
-            String fhStr = entry.toString();
+            String fhStr = String.valueOf(entry);
             if (!fhStr.contains("optifine/ctm/"))
             {
                 continue;
@@ -139,26 +139,26 @@ public class FilesHandling
                 Identifier identifier = getIdentifierFor(props, zipFile, getParentFileHeader(fhStr), namespace);
                 if (props.containsKey(types[0]))
                 {
-                    ctmBlocks.add(new CTMBlock(props.get(types[0]).toString(), identifier, true, false, fhStr));
+                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[0])), identifier, true, false, fhStr));
                 }
                 else if (props.containsKey(types[1]))
                 {
-                    ctmBlocks.add(new CTMBlock(props.get(types[1]).toString(), identifier, true, true, fhStr));
+                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[1])), identifier, true, true, fhStr));
                 }
                 else if (props.containsKey(types[2]))
                 {
-                    ctmBlocks.add(new CTMBlock(props.get(types[2]).toString(), identifier, false, false, fhStr));
+                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[2])), identifier, false, false, fhStr));
                 }
                 else if (props.containsKey(types[3]))
                 {
-                    ctmBlocks.add(new CTMBlock(props.get(types[3]).toString(), identifier, false, true, fhStr));
+                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[3])), identifier, false, true, fhStr));
                 }
             }
         }
         return namespaceBlocks;
     }
 
-    private @NotNull List<CTMBlock> getCTMBlocksForNamespace(File namespaceDir)
+    private @NotNull List<CTMBlock> getCTMBlocksForNamespace(@NotNull File namespaceDir)
     {
         List<CTMBlock> ctmBlocks = new ArrayList<>();
 
@@ -199,7 +199,7 @@ public class FilesHandling
                         continue;
                     }
 
-                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, file.toString()));
+                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, String.valueOf(file)));
                 }
             }
         }
@@ -214,42 +214,44 @@ public class FilesHandling
 
         if (properties.containsKey(types[0]))
         {
-            return new CTMBlock(properties.get(types[0]).toString(), identifier, true, false, filePath);
+            return new CTMBlock(String.valueOf(properties.get(types[0])), identifier, true, false, filePath);
         }
         if (properties.containsKey(types[1]))
         {
-            return new CTMBlock(properties.get(types[1]).toString(), identifier, true, true, filePath);
+            return new CTMBlock(String.valueOf(properties.get(types[1])), identifier, true, true, filePath);
         }
         if (properties.containsKey(types[2]))
         {
-            return new CTMBlock(properties.get(types[2]).toString(), identifier, false, false, filePath);
+            return new CTMBlock(String.valueOf(properties.get(types[2])), identifier, false, false, filePath);
         }
         if (properties.containsKey(types[3]))
         {
-            return new CTMBlock(properties.get(types[3]).toString(), identifier, false, true, filePath);
+            return new CTMBlock(String.valueOf(properties.get(types[3])), identifier, false, true, filePath);
         }
         return null;
     }
 
-    private Identifier getIdentifierFor(Properties properties, @NotNull File parentFile, String namespace)
+    private Identifier getIdentifierFor(@NotNull Properties properties, @NotNull File parentFile, String namespace)
     {
         File[] neighborFiles = parentFile.listFiles();
-        Identifier identifier = getIdentifier("unknown");
-        if (neighborFiles != null)
+        if (neighborFiles == null || !properties.containsKey("tiles"))
         {
-            int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
-            String pngFile = "%d.png".formatted(firstImage);
-            if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
-            {
-                identifier = Arrays.stream(neighborFiles)
-                                   .filter(file -> pngFile.equals(file.getName()))
-                                   .findFirst()
-                                   .map(file -> getIdentifier(
-                                           namespace,
-                                           getIdentifierLikePathFrom(namespace, file.getPath())
-                                   ))
-                                   .orElse(identifier);
-            }
+            return getIdentifier("unknown");
+        }
+
+        Identifier identifier = getIdentifier("unknown");
+        int firstImage = Integer.parseInt(String.valueOf(properties.get("tiles")).split("-")[0]);
+        String pngFile = "%d.png".formatted(firstImage);
+        if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
+        {
+            identifier = Arrays.stream(neighborFiles)
+                               .filter(file -> pngFile.equals(file.getName()))
+                               .findFirst()
+                               .map(file -> getIdentifier(
+                                       namespace,
+                                       getIdentifierLikePathFrom(namespace, file.getPath())
+                               ))
+                               .orElse(identifier);
         }
         return identifier;
     }
@@ -259,14 +261,19 @@ public class FilesHandling
             @NotNull Properties properties, @NotNull ZipFile zipFile, String parentFh, String namespace
     )
     {
-        int firstImage = Integer.parseInt(properties.get("tiles").toString().split("-")[0]);
+        if (!properties.containsKey("tiles"))
+        {
+            return getIdentifier("unknown");
+        }
+
+        int firstImage = Integer.parseInt(String.valueOf(properties.get("tiles")).split("-")[0]);
         String pngFile = "%d.png".formatted(firstImage);
 
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
         while (entries.hasMoreElements())
         {
             ZipEntry entry = entries.nextElement();
-            if (entry.toString().contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+            if (String.valueOf(entry).contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
             {
                 return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
             }
@@ -287,7 +294,7 @@ public class FilesHandling
                 sb.append("/");
             }
         }
-        return sb.toString();
+        return String.valueOf(sb);
     }
 
     private @NotNull String getParentFileHeader(@NotNull String fhStr)
@@ -303,7 +310,7 @@ public class FilesHandling
         {
             sb.append(split[i]).append("/");
         }
-        return sb.toString();
+        return String.valueOf(sb);
     }
 
     //****************************************************************************************************************//
@@ -388,11 +395,11 @@ public class FilesHandling
                     {
                         removeEmptyKeys(properties);
                         // We take the properties in a byte array, so we can write it in the zip later
-                        byte[] tmp = properties.toString()
-                                               .replace("{", "")
-                                               .replace("}", "")
-                                               .replace(", ", "\n")
-                                               .getBytes();
+                        byte[] tmp = String.valueOf(properties)
+                                           .replace("{", "")
+                                           .replace("}", "")
+                                           .replace(", ", "\n")
+                                           .getBytes();
                         headersBytes.put(entry.toString(), tmp);
                     }
                 }
@@ -407,7 +414,7 @@ public class FilesHandling
                 MinecraftClient.getInstance().getResourcePackManager().disable("file/%s".formatted(ctmPack.getName()));
                 MinecraftClient.getInstance().reloadResources();
 
-                writeBytesToZip(packPath.toString(), headersBytes);
+                writeBytesToZip(String.valueOf(packPath), headersBytes);
 
                 MinecraftClient.getInstance().getResourcePackManager().enable("file/%s".formatted(ctmPack.getName()));
                 MinecraftClient.getInstance().reloadResources();
@@ -417,11 +424,11 @@ public class FilesHandling
 
     private boolean isBlockEnabled(@NotNull Properties properties, String blockName)
     {
-        return properties.containsKey(types[0]) && properties.get(types[0]).toString().equals(blockName)
-               || properties.containsKey(types[1]) && properties.get(types[1]).toString().equals(blockName);
+        return properties.containsKey(types[0]) && String.valueOf(properties.get(types[0])).equals(blockName)
+                || properties.containsKey(types[1]) && String.valueOf(properties.get(types[1])).equals(blockName);
     }
 
-    private void setBlockInPropertiesToAppropriateState(Properties properties, @NotNull CTMBlock ctmBlock)
+    private void setBlockInPropertiesToAppropriateState(@NotNull Properties properties, @NotNull CTMBlock ctmBlock)
     {
         if (ctmBlock.isEnabled())
         {
