@@ -3,6 +3,7 @@ package fr.aeldit.ctms;
 import fr.aeldit.ctms.textures.CTMPacks;
 import fr.aeldit.ctms.textures.FilesHandling;
 import net.fabricmc.loader.api.FabricLoader;
+import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -11,9 +12,10 @@ import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Utils
+public abstract class Utils
 {
     public static final String CTMS_MODID = "ctms";
+    public static final String PATH_SEPARATOR = SystemUtils.IS_OS_WINDOWS ? "\\\\" : "/";
 
     public static final FilesHandling TEXTURES_HANDLING = new FilesHandling();
     public static CTMPacks CTM_PACKS;

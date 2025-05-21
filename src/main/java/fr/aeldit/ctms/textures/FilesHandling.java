@@ -5,6 +5,7 @@ import fr.aeldit.ctms.textures.entryTypes.CTMPack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -266,24 +268,78 @@ public class FilesHandling
             return getIdentifier("unknown");
         }
 
-        int firstImage = Integer.parseInt(String.valueOf(properties.get("tiles")).split("-")[0]);
-        String pngFile = "%d.png".formatted(firstImage);
+        // See https://optifine.readthedocs.io/ctm.html#tiles
+        String tiles = String.valueOf(properties.get("tiles"));
+        String tile = tiles.contains(" ") ? tiles.split(" ")[0] : tiles;
 
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements())
+        // 5 -> 5.png
+        if (StringUtils.isNumeric(tile))
         {
-            ZipEntry entry = entries.nextElement();
-            if (String.valueOf(entry).contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+            int image = Integer.parseInt(tile);
+            String pngFile = "%d.png".formatted(image);
+
+            Enumeration<? extends ZipEntry> es = zipFile.entries();
+            while (es.hasMoreElements())
             {
-                return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
+                if (String.valueOf(es.nextElement()).contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+                {
+                    return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
+                }
             }
         }
+        // 8-11 -> 8.png, 9.png, 10.png, 11.png
+        else if (tile.contains("-"))
+        {
+            int firstImage = Integer.parseInt(tile.split("-")[0]);
+            String pngFile = "%d.png".formatted(firstImage);
+
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements())
+            {
+                ZipEntry entry = entries.nextElement();
+                if (String.valueOf(entry).contains("assets/%s/%s%s".formatted(namespace, parentFh, pngFile)))
+                {
+                    return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
+                }
+            }
+        }
+        // full/path/name.png -> full/path/name.png
+        // TODO: Make sure this is correct
+        else if (tile.contains("/"))
+        {
+            ZipEntry entry = zipFile.getEntry(tile);
+            if (entry != null)
+            {
+                return getIdentifier(namespace, String.valueOf(entry));
+            }
+        }
+        // name.png -> name.png
+        else if (tile.endsWith(".png"))
+        {
+            ZipEntry entry = zipFile.getEntry("assets/%s/%s%s".formatted(namespace, parentFh, tile));
+            if (entry != null)
+            {
+                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s".formatted(namespace), ""));
+            }
+        }
+        // name -> name.png
+        else if (StringUtils.isAsciiPrintable(tile)
+                // Windows forbidden characters in file name, linux just forbids '/'
+                && Stream.of(">", "<", ":", "\"", "/", "\\", "|", "?", "*").noneMatch(tile::contains))
+        {
+            ZipEntry entry = zipFile.getEntry("assets/%s/%s%s.png".formatted(namespace, parentFh, tile));
+            if (entry != null)
+            {
+                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s".formatted(namespace), ""));
+            }
+        }
+        // <skip> and <default> are for now the unknown icon
         return getIdentifier("unknown");
     }
 
     private @NotNull String getIdentifierLikePathFrom(String namespace, @NotNull String path)
     {
-        List<String> split = new ArrayList<>(List.of(path.split("/")));
+        List<String> split = new ArrayList<>(List.of(path.split(PATH_SEPARATOR)));
         StringBuilder sb = new StringBuilder();
         int splitSize = split.size();
         for (int i = split.lastIndexOf(namespace) + 1; i < splitSize; ++i)
@@ -291,9 +347,10 @@ public class FilesHandling
             sb.append(split.get(i));
             if (i != splitSize - 1)
             {
-                sb.append("/");
+                sb.append(PATH_SEPARATOR);
             }
         }
+        System.out.println(sb);
         return String.valueOf(sb);
     }
 
