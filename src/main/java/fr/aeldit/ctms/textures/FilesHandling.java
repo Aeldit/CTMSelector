@@ -319,7 +319,7 @@ public class FilesHandling
             ZipEntry entry = zipFile.getEntry("assets/%s/%s%s".formatted(namespace, parentFh, tile));
             if (entry != null)
             {
-                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s".formatted(namespace), ""));
+                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s/".formatted(namespace), ""));
             }
         }
         // name -> name.png
@@ -330,7 +330,7 @@ public class FilesHandling
             ZipEntry entry = zipFile.getEntry("assets/%s/%s%s.png".formatted(namespace, parentFh, tile));
             if (entry != null)
             {
-                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s".formatted(namespace), ""));
+                return getIdentifier(namespace, entry.toString().replaceFirst("assets/%s/".formatted(namespace), ""));
             }
         }
         // <skip> and <default> are for now the unknown icon
