@@ -12,6 +12,8 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static fr.aeldit.ctms.Utils.PATH_SEPARATOR;
+
 /**
  * Represents a CTM pack
  *
@@ -50,24 +52,24 @@ public class CTMPack
     //******************************************************************************************************************
     public CTMPack(@NotNull File file, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
-        this.name     = file.getName();
+        this.name = file.getName();
         this.isFolder = true;
 
         boolean isVanilla = namespacesBLocks.size() == 1 && namespacesBLocks.containsKey("minecraft");
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
-        this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
+        this.namespaceBlocks = isVanilla ? null : namespacesBLocks;
 
         this.ctmSelector = hasCTMSelector(file) ? new CTMSelector(this.name, this) : null;
     }
 
     public CTMPack(@NotNull ZipFile zipFile, @NotNull Map<String, List<CTMBlock>> namespacesBLocks)
     {
-        this.name     = zipFile.getName().split("/")[zipFile.getName().split("/").length - 1];
+        this.name = zipFile.getName().split(PATH_SEPARATOR)[zipFile.getName().split(PATH_SEPARATOR).length - 1];
         this.isFolder = false;
 
         boolean isVanilla = namespacesBLocks.size() == 1 && namespacesBLocks.containsKey("minecraft");
         this.vanillaOnlyCtmBlocks = isVanilla ? new ArrayList<>(namespacesBLocks.get("minecraft")) : null;
-        this.namespaceBlocks      = isVanilla ? null : namespacesBLocks;
+        this.namespaceBlocks = isVanilla ? null : namespacesBLocks;
 
         this.ctmSelector = hasCTMSelector(zipFile) ? new CTMSelector(this.name, zipFile, this) : null;
     }
@@ -106,10 +108,10 @@ public class CTMPack
     public List<CTMBlock> getCTMBlocks()
     {
         return vanillaOnlyCtmBlocks != null
-               ? vanillaOnlyCtmBlocks
-               : namespaceBlocks.values().stream()
-                                .flatMap(Collection::stream)
-                                .toList();
+                ? vanillaOnlyCtmBlocks
+                : namespaceBlocks.values().stream()
+                                 .flatMap(Collection::stream)
+                                 .toList();
     }
 
     public List<CTMBlock> getCTMBlocksForNamespace(String namespace)
@@ -120,7 +122,7 @@ public class CTMPack
     public ArrayList<String> getNamespaces()
     {
         return vanillaOnlyCtmBlocks == null ? new ArrayList<>(namespaceBlocks.keySet())
-                                            : new ArrayList<>(List.of("minecraft"));
+                : new ArrayList<>(List.of("minecraft"));
     }
 
     //=========================================================================
