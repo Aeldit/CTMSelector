@@ -137,23 +137,50 @@ public class FilesHandling
                     continue;
                 }
 
+                if (!props.containsKey("method"))
+                {
+                    continue;
+                }
+
+                // We do not handle overlay methods
+                String method = props.getProperty("method");
+                if (Stream.of(
+                        "ctm", "ctm_compact", "horizontal", "vertical", "horizontal+vertical", "vertical+horizontal",
+                        "top", "random", "repeat", "fixed"
+                ).noneMatch(s -> s.equals(method)))
+                {
+                    continue;
+                }
+
                 List<CTMBlock> ctmBlocks = namespaceBlocks.get(namespace);
                 Identifier identifier = getIdentifierFor(props, zipFile, getParentFileHeader(fhStr), namespace);
                 if (props.containsKey(types[0]))
                 {
-                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[0])), identifier, true, false, fhStr));
+                    ctmBlocks.add(new CTMBlock(
+                            String.valueOf(props.get(types[0])).split(" ")[0],
+                            identifier, true, false, fhStr
+                    ));
                 }
                 else if (props.containsKey(types[1]))
                 {
-                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[1])), identifier, true, true, fhStr));
+                    ctmBlocks.add(new CTMBlock(
+                            String.valueOf(props.get(types[1])).split(" ")[0],
+                            identifier, true, true, fhStr
+                    ));
                 }
                 else if (props.containsKey(types[2]))
                 {
-                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[2])), identifier, false, false, fhStr));
+                    ctmBlocks.add(new CTMBlock(
+                            String.valueOf(props.get(types[2])).split(" ")[0],
+                            identifier, false, false, fhStr
+                    ));
                 }
                 else if (props.containsKey(types[3]))
                 {
-                    ctmBlocks.add(new CTMBlock(String.valueOf(props.get(types[3])), identifier, false, true, fhStr));
+                    ctmBlocks.add(new CTMBlock(
+                            String.valueOf(props.get(types[3])).split(" ")[0],
+                            identifier, false, true, fhStr
+                    ));
                 }
             }
         }
