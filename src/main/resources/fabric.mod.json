@@ -28,8 +28,8 @@
     "java": ">=${java_version}",
     "fabricloader": ">=${loader_version}",
     "fabric-api": ">=${fabric_api_version}",
-    "modmenu": "=${modmenu_version}",
-    "continuity": "=${continuity_version}"
+    "modmenu": ">=${modmenu_version}",
+    "continuity": ">=${continuity_version}"
   },
   "custom": {
     "modmenu": {
