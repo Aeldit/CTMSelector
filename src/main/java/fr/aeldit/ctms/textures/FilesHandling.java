@@ -241,6 +241,8 @@ public class FilesHandling
             return getIdentifier("unknown");
         }
 
+        // TODO: Update like the zip version of this function
+
         Identifier identifier = getIdentifier("unknown");
         int firstImage = Integer.parseInt(String.valueOf(properties.get("tiles")).split("-")[0]);
         String pngFile = "%d.png".formatted(firstImage);
