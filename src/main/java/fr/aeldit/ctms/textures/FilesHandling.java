@@ -287,8 +287,18 @@ public class FilesHandling
                 }
             }
         }
+        // full/path/name.png -> full/path/name.png
+        // TODO: Make sure this is correct
+        else if (tile.contains("/"))
+        {
+            ZipEntry entry = zipFile.getEntry(tile);
+            if (entry != null)
+            {
+                return getIdentifier(namespace, String.valueOf(entry));
+            }
+        }
         // 8-11 -> 8.png, 9.png, 10.png, 11.png
-        else if (tile.contains("-"))
+        else if (tile.contains("-") && !tile.matches("[A-Za-z]+"))
         {
             int firstImage = Integer.parseInt(tile.split("-")[0]);
             String pngFile = "%d.png".formatted(firstImage);
@@ -301,16 +311,6 @@ public class FilesHandling
                 {
                     return getIdentifier(namespace, "%s%s".formatted(parentFh, pngFile));
                 }
-            }
-        }
-        // full/path/name.png -> full/path/name.png
-        // TODO: Make sure this is correct
-        else if (tile.contains("/"))
-        {
-            ZipEntry entry = zipFile.getEntry(tile);
-            if (entry != null)
-            {
-                return getIdentifier(namespace, String.valueOf(entry));
             }
         }
         // name.png -> name.png
