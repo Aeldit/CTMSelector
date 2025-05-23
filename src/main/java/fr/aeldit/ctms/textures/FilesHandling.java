@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -132,12 +132,7 @@ public class FilesHandling
                 Properties props = new Properties();
                 props.load(zipFile.getInputStream(entry));
 
-                if (props.isEmpty())
-                {
-                    continue;
-                }
-
-                if (!props.containsKey("method"))
+                if (props.isEmpty() || !props.containsKey("method"))
                 {
                     continue;
                 }
@@ -145,8 +140,8 @@ public class FilesHandling
                 // We do not handle overlay methods
                 String method = props.getProperty("method");
                 if (Stream.of(
-                        "ctm", "ctm_compact", "horizontal", "vertical", "horizontal+vertical", "vertical+horizontal",
-                        "top", "random", "repeat", "fixed"
+                        "ctm", "ctm_compact", "horizontal", "vertical", "horizontal+vertical",
+                        "vertical+horizontal", "top", "random", "repeat", "fixed"
                 ).noneMatch(s -> s.equals(method)))
                 {
                     continue;
@@ -213,51 +208,65 @@ public class FilesHandling
                 }
                 else if (file.isFile() && file.getName().endsWith(".properties"))
                 {
-                    Properties properties = new Properties();
+                    Properties props = new Properties();
                     try (FileInputStream fileInputStream = new FileInputStream(file))
                     {
-                        properties.load(fileInputStream);
+                        props.load(fileInputStream);
                     }
                     catch (IOException e)
                     {
                         throw new RuntimeException(e);
                     }
 
-                    if (properties.isEmpty())
+                    if (props.isEmpty() || !props.containsKey("method"))
                     {
                         continue;
                     }
 
-                    ctmBlocks.add(getCTMBlockFrom(properties, file.getParentFile(), namespace, String.valueOf(file)));
+                    // We do not handle overlay methods
+                    String method = props.getProperty("method");
+                    if (Stream.of(
+                            "ctm", "ctm_compact", "horizontal", "vertical", "horizontal+vertical",
+                            "vertical+horizontal", "top", "random", "repeat", "fixed"
+                    ).noneMatch(s -> s.equals(method)))
+                    {
+                        continue;
+                    }
+
+                    Identifier identifier = getIdentifierFor(props, file.getParentFile(), namespace);
+                    String filePath = String.valueOf(file);
+                    if (props.containsKey(types[0]))
+                    {
+                        ctmBlocks.add(new CTMBlock(
+                                String.valueOf(props.get(types[0])).split(" ")[0],
+                                identifier, true, false, filePath
+                        ));
+                    }
+                    else if (props.containsKey(types[1]))
+                    {
+                        ctmBlocks.add(new CTMBlock(
+                                String.valueOf(props.get(types[1])).split(" ")[0],
+                                identifier, true, true, filePath
+                        ));
+                    }
+                    else if (props.containsKey(types[2]))
+                    {
+                        ctmBlocks.add(new CTMBlock(
+                                String.valueOf(props.get(types[2])).split(" ")[0],
+                                identifier, false, false, filePath
+                        ));
+                    }
+                    else if (props.containsKey(types[3]))
+                    {
+                        ctmBlocks.add(new CTMBlock(
+                                String.valueOf(props.get(types[3])).split(" ")[0],
+                                identifier, false, true, filePath
+                        ));
+                    }
                 }
             }
         }
         return ctmBlocks;
-    }
-
-    private @Nullable CTMBlock getCTMBlockFrom(
-            @NotNull Properties properties, @NotNull File parentFile, String namespace, String filePath
-    )
-    {
-        Identifier identifier = getIdentifierFor(properties, parentFile, namespace);
-
-        if (properties.containsKey(types[0]))
-        {
-            return new CTMBlock(String.valueOf(properties.get(types[0])), identifier, true, false, filePath);
-        }
-        if (properties.containsKey(types[1]))
-        {
-            return new CTMBlock(String.valueOf(properties.get(types[1])), identifier, true, true, filePath);
-        }
-        if (properties.containsKey(types[2]))
-        {
-            return new CTMBlock(String.valueOf(properties.get(types[2])), identifier, false, false, filePath);
-        }
-        if (properties.containsKey(types[3]))
-        {
-            return new CTMBlock(String.valueOf(properties.get(types[3])), identifier, false, true, filePath);
-        }
-        return null;
     }
 
     private Identifier getIdentifierFor(@NotNull Properties properties, @NotNull File parentFile, String namespace)
@@ -268,22 +277,87 @@ public class FilesHandling
             return getIdentifier("unknown");
         }
 
-        // TODO: Update like the zip version of this function
-
+        // See https://optifine.readthedocs.io/ctm.html#tiles
+        String tile = String.valueOf(properties.get("tiles")).split(" ")[0];
         Identifier identifier = getIdentifier("unknown");
-        int firstImage = Integer.parseInt(String.valueOf(properties.get("tiles")).split("-")[0]);
-        String pngFile = "%d.png".formatted(firstImage);
-        if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
+
+        // 5 -> 5.png
+        if (StringUtils.isNumeric(tile))
         {
-            identifier = Arrays.stream(neighborFiles)
-                               .filter(file -> pngFile.equals(file.getName()))
-                               .findFirst()
-                               .map(file -> getIdentifier(
-                                       namespace,
-                                       getIdentifierLikePathFrom(namespace, file.getPath())
-                               ))
-                               .orElse(identifier);
+            int image = Integer.parseInt(tile);
+            String pngFile = "%d.png".formatted(image);
+
+            if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
+            {
+                identifier = Arrays.stream(neighborFiles)
+                                   .filter(file -> pngFile.equals(file.getName()))
+                                   .findFirst()
+                                   .map(file -> getIdentifier(
+                                           namespace,
+                                           getIdentifierLikePathFrom(namespace, file.getPath())
+                                   ))
+                                   .orElse(identifier);
+            }
         }
+        // full/path/name.png -> full/path/name.png
+        else if (tile.contains("/"))
+        {
+            // TODO
+            LoggerFactory.getLogger(CTMS_MODID).warn("Full path identifiers are not implemented yet");
+        }
+        // 8-11 -> 8.png, 9.png, 10.png, 11.png
+        else if (tile.contains("-") && !tile.matches("[A-Za-z]+"))
+        {
+            int firstImage = Integer.parseInt(tile.split("-")[0]);
+            String pngFile = "%d.png".formatted(firstImage);
+
+            if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
+            {
+                identifier = Arrays.stream(neighborFiles)
+                                   .filter(file -> pngFile.equals(file.getName()))
+                                   .findFirst()
+                                   .map(file -> getIdentifier(
+                                           namespace,
+                                           getIdentifierLikePathFrom(namespace, file.getPath())
+                                   ))
+                                   .orElse(identifier);
+            }
+        }
+        // name.png -> name.png
+        else if (tile.endsWith(".png"))
+        {
+            if (Arrays.stream(neighborFiles).anyMatch(file -> tile.equals(file.getName())))
+            {
+                identifier = Arrays.stream(neighborFiles)
+                                   .filter(file -> tile.equals(file.getName()))
+                                   .findFirst()
+                                   .map(file -> getIdentifier(
+                                           namespace,
+                                           getIdentifierLikePathFrom(namespace, file.getPath())
+                                   ))
+                                   .orElse(identifier);
+            }
+        }
+        // name -> name.png
+        else if (StringUtils.isAsciiPrintable(tile)
+                // Windows forbidden characters in file name, linux just forbids '/'
+                && Stream.of(">", "<", ":", "\"", "/", "\\", "|", "?", "*").noneMatch(tile::contains))
+        {
+            String pngFile = "%s.png".formatted(tile);
+
+            if (Arrays.stream(neighborFiles).anyMatch(file -> pngFile.equals(file.getName())))
+            {
+                identifier = Arrays.stream(neighborFiles)
+                                   .filter(file -> pngFile.equals(file.getName()))
+                                   .findFirst()
+                                   .map(file -> getIdentifier(
+                                           namespace,
+                                           getIdentifierLikePathFrom(namespace, file.getPath())
+                                   ))
+                                   .orElse(identifier);
+            }
+        }
+        // <skip> and <default> are for now the unknown icon
         return identifier;
     }
 
@@ -317,14 +391,10 @@ public class FilesHandling
             }
         }
         // full/path/name.png -> full/path/name.png
-        // TODO: Make sure this is correct
         else if (tile.contains("/"))
         {
-            ZipEntry entry = zipFile.getEntry(tile);
-            if (entry != null)
-            {
-                return getIdentifier(namespace, String.valueOf(entry));
-            }
+            // TODO
+            LoggerFactory.getLogger(CTMS_MODID).warn("Full path identifiers are not implemented yet");
         }
         // 8-11 -> 8.png, 9.png, 10.png, 11.png
         else if (tile.contains("-") && !tile.matches("[A-Za-z]+"))
@@ -376,10 +446,9 @@ public class FilesHandling
             sb.append(split.get(i));
             if (i != splitSize - 1)
             {
-                sb.append(PATH_SEPARATOR);
+                sb.append("/");
             }
         }
-        System.out.println(sb);
         return String.valueOf(sb);
     }
 
