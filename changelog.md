@@ -1,3 +1,0 @@
-- Fix paths not working on Windows and causing crashes
-- CTM methods that are not overlay are now all handled
-- Fix packs names on Windows
